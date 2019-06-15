@@ -1,4 +1,4 @@
-module vn.edu.nlu.fit.minesweeper {
+module vn.edu.nlu.fit.app {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -11,6 +11,10 @@ module vn.edu.nlu.fit.minesweeper {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
 
-    opens vn.edu.nlu.fit.minesweeper to javafx.fxml;
-    exports vn.edu.nlu.fit.minesweeper;
+    opens app to javafx.fxml;
+    opens minesweeper.controller to javafx.fxml;
+
+    exports app;
+    exports minesweeper.controller;
+    exports minesweeper.model;
 }

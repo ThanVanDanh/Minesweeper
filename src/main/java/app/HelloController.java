@@ -1,4 +1,4 @@
-package vn.edu.nlu.fit.minesweeper;
+package app;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
