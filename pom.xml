@@ -133,7 +133,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>vn.edu.nlu.fit.minesweeper/vn.edu.nlu.fit.minesweeper.HelloApplication
+                            <mainClass>vn.edu.nlu.fit.app/app.HelloApplication
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
