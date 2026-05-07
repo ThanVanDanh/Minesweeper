@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="minesweeper.controller.AdminResultController"
@@ -19,7 +18,7 @@
         <Label fx:id="statusLabel" styleClass="selected-mode"/>
     </HBox>
 
-    <!-- Body -->
+    <!-- Body — dùng ScrollPane để không bị overflow -->
     <VBox spacing="14" VBox.vgrow="ALWAYS">
         <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
 
@@ -27,26 +26,21 @@
         <VBox styleClass="panel-card" spacing="0">
             <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
             <HBox spacing="16" alignment="CENTER_LEFT">
-
                 <VBox spacing="5">
                     <Label text="ĐỘ KHÓ" style="-fx-text-fill: white;" styleClass="input-label"/>
                     <ComboBox fx:id="cbDifficulty" prefWidth="148"
                               style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
                 </VBox>
-
                 <VBox spacing="5">
                     <Label text="USERNAME" style="-fx-text-fill: white;" styleClass="input-label"/>
                     <TextField fx:id="tfUsername" promptText="Nhập username..." prefWidth="220" styleClass="auth-input"/>
                 </VBox>
-
                 <VBox spacing="5">
-                    <Label text="KẾT QUẢ" style="-fx-text-fill: white;"  styleClass="input-label"/>
+                    <Label text="KẾT QUẢ" style="-fx-text-fill: white;" styleClass="input-label"/>
                     <ComboBox fx:id="cbResult" prefWidth="130"
                               style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
                 </VBox>
-
                 <Region HBox.hgrow="ALWAYS"/>
-
                 <VBox spacing="8" alignment="BOTTOM_RIGHT">
                     <Button text="▷  LỌC"      onAction="#onFilter" styleClass="start-button" prefWidth="110"/>
                     <Button text="↺  Đặt lại"  onAction="#onReset"  styleClass="nav-button"   prefWidth="110"/>
@@ -64,11 +58,11 @@
                     style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-padding:9 16;-fx-cursor:hand;"/>
         </HBox>
 
-        <!-- Table -->
+        <!-- Table — VBox.vgrow ALWAYS nhưng KHÔNG đặt minHeight cố định lớn -->
         <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
             <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-            <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS" minHeight="400"
-                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(0,180,210,0.55);-fx-selection-bar-text:#ffffff;-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+            <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:transparent;-fx-selection-bar-text:#2dd4f0;-fx-selection-bar-non-focused:transparent;-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
                 <columns>
                     <TableColumn fx:id="colSelect" text="" minWidth="40" maxWidth="40"/>
                     <TableColumn fx:id="colGameId" text="Game ID"/>
@@ -78,7 +72,7 @@
                     <TableColumn fx:id="colTime" text="Thời gian"/>
                     <TableColumn fx:id="colOpenedCells" text="Opened"/>
                     <TableColumn fx:id="colResult" text="Kết quả"/>
-                    <TableColumn fx:id="colPlayedAt" text="Ngày chơi"/>
+                    <TableColumn fx:id="colPlayedAt" text="Ngày chơi" minWidth="145"/>
                 </columns>
                 <placeholder>
                     <Label text="Không tìm thấy dữ liệu."
@@ -86,8 +80,10 @@
                 </placeholder>
             </TableView>
         </VBox>
-        <!-- Pagination bar -->
-        <HBox spacing="10" alignment="CENTER" styleClass="panel-card">
+
+        <!-- Pagination bar — đặt NGOÀI VBox table, TRONG body VBox -->
+        <HBox spacing="10" alignment="CENTER" styleClass="panel-card"
+              minHeight="50" maxHeight="50">
             <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
             <Button fx:id="btnPrevPage" text="◀ Trước" onAction="#onPrevPage" styleClass="nav-button"/>
             <Label fx:id="pageLabel" text="Trang 1 / 1" styleClass="selected-mode"/>
