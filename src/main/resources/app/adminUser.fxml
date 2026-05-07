@@ -4,58 +4,95 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!--
-    UCN — Quản lý User (Admin)
-    Controller: minesweeper.controller.AdminUserController
-    Gắn vào nav-button "⚙ Quản lý" trong dashboard.fxml
--->
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="minesweeper.controller.AdminUserController"
-      spacing="16">
-    <padding><Insets top="22" right="38" bottom="34" left="38"/></padding>
+      styleClass="root-bg"
+      spacing="0">
 
-    <!-- Tiêu đề trang -->
-    <HBox alignment="CENTER_LEFT" spacing="8">
-        <Label text="◇" styleClass="section-icon-green"/>
+    <!-- Header bar -->
+    <HBox styleClass="top-nav" alignment="CENTER_LEFT" spacing="14">
+        <padding><Insets top="14" right="30" bottom="14" left="30"/></padding>
+        <Label text="👤" style="-fx-font-size:18;"/>
         <Label text="QUẢN LÝ NGƯỜI DÙNG" styleClass="section-title-green"/>
-    </HBox>
-
-    <!-- Toolbar: tìm kiếm + refresh -->
-    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
-        <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
-
-        <TextField fx:id="searchField"
-                   promptText="Tìm theo username hoặc email..."
-                   prefWidth="320"
-                   styleClass="auth-input"/>
-
         <Region HBox.hgrow="ALWAYS"/>
-
-        <Button text="↺ Làm mới" onAction="#onRefresh" styleClass="nav-button"/>
+        <Label fx:id="statusLabel" text="" styleClass="selected-mode"/>
     </HBox>
 
-    <!-- Bảng danh sách user -->
-    <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
-        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <!-- Body -->
+    <VBox spacing="14" VBox.vgrow="ALWAYS">
+        <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
 
-        <TableView fx:id="userTable" VBox.vgrow="ALWAYS" minHeight="400">
-            <columns>
-                <TableColumn fx:id="colId"          text="ID"           prefWidth="50"/>
-                <TableColumn fx:id="colUsername"     text="Username"     prefWidth="130"/>
-                <TableColumn fx:id="colDisplayName"  text="Tên hiển thị" prefWidth="150"/>
-                <TableColumn fx:id="colEmail"        text="Email"        prefWidth="200"/>
-                <TableColumn fx:id="colRole"         text="Vai trò"      prefWidth="110"/>
-                <TableColumn fx:id="colStatus"       text="Trạng thái"   prefWidth="100"/>
-                <TableColumn fx:id="colActions"      text="Hành động"    prefWidth="210"/>
-            </columns>
-            <placeholder>
-                <Label text="Không tìm thấy người dùng phù hợp." styleClass="muted-text"/>
-            </placeholder>
-        </TableView>
+        <!-- Search + action toolbar -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+
+            <TextField fx:id="searchField"
+                       promptText="🔍  Tìm theo username, tên hiển thị hoặc email..."
+                       prefWidth="360"
+                       styleClass="auth-input"
+                       onKeyReleased="#onSearch"/>
+
+            <Button text="Tìm" onAction="#onSearch" styleClass="outline-button"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+  <Button text="↺  Làm mới"    onAction="#onRefresh"    styleClass="nav-button"/>
+        </HBox>
+
+        <!-- Stats bar -->
+        <HBox spacing="16" alignment="CENTER_LEFT">
+
+            <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Label fx:id="totalUsersLabel" text="—"
+                       style="-fx-text-fill:#39ff8f;-fx-font-size:24;-fx-font-weight:900;"/>
+                <Label text="Tổng người dùng" styleClass="selected-mode"/>
+            </VBox>
+
+            <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Label fx:id="activeUsersLabel" text="—"
+                       style="-fx-text-fill:#2dd4f0;-fx-font-size:24;-fx-font-weight:900;"/>
+                <Label text="Đang hoạt động" styleClass="selected-mode"/>
+            </VBox>
+
+            <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Label fx:id="lockedUsersLabel" text="—"
+                       style="-fx-text-fill:#ef5350;-fx-font-size:24;-fx-font-weight:900;"/>
+                <Label text="Đã khoá" styleClass="selected-mode"/>
+            </VBox>
+
+            <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Label fx:id="adminCountLabel" text="—"
+                       style="-fx-text-fill:#ff9d2e;-fx-font-size:24;-fx-font-weight:900;"/>
+                <Label text="Quản trị viên" styleClass="selected-mode"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- Table -->
+        <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+            <TableView fx:id="userTable" VBox.vgrow="ALWAYS" minHeight="380"
+                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(45,212,240,0.18);-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+                <columns>
+                    <TableColumn fx:id="colId"          text="ID"           prefWidth="50"  style="-fx-alignment:CENTER;"/>
+                    <TableColumn fx:id="colUsername"     text="Username"     prefWidth="140"/>
+                    <TableColumn fx:id="colDisplayName"  text="Tên hiển thị" prefWidth="160"/>
+                    <TableColumn fx:id="colRole"         text="Vai trò"      prefWidth="120" style="-fx-alignment:CENTER;"/>
+                    <TableColumn fx:id="colStatus"       text="Trạng thái"   prefWidth="120" style="-fx-alignment:CENTER;"/>
+                    <TableColumn fx:id="colActions"      text="Hành động"    prefWidth="240" style="-fx-alignment:CENTER;"/>
+                </columns>
+                <placeholder>
+                    <Label text="Không tìm thấy người dùng phù hợp."
+                           style="-fx-text-fill:rgba(45,212,240,0.45);-fx-font-size:13;"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+
     </VBox>
-
-    <!-- Thanh trạng thái -->
-    <Label fx:id="statusLabel" text="" styleClass="selected-mode"/>
-
 </VBox>
