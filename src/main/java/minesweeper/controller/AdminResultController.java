@@ -6,9 +6,13 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import minesweeper.model.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
 import minesweeper.repository.MySqlGameResultRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminResultController {
 
@@ -25,6 +29,8 @@ public class AdminResultController {
     private int currentPage = 0;
     private int totalPages = 1;
     private MySqlGameResultRepository pagedRepository;
+    private boolean isFiltering = false;
+    private ObservableList<GameResult> filteredList = FXCollections.observableArrayList();
 
     @FXML private TableView<GameResult> resultTable;
     @FXML private TableColumn<GameResult, Boolean> colSelect;
@@ -48,14 +54,14 @@ public class AdminResultController {
     @FXML
     public void initialize() {
         resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        cbDifficulty.setItems(FXCollections.observableArrayList("Tất cả","Easy","Medium","Hard","Expert"));
+        cbDifficulty.setItems(FXCollections.observableArrayList("Tất cả", "Easy", "Medium", "Hard"));
         cbDifficulty.getSelectionModel().selectFirst();
 
         cbResult.setItems(FXCollections.observableArrayList("Tất cả",  "Thắng", "Thua"));
         cbResult.getSelectionModel().selectFirst();
 
         resultTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        setupColumns();
+               setupColumns();
         loadResults();
     }
 
@@ -85,10 +91,12 @@ public class AdminResultController {
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : checkBox);
-                if (!empty) {
-                    checkBox.setSelected(
-                            resultTable.getSelectionModel().getSelectedIndices().contains(getIndex()));
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    boolean selected = resultTable.getSelectionModel().getSelectedIndices().contains(getIndex());
+                    checkBox.setSelected(selected);
+                    setGraphic(checkBox);
                 }
             }
         });
@@ -112,38 +120,70 @@ public class AdminResultController {
 
     @FXML
     public void onFilter() {
-        String username = tfUsername.getText().toLowerCase();
-        String difficulty = cbDifficulty.getValue();
-        String result = cbResult.getValue();
+        try {
+            ObservableList<GameResult> allResults = FXCollections.observableArrayList(repository.getAllResults());
 
-        ObservableList<GameResult> filteredList = FXCollections.observableArrayList();
+            String usernameFilter = tfUsername.getText().toLowerCase().trim();
+            String difficultyFilter = cbDifficulty.getValue();
+            String resultFilter = cbResult.getValue();
 
-        for (GameResult game : masterList) {
-            boolean matchUsername =game.getPlayerName().toLowerCase().contains(username);
-            boolean matchDifficulty =difficulty.equals("Tất cả")|| game.getDifficultyLabel().equals(difficulty);
-            boolean matchResult =result.equals("Tất cả") || game.getResult().equals(result);
+            filteredList.clear();
+            for (GameResult game : allResults) {
+                Difficulty diff = game.getDifficulty();
+                String difficultyLabel = game.getDifficultyLabel();
+                boolean matchUsername = game.getPlayerName().toLowerCase().contains(usernameFilter);
+                boolean matchDifficulty = difficultyFilter.equals("Tất cả") ||
+                        (diff != null && diff.name().equalsIgnoreCase(difficultyFilter)) ||
+                        (difficultyLabel != null && difficultyLabel.equalsIgnoreCase(difficultyFilter));
+                boolean matchResult = resultFilter.equals("Tất cả") ||
+                        game.getResult().equalsIgnoreCase(resultFilter);
 
-            if (matchUsername && matchDifficulty && matchResult) {
-                filteredList.add(game);
+                if (matchUsername && matchDifficulty && matchResult) {
+                    filteredList.add(game);
+                }
             }
-        }
 
-        resultTable.setItems(filteredList);
-        statusLabel.setText("Tìm thấy " + filteredList.size() + " kết quả" );
+            isFiltering = true;
+
+            totalPages = Math.max(1, (int) Math.ceil((double) filteredList.size() / PAGE_SIZE));
+            currentPage = 0;
+            showFilteredPage();
+
+            statusLabel.setText("Tìm thấy " + filteredList.size() + " kết quả");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Lọc thất bại");
+        }
+    }
+
+    private void showFilteredPage() {
+        int from = currentPage * PAGE_SIZE;
+        int to = Math.min(from + PAGE_SIZE, filteredList.size());
+        masterList.setAll(filteredList.subList(from, to));
+        resultTable.setItems(masterList);
+
+        pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
+        btnPrevPage.setDisable(currentPage == 0);
+        btnNextPage.setDisable(currentPage >= totalPages - 1);
+        statusLabel.setText("Trang " + (currentPage + 1) + ": " + masterList.size() + " kết quả");
     }
 
     @FXML
     public void onReset() {
         tfUsername.clear();
         cbDifficulty.getSelectionModel().selectFirst();
-        cbResult.getSelectionModel() .selectFirst();
-        resultTable.setItems(masterList);
+        cbResult.getSelectionModel().selectFirst();
+
+        isFiltering = false;
+        filteredList.clear();
+        currentPage = 0;
+        loadResults();
         statusLabel.setText("Đã reset");
     }
 
     @FXML
     public void onDeleteFraud() {
-        ObservableList<GameResult> selectedList = resultTable.getSelectionModel().getSelectedItems();
+        List<GameResult> selectedList = new ArrayList<>(resultTable.getSelectionModel().getSelectedItems());
 
         if (selectedList.isEmpty()) {
             showInfo("Hãy chọn dữ liệu để xoá");
@@ -151,13 +191,12 @@ public class AdminResultController {
         }
         try {
             for (GameResult game : selectedList) {
-                repository.deleteByGameIds(
-                        java.util.List.of(game.getGameId())
-                );
+                repository.deleteByGameIds(java.util.List.of(game.getGameId()));
                 masterList.remove(game);
+                if (isFiltering) filteredList.remove(game);
             }
             resultTable.setItems(masterList);
-            statusLabel.setText("Đã xoá "+ selectedList.size()+ " kết quả");
+            statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
             showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
         } catch (Exception e) {
             showError("Xoá thất bại");
@@ -178,12 +217,20 @@ public class AdminResultController {
 
     @FXML
     public void onPrevPage() {
-        if (currentPage > 0) { currentPage--; loadResults(); }
+        if (currentPage > 0) {
+            currentPage--;
+            if (isFiltering) showFilteredPage();
+            else loadResults();
+        }
     }
 
     @FXML
     public void onNextPage() {
-        if (currentPage < totalPages - 1) { currentPage++; loadResults(); }
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            if (isFiltering) showFilteredPage();
+            else loadResults();
+        }
     }
 
     private void showInfo(String message) {
