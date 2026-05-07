@@ -43,4 +43,7 @@ public interface UserService {
     long createUser(String username, String displayName) throws DataAccessException;
 
     List<User> getAllUsers() throws DataAccessException;
+    void updateDisplayName(int userId, String newDisplayName) throws DataAccessException;
+    void setActive(int userId, boolean active) throws DataAccessException;
+    void deleteUser(int userId) throws DataAccessException;
 }
