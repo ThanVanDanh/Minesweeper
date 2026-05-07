@@ -1,5 +1,6 @@
 package minesweeper.service;
 
+import minesweeper.model.Role;
 import minesweeper.model.User;
 import minesweeper.repository.connection.ConnectionFactory;
 import minesweeper.repository.connection.HikariConnectionFactory;
@@ -26,6 +27,27 @@ public class MySqlUserService implements UserService {
     private static final String SELECT_USER_BY_ID_SQL = "SELECT id, username, display_name FROM users WHERE id = ? LIMIT 1";
     private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT id, username, display_name FROM users WHERE username = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
+    private static final String SELECT_ALL_SQL =
+            "SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
+
+//    private static final String SELECT_BY_ID_SQL =
+//            "SELECT id, username, display_name, email, role, is_active FROM users WHERE id = ? LIMIT 1";
+//
+//    private static final String SELECT_BY_USERNAME_SQL =
+//            "SELECT id, username, display_name, email, role, is_active FROM users WHERE username = ? LIMIT 1";
+//
+//    private static final String INSERT_SQL =
+//            "INSERT INTO users (username, display_name) VALUES (?, ?)";
+
+    private static final String UPDATE_DISPLAY_NAME_SQL =
+            "UPDATE users SET display_name = ? WHERE id = ?";
+
+    private static final String UPDATE_ACTIVE_SQL =
+            "UPDATE users SET is_active = ? WHERE id = ?";
+
+    private static final String DELETE_SQL =
+            "DELETE FROM users WHERE id = ?";
+
 
     private final ConnectionFactory connectionFactory;
 
@@ -139,32 +161,82 @@ public class MySqlUserService implements UserService {
 
     @Override
     public List<User> getAllUsers() throws DataAccessException {
-
         List<User> users = new ArrayList<>();
-
-        try (Connection connection = connectionFactory.getConnection();
-             PreparedStatement ps = connection.prepareStatement(  "SELECT id, username, display_name FROM users");
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
-
-                users.add(mapUser(rs));
-            }
-
+            while (rs.next()) users.add(mapUser(rs));
             return users;
 
         } catch (SQLException e) {
-
             LOG.error("Error fetching all users", e);
-
             throw new DataAccessException("Failed to fetch all users", e);
         }
     }
+
+    // ── Admin: Update / Lock / Delete ─────────────────────────────────────────
+
+    @Override
+    public void updateDisplayName(int userId, String newDisplayName) throws DataAccessException {
+        if (newDisplayName == null || newDisplayName.isBlank())
+            throw new DataAccessException("Display name cannot be blank");
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_DISPLAY_NAME_SQL)) {
+            ps.setString(1, newDisplayName.trim());
+            ps.setInt(2, userId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+            LOG.info("Updated display name for user id={}", userId);
+        } catch (SQLException e) {
+            LOG.error("Error updating display name for user id={}", userId, e);
+            throw new DataAccessException("Failed to update display name", e);
+        }
+    }
+
+    @Override
+    public void setActive(int userId, boolean active) throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_ACTIVE_SQL)) {
+            ps.setBoolean(1, active);
+            ps.setInt(2, userId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+            LOG.info("Set active={} for user id={}", active, userId);
+        } catch (SQLException e) {
+            LOG.error("Error updating is_active for user id={}", userId, e);
+            throw new DataAccessException("Failed to update user status", e);
+        }
+    }
+
+    @Override
+    public void deleteUser(int userId) throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
+            ps.setInt(1, userId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+            LOG.info("Deleted user id={}", userId);
+        } catch (SQLException e) {
+            LOG.error("Error deleting user id={}", userId, e);
+            throw new DataAccessException("Failed to delete user", e);
+        }
+    }
+
     private User mapUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId((int) rs.getLong("id"));
         user.setUsername(rs.getString("username"));
         user.setDisplayName(rs.getString("display_name"));
+        user.setActive(rs.getBoolean("is_active"));
+        String role = rs.getString("role");
+        if (role != null) {
+            user.setRole(Role.valueOf(role));
+        }
+
+
+
         return user;
     }
 

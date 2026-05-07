@@ -20,26 +20,25 @@ import java.util.stream.Collectors;
 
 public class AdminResultController {
 
-
     @FXML private ComboBox<String> cbDifficulty;
+    @FXML private ComboBox<String> cbResult;
     @FXML private TextField        tfUsername;
 
-    @FXML private TableView<GameResult>                 resultTable;
-    @FXML private TableColumn<GameResult, Boolean>      colSelect;
-    @FXML private TableColumn<GameResult, String>       colGameId;
-    @FXML private TableColumn<GameResult, String>       colUsername;
-    @FXML private TableColumn<GameResult, Integer>      colScore;
-    @FXML private TableColumn<GameResult, String>       colDifficulty;
-    @FXML private TableColumn<GameResult, String>       colTime;
-    @FXML private TableColumn<GameResult, String>       colResult;
-    @FXML private TableColumn<GameResult, String>       colPlayedAt;
+    @FXML private Label statusLabel;
+    @FXML private Label selectedCountLabel;
 
+    @FXML private TableView<GameResult>            resultTable;
+    @FXML private TableColumn<GameResult, Boolean> colSelect;
+    @FXML private TableColumn<GameResult, String>  colGameId;
+    @FXML private TableColumn<GameResult, String>  colUsername;
+    @FXML private TableColumn<GameResult, Integer> colScore;
+    @FXML private TableColumn<GameResult, String>  colDifficulty;
+    @FXML private TableColumn<GameResult, String>  colTime;
+    @FXML private TableColumn<GameResult, String>  colResult;
+    @FXML private TableColumn<GameResult, String>  colPlayedAt;
 
     private final Set<String> fraudIds = new HashSet<>();
-
     private final ObservableList<GameResult> masterList = FXCollections.observableArrayList();
-
-
     private final GameResultRepository repository;
 
     public AdminResultController() {
@@ -48,7 +47,6 @@ public class AdminResultController {
     public AdminResultController(GameResultRepository repository) {
         this.repository = repository;
     }
-
 
     @FXML
     public void initialize() {
@@ -61,30 +59,28 @@ public class AdminResultController {
         ));
         cbDifficulty.getSelectionModel().selectFirst();
 
+        cbResult.setItems(FXCollections.observableArrayList("Tất cả", "Thắng", "Thua"));
+        cbResult.getSelectionModel().selectFirst();
+
         setupColumns();
         loadResults();
     }
 
-
     private void setupColumns() {
-
+        // Checkbox chọn
         colSelect.setCellValueFactory(data ->
                 new SimpleBooleanProperty(fraudIds.contains(data.getValue().getGameId())));
-
         colSelect.setCellFactory(col -> new TableCell<>() {
             private final CheckBox cb = new CheckBox();
-
             {
+                cb.setStyle("-fx-cursor:hand;");
                 cb.setOnAction(e -> {
                     GameResult r = getTableView().getItems().get(getIndex());
-                    if (cb.isSelected()) {
-                        fraudIds.add(r.getGameId());
-                    } else {
-                        fraudIds.remove(r.getGameId());
-                    }
+                    if (cb.isSelected()) fraudIds.add(r.getGameId());
+                    else                 fraudIds.remove(r.getGameId());
+                    updateSelectedCount();
                 });
             }
-
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
@@ -100,8 +96,26 @@ public class AdminResultController {
 
         colUsername.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getPlayerName()));
+        colUsername.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill:#2dd4f0;-fx-font-weight:700;");
+            }
+        });
 
         colScore.setCellValueFactory(new PropertyValueFactory<>("score"));
+        colScore.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(String.valueOf(item));
+                setStyle("-fx-text-fill:#39ff8f;-fx-font-weight:700;-fx-alignment:CENTER_RIGHT;");
+            }
+        });
 
         colDifficulty.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getDifficultyLabel()));
@@ -117,9 +131,9 @@ public class AdminResultController {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
-                setStyle(item.equals("Thắng")
-                        ? "-fx-text-fill: #2a9d2a;"
-                        : "-fx-text-fill: #c0392b;");
+                setStyle("Thắng".equals(item)
+                        ? "-fx-text-fill:#39ff8f;-fx-font-weight:900;"
+                        : "-fx-text-fill:#ef5350;-fx-font-weight:900;");
             }
         });
 
@@ -129,13 +143,14 @@ public class AdminResultController {
         resultTable.setEditable(true);
     }
 
-
     private void loadResults() {
         try {
             List<GameResult> all = repository.getAllResults();
             masterList.setAll(all);
             fraudIds.clear();
             resultTable.setItems(masterList);
+            setStatus("Tải " + all.size() + " kết quả.");
+            updateSelectedCount();
         } catch (DataAccessException e) {
             showError("Không thể tải dữ liệu:\n" + e.getMessage());
         }
@@ -143,33 +158,32 @@ public class AdminResultController {
 
     @FXML
     public void onFilter() {
-        String username   = tfUsername.getText().trim().toLowerCase();
-        String diffLabel  = cbDifficulty.getValue();
+        String username  = tfUsername.getText().trim().toLowerCase();
+        String diffLabel = cbDifficulty.getValue();
+        String result    = cbResult.getValue();
 
         List<GameResult> filtered = masterList.stream()
                 .filter(r -> username.isBlank()
                         || r.getPlayerName().toLowerCase().contains(username))
                 .filter(r -> "Tất cả".equals(diffLabel)
                         || diffLabel.equals(r.getDifficultyLabel()))
+                .filter(r -> "Tất cả".equals(result)
+                        || result.equals(r.getResult()))
                 .collect(Collectors.toList());
 
         resultTable.setItems(FXCollections.observableArrayList(filtered));
-
-        if (filtered.isEmpty()) {
-            showInfo("Không tìm thấy dữ liệu phù hợp.");
-        } else {
-            showInfo("Tìm thấy " + filtered.size() + " kết quả.");
-        }
+        setStatus("Tìm thấy " + filtered.size() + " kết quả.");
+        updateSelectedCount();
     }
 
     @FXML
     public void onReset() {
         tfUsername.clear();
         cbDifficulty.getSelectionModel().selectFirst();
+        cbResult.getSelectionModel().selectFirst();
         fraudIds.clear();
         loadResults();
     }
-
 
     @FXML
     public void onSelectAll() {
@@ -177,12 +191,11 @@ public class AdminResultController {
         boolean anyUnchecked = current.stream()
                 .anyMatch(r -> !fraudIds.contains(r.getGameId()));
 
-        if (anyUnchecked) {
-            current.forEach(r -> fraudIds.add(r.getGameId()));
-        } else {
-            current.forEach(r -> fraudIds.remove(r.getGameId()));
-        }
+        if (anyUnchecked) current.forEach(r -> fraudIds.add(r.getGameId()));
+        else              current.forEach(r -> fraudIds.remove(r.getGameId()));
+
         resultTable.refresh();
+        updateSelectedCount();
     }
 
     @FXML
@@ -210,28 +223,31 @@ public class AdminResultController {
 
             try {
                 repository.deleteByGameIds(gameIds);
-
                 masterList.removeAll(toDelete);
                 resultTable.getItems().removeAll(toDelete);
                 fraudIds.removeAll(gameIds);
-
-                showInfo("Đã xoá " + toDelete.size() + " kết quả gian lận.");
+                setStatus("Đã xoá " + toDelete.size() + " kết quả gian lận.");
+                updateSelectedCount();
             } catch (DataAccessException e) {
-                showError("Xoá thất bại, dữ liệu không thay đổi:\n" + e.getMessage());
+                showError("Xoá thất bại:\n" + e.getMessage());
             }
         });
     }
 
+    private void updateSelectedCount() {
+        if (selectedCountLabel != null)
+            selectedCountLabel.setText(fraudIds.size() + " đã chọn");
+    }
+
+    private void setStatus(String msg) {
+        if (statusLabel != null) statusLabel.setText(msg);
+    }
 
     private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setContentText(message);
-        alert.showAndWait();
+        new Alert(Alert.AlertType.INFORMATION) {{ setContentText(message); }}.showAndWait();
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setContentText(message);
-        alert.showAndWait();
+        new Alert(Alert.AlertType.ERROR) {{ setContentText(message); }}.showAndWait();
     }
 }
