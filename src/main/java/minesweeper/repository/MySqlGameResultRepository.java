@@ -295,7 +295,9 @@ public class MySqlGameResultRepository implements GameResultRepository {
         String gameId = "session-" + sessionId;
         String playerName = rs.getString("player_name");
         String levelName = rs.getString("level_name");
-        
+        int openedCells = rs.getInt("opened_cells");
+        int score = rs.getInt("score");
+
         Difficulty difficulty = null;
         if (levelName != null && !levelName.isBlank()) {
             try {
@@ -322,7 +324,10 @@ public class MySqlGameResultRepository implements GameResultRepository {
             playedAt = LocalDateTime.now();
         }
 
-        return new GameResult(gameId, playerName, difficulty, isWon, elapsed, flagsUsed, minesTotal, playedAt);
+        GameResult gr = new GameResult(gameId, playerName, difficulty, isWon, elapsed, flagsUsed, minesTotal, playedAt);
+        gr.setOpenedCells(openedCells);
+        gr.setScore(score);
+        return gr;
     }
 
     /**
