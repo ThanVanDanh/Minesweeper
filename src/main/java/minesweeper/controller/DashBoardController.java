@@ -11,8 +11,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import minesweeper.model.Difficulty;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class DashBoardController {
     @FXML
@@ -59,6 +61,28 @@ public class DashBoardController {
     @FXML
     private void onStartBattle() {
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
+            Parent root = loader.load();
+
+            BoardGameController controller = loader.getController();
+            controller.setInitialDifficulty(getSelectedDifficulty());
+
+            Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
+            Scene gameScene = new Scene(root);
+            gameScene.getStylesheets().add(Objects.requireNonNull(
+                    getClass().getResource("/css/styles.css")
+            ).toExternalForm());
+
+            stage.setScene(gameScene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi: Không thể tải file boardgame.fxml. Hãy kiểm tra lại đường dẫn!");
+        }
+
     }
 
     @FXML
@@ -76,6 +100,14 @@ public class DashBoardController {
         selectedModeLabel.setText("Đã chọn thử thách hằng ngày: Expert mode");
     }
 
+    private Difficulty getSelectedDifficulty() {
+        if (easyButton.isSelected()) return Difficulty.EASY;
+        if (mediumButton.isSelected()) return Difficulty.MEDIUM;
+        if (hardButton.isSelected()) return Difficulty.HARD;
+        if (expertButton.isSelected()) return Difficulty.EXPERT;
+        if (customButton.isSelected()) return Difficulty.CUSTOM;
+        return Difficulty.MEDIUM;
+    }
 
     private void updateSelectedMode(String title, String meta) {
         selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta);
