@@ -1,5 +1,6 @@
 package minesweeper.controller;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,7 +18,16 @@ public class AdminResultController {
     @FXML private Label statusLabel;
     @FXML private Label selectedCountLabel;
 
+    @FXML private Button btnPrevPage;
+    @FXML private Button btnNextPage;
+    @FXML private Label pageLabel;
+    private static final int PAGE_SIZE = 20;
+    private int currentPage = 0;
+    private int totalPages = 1;
+    private MySqlGameResultRepository pagedRepository;
+
     @FXML private TableView<GameResult> resultTable;
+    @FXML private TableColumn<GameResult, Boolean> colSelect;
     @FXML private TableColumn<GameResult, String> colGameId;
     @FXML private TableColumn<GameResult, String> colUsername;
     @FXML private TableColumn<GameResult, Integer> colScore;
@@ -32,17 +42,19 @@ public class AdminResultController {
 
     public AdminResultController() {
         repository = new MySqlGameResultRepository();
+        pagedRepository = (MySqlGameResultRepository) repository;
     }
 
     @FXML
     public void initialize() {
-
+        resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         cbDifficulty.setItems(FXCollections.observableArrayList("Tất cả","Easy","Medium","Hard","Expert"));
         cbDifficulty.getSelectionModel().selectFirst();
 
         cbResult.setItems(FXCollections.observableArrayList("Tất cả",  "Thắng", "Thua"));
         cbResult.getSelectionModel().selectFirst();
 
+        resultTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         setupColumns();
         loadResults();
     }
@@ -56,15 +68,43 @@ public class AdminResultController {
         colResult.setCellValueFactory( new PropertyValueFactory<>("result"));
         colPlayedAt.setCellValueFactory( new PropertyValueFactory<>("playedAtFormatted"));
         colOpenedCells.setCellValueFactory( new PropertyValueFactory<>("openedCells"));
+        colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
+        colSelect.setCellFactory(col -> new TableCell<>() {
+            private final CheckBox checkBox = new CheckBox();
+            {
+                checkBox.setOnAction(e -> {
+                    if (checkBox.isSelected()) {
+                        resultTable.getSelectionModel().select(getIndex());
+                    } else {
+                        resultTable.getSelectionModel().clearSelection(getIndex());
+                    }
+                    selectedCountLabel.setText(
+                            resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
+                });
+            }
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : checkBox);
+                if (!empty) {
+                    checkBox.setSelected(
+                            resultTable.getSelectionModel().getSelectedIndices().contains(getIndex()));
+                }
+            }
+        });
     }
 
     private void loadResults() {
 
         try {
-            masterList.clear();
-            masterList.addAll( repository.getAllResults() );
+            var paged = pagedRepository.getAllResults(currentPage, PAGE_SIZE);
+            masterList.setAll(paged.getContent());
             resultTable.setItems(masterList);
-            statusLabel.setText("Đã tải "+ masterList.size()+ " kết quả");
+            totalPages = Math.max(1, paged.getTotalPages());
+            pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
+            btnPrevPage.setDisable(currentPage == 0);
+            btnNextPage.setDisable(currentPage >= totalPages - 1);
+            statusLabel.setText("Trang " + (currentPage+1) + ": " + masterList.size() + " kết quả");
         } catch (Exception e) {
             showError("Không thể tải dữ liệu");
         }
@@ -103,16 +143,22 @@ public class AdminResultController {
 
     @FXML
     public void onDeleteFraud() {
-        GameResult selected =resultTable.getSelectionModel().getSelectedItem();
+        ObservableList<GameResult> selectedList = resultTable.getSelectionModel().getSelectedItems();
 
-        if (selected == null) {
-            showInfo("Hãy chọn 1 dòng để xoá");
+        if (selectedList.isEmpty()) {
+            showInfo("Hãy chọn dữ liệu để xoá");
             return;
         }
         try {
-            masterList.remove(selected);
+            for (GameResult game : selectedList) {
+                repository.deleteByGameIds(
+                        java.util.List.of(game.getGameId())
+                );
+                masterList.remove(game);
+            }
             resultTable.setItems(masterList);
-            statusLabel.setText("Đã xoá kết quả");
+            statusLabel.setText("Đã xoá "+ selectedList.size()+ " kết quả");
+            showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
         } catch (Exception e) {
             showError("Xoá thất bại");
         }
@@ -120,9 +166,24 @@ public class AdminResultController {
 
     @FXML
     public void onSelectAll() {
-        resultTable.getSelectionModel().selectAll();
+        if (resultTable.getSelectionModel().getSelectedItems().size() == resultTable.getItems().size()) {
+            resultTable.getSelectionModel().clearSelection();
+        } else {
+            resultTable.getSelectionModel().selectAll();
+        }
+        resultTable.refresh();
         selectedCountLabel.setText(
-                resultTable.getSelectionModel().getSelectedItems().size()+ " đã chọn");
+                resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
+    }
+
+    @FXML
+    public void onPrevPage() {
+        if (currentPage > 0) { currentPage--; loadResults(); }
+    }
+
+    @FXML
+    public void onNextPage() {
+        if (currentPage < totalPages - 1) { currentPage++; loadResults(); }
     }
 
     private void showInfo(String message) {

@@ -86,22 +86,22 @@ public class GameResult implements Serializable {
     public int getMinesTotal() { return minesTotal; }
     public LocalDateTime getPlayedAt() { return playedAt; }
     public int getScore() { return score; }
-    public int getOpenedCells() {return openedCells;}
     public String getResult() {
         return isWon ? "Thắng" : "Thua";
     }
 
+    // Setter
+    public void setOpenedCells(int openedCells) { this.openedCells = openedCells; }
+    public void setScore(int score) { this.score = score; }
     public String getDifficultyLabel() {
         return difficulty == null ? "N/A" : difficulty.getLabel();
     }
-
     public String getTimeFormatted() {
         long seconds = elapsedTimeMs / 1000;
         long minutes = seconds / 60;
         long secs = seconds % 60;
         return String.format("%02d:%02d", minutes, secs);
     }
-
     public String getPlayedAtFormatted() {
         if (playedAt == null) {
             return "N/A";
