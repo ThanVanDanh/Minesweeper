@@ -68,9 +68,9 @@
         <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
             <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
             <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS" minHeight="400"
-                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(45,212,240,0.18);-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(0,180,210,0.55);-fx-selection-bar-text:#ffffff;-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
                 <columns>
-
+                    <TableColumn fx:id="colSelect" text="" minWidth="40" maxWidth="40"/>
                     <TableColumn fx:id="colGameId" text="Game ID"/>
                     <TableColumn fx:id="colUsername" text="Username"/>
                     <TableColumn fx:id="colDifficulty" text="Độ khó"/>
@@ -79,7 +79,6 @@
                     <TableColumn fx:id="colOpenedCells" text="Opened"/>
                     <TableColumn fx:id="colResult" text="Kết quả"/>
                     <TableColumn fx:id="colPlayedAt" text="Ngày chơi"/>
-
                 </columns>
                 <placeholder>
                     <Label text="Không tìm thấy dữ liệu."
@@ -87,6 +86,13 @@
                 </placeholder>
             </TableView>
         </VBox>
+        <!-- Pagination bar -->
+        <HBox spacing="10" alignment="CENTER" styleClass="panel-card">
+            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+            <Button fx:id="btnPrevPage" text="◀ Trước" onAction="#onPrevPage" styleClass="nav-button"/>
+            <Label fx:id="pageLabel" text="Trang 1 / 1" styleClass="selected-mode"/>
+            <Button fx:id="btnNextPage" text="Sau ▶" onAction="#onNextPage" styleClass="nav-button"/>
+        </HBox>
 
     </VBox>
 </VBox>
