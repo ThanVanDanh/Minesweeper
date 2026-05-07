@@ -59,20 +59,6 @@ public class DashBoardController {
     @FXML
     private void onStartBattle() {
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
-
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
-            Scene gameScene = new Scene(root);
-            stage.setScene(gameScene);
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Lỗi: Không thể tải file GameScene.fxml. Hãy kiểm tra lại đường dẫn!");
-        }
-
     }
 
     @FXML
@@ -90,6 +76,7 @@ public class DashBoardController {
         selectedModeLabel.setText("Đã chọn thử thách hằng ngày: Expert mode");
     }
 
+
     private void updateSelectedMode(String title, String meta) {
         selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta);
     }
@@ -102,6 +89,37 @@ public class DashBoardController {
     @FXML
     private void openRegisterPopup() {
         openAuthPopup(true);
+    }
+
+    @FXML
+    private void openRankingHistoryPopup() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/ranking-history.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 1100, 720);
+
+            Stage popupStage = new Stage();
+            popupStage.initStyle(StageStyle.DECORATED);
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+
+            Stage owner = null;
+            if (rootPane != null && rootPane.getScene() != null) {
+                owner = (Stage) rootPane.getScene().getWindow();
+            } else if (selectedModeLabel != null && selectedModeLabel.getScene() != null) {
+                owner = (Stage) selectedModeLabel.getScene().getWindow();
+            }
+            if (owner != null) {
+                popupStage.initOwner(owner);
+            }
+
+            popupStage.setTitle("Bảng xếp hạng & lịch sử chơi");
+            popupStage.setScene(scene);
+            popupStage.centerOnScreen();
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void openAuthPopup(boolean registerMode) {
