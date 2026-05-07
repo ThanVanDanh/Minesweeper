@@ -89,6 +89,7 @@ public class GameResult implements Serializable {
     public String getResult() {
         return isWon ? "Thắng" : "Thua";
     }
+    public int getOpenedCells() {return openedCells;}
 
     // Setter
     public void setOpenedCells(int openedCells) { this.openedCells = openedCells; }
