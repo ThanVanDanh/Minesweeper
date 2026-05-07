@@ -59,6 +59,20 @@ public class DashBoardController {
     @FXML
     private void onStartBattle() {
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
+            Scene gameScene = new Scene(root);
+            stage.setScene(gameScene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi: Không thể tải file GameScene.fxml. Hãy kiểm tra lại đường dẫn!");
+        }
+
     }
 
     @FXML
