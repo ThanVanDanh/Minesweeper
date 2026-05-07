@@ -24,68 +24,66 @@
         <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
 
         <!-- Search + action toolbar -->
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
-            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
-
-            <TextField fx:id="searchField"
-                       promptText="🔍  Tìm theo username, tên hiển thị hoặc email..."
-                       prefWidth="360"
-                       styleClass="auth-input"
-                       onKeyReleased="#onSearch"/>
-
-            <Button text="Tìm" onAction="#onSearch" styleClass="outline-button"/>
-
-            <Region HBox.hgrow="ALWAYS"/>
-  <Button text="↺  Làm mới"    onAction="#onRefresh"    styleClass="nav-button"/>
-        </HBox>
+        <VBox styleClass="panel-card" spacing="0">
+            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField"
+                           promptText="🔍  Tìm theo username hoặc tên hiển thị..."
+                           prefWidth="360"
+                           styleClass="auth-input"
+                           onKeyReleased="#onSearch"/>
+                <Button text="Tìm" onAction="#onSearch" styleClass="outline-button"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="➕  Thêm user" onAction="#onAddUser" styleClass="start-button" prefWidth="130"/>
+                <Button text="✏  Sửa"        onAction="#onEditUser" styleClass="nav-button"   prefWidth="100"/>
+                <Button text="🔒  Khoá/Mở"   onAction="#onLockUser" styleClass="nav-button"   prefWidth="110"/>
+                <Button text="🗑  Xoá"        onAction="#onDeleteUser"
+                        style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-padding:9 16;-fx-cursor:hand;"
+                        prefWidth="100"/>
+                <Button text="↺  Làm mới" onAction="#onRefresh" styleClass="nav-button"/>
+            </HBox>
+        </VBox>
 
         <!-- Stats bar -->
         <HBox spacing="16" alignment="CENTER_LEFT">
-
             <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
                 <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
                 <Label fx:id="totalUsersLabel" text="—"
                        style="-fx-text-fill:#39ff8f;-fx-font-size:24;-fx-font-weight:900;"/>
                 <Label text="Tổng người dùng" styleClass="selected-mode"/>
             </VBox>
-
             <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
                 <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
                 <Label fx:id="activeUsersLabel" text="—"
                        style="-fx-text-fill:#2dd4f0;-fx-font-size:24;-fx-font-weight:900;"/>
                 <Label text="Đang hoạt động" styleClass="selected-mode"/>
             </VBox>
-
             <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
                 <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
                 <Label fx:id="lockedUsersLabel" text="—"
                        style="-fx-text-fill:#ef5350;-fx-font-size:24;-fx-font-weight:900;"/>
                 <Label text="Đã khoá" styleClass="selected-mode"/>
             </VBox>
-
             <VBox styleClass="panel-card" alignment="CENTER" prefWidth="180" spacing="2">
                 <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
                 <Label fx:id="adminCountLabel" text="—"
                        style="-fx-text-fill:#ff9d2e;-fx-font-size:24;-fx-font-weight:900;"/>
                 <Label text="Quản trị viên" styleClass="selected-mode"/>
             </VBox>
-
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>
 
         <!-- Table -->
         <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
             <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-
-            <TableView fx:id="userTable" VBox.vgrow="ALWAYS" minHeight="380"
-                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(45,212,240,0.18);-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+            <TableView fx:id="userTable" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:transparent;-fx-selection-bar-text:#2dd4f0;-fx-selection-bar-non-focused:transparent;-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
                 <columns>
                     <TableColumn fx:id="colId"          text="ID"           prefWidth="50"  style="-fx-alignment:CENTER;"/>
                     <TableColumn fx:id="colUsername"     text="Username"     prefWidth="140"/>
                     <TableColumn fx:id="colDisplayName"  text="Tên hiển thị" prefWidth="160"/>
                     <TableColumn fx:id="colRole"         text="Vai trò"      prefWidth="120" style="-fx-alignment:CENTER;"/>
                     <TableColumn fx:id="colStatus"       text="Trạng thái"   prefWidth="120" style="-fx-alignment:CENTER;"/>
-                    <TableColumn fx:id="colActions"      text="Hành động"    prefWidth="240" style="-fx-alignment:CENTER;"/>
                 </columns>
                 <placeholder>
                     <Label text="Không tìm thấy người dùng phù hợp."
@@ -93,6 +91,14 @@
                 </placeholder>
             </TableView>
         </VBox>
+
+        <!-- Pagination bar -->
+        <HBox spacing="10" alignment="CENTER" styleClass="panel-card" minHeight="50" maxHeight="50">
+            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+            <Button fx:id="btnPrevPage" text="◀ Trước" onAction="#onPrevPage" styleClass="nav-button"/>
+            <Label fx:id="pageLabel" text="Trang 1 / 1" styleClass="selected-mode"/>
+            <Button fx:id="btnNextPage" text="Sau ▶" onAction="#onNextPage" styleClass="nav-button"/>
+        </HBox>
 
     </VBox>
 </VBox>
