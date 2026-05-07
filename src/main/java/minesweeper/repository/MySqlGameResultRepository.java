@@ -67,7 +67,8 @@ public class MySqlGameResultRepository implements GameResultRepository {
             """;
 
     private static final String DELETE_ALL_SQL = "DELETE FROM game_sessions";
-
+    private static final String DELETE_BY_IDS_SQL =
+            "DELETE FROM game_sessions WHERE id = ?";
     private final ConnectionFactory connectionFactory;
     private final UserService userService;
     private final LevelService levelService;
@@ -336,4 +337,44 @@ public class MySqlGameResultRepository implements GameResultRepository {
         connectionFactory.close();
         LOG.info("MySqlGameResultRepository closed");
     }
+
+    @Override
+    public void deleteByGameIds(List<String> gameIds) throws DataAccessException {
+        if (gameIds == null || gameIds.isEmpty()) return;
+
+        List<Long> sessionIds = gameIds.stream()
+                .filter(id -> id != null && id.startsWith("session-"))
+                .map(id -> {
+                    try {
+                        return Long.parseLong(id.substring("session-".length()));
+                    } catch (NumberFormatException e) {
+                        LOG.warn("gameId không hợp lệ, bỏ qua: {}", id);
+                        return -1L;
+                    }
+                })
+                .filter(id -> id > 0)
+                .collect(java.util.stream.Collectors.toList());
+
+        if (sessionIds.isEmpty()) return;
+
+        try (Connection connection = connectionFactory.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement ps = connection.prepareStatement(DELETE_BY_IDS_SQL)) {
+                for (long sessionId : sessionIds) {
+                    ps.setLong(1, sessionId);
+                    ps.addBatch();
+                    LOG.warn("[FRAUD-DELETE] Xoá game_session id={}", sessionId);
+                }
+                ps.executeBatch();
+                connection.commit();
+                LOG.warn("Đã xoá {} kết quả gian lận khỏi DB.", sessionIds.size());
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new DataAccessException("Lỗi khi xoá kết quả gian lận", e);
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Lỗi kết nối DB khi xoá gian lận", e);
+        }}
 }

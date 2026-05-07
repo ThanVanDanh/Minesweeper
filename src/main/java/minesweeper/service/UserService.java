@@ -3,6 +3,8 @@ package minesweeper.service;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
 
+import java.util.List;
+
 /**
  * Service interface for user management
  */
@@ -39,4 +41,6 @@ public interface UserService {
      * @throws DataAccessException if database error occurs or user already exists
      */
     long createUser(String username, String displayName) throws DataAccessException;
+
+    List<User> getAllUsers() throws DataAccessException;
 }
