@@ -61,6 +61,49 @@ public class DashBoardController {
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
     }
 
+
+    // ── Admin navigation ──────────────────────────────────────────────────────
+
+    @FXML
+    public void openAdminUser() {
+        openAdminWindow("/app/adminUser.fxml", "Quản lý Người dùng – Admin");
+    }
+
+    @FXML
+    public void openAdminResult() {
+        openAdminWindow("/app/adminResult.fxml", "Quản lý Kết quả – Admin");
+    }
+
+    private void openAdminWindow(String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 1100, 700);
+            if (rootPane != null && rootPane.getScene() != null) {
+                scene.getStylesheets().addAll(rootPane.getScene().getStylesheets());
+            }
+
+            Stage stage = new Stage();
+            stage.setTitle(title);
+            stage.setScene(scene);
+            stage.setMinWidth(900);
+            stage.setMinHeight(600);
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            if (rootPane != null && rootPane.getScene() != null) {
+                stage.initOwner(rootPane.getScene().getWindow());
+            }
+
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
     @FXML
     private void onLogin() {
         openLoginPopup();

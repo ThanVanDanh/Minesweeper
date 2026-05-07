@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="minesweeper.controller.AdminResultController"
+      spacing="16">
+    <padding><Insets top="22" right="38" bottom="34" left="38"/></padding>
+
+    <!-- Tiêu đề -->
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="🏆" styleClass="section-icon-orange"/>
+        <Label text="QUẢN LÝ KẾT QUẢ" styleClass="section-title-orange"/>
+    </HBox>
+
+    <!-- UC18: Bộ lọc -->
+    <VBox styleClass="panel-card" spacing="10">
+        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+
+        <HBox spacing="14" alignment="CENTER_LEFT">
+
+            <VBox spacing="4">
+                <Label text="ĐỘ KHÓ" styleClass="input-label"/>
+                <ComboBox fx:id="cbDifficulty" prefWidth="140"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="USERNAME" styleClass="input-label"/>
+                <TextField fx:id="tfUsername"
+                           promptText="Nhập username..."
+                           prefWidth="200"
+                           styleClass="auth-input"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <VBox spacing="6" alignment="BOTTOM_RIGHT">
+                <Button text="▷ LỌC"     onAction="#onFilter" styleClass="start-button" prefWidth="100"/>
+                <Button text="↺ Đặt lại" onAction="#onReset"  styleClass="nav-button"   prefWidth="100"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- UC19: Toolbar chọn và xóa -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
+        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+
+        <Button text="☑ Chọn / Bỏ chọn tất cả" onAction="#onSelectAll" styleClass="nav-button"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button text="⚑ XÓA GIAN LẬN" onAction="#onDeleteFraud"
+                style="-fx-background-color:#c62828;-fx-text-fill:white;-fx-font-weight:bold;"/>
+    </HBox>
+
+    <!-- Bảng kết quả -->
+    <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+        <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS" minHeight="380">
+            <columns>
+                <TableColumn fx:id="colSelect"     text="Chọn"      prefWidth="60"/>
+                <TableColumn fx:id="colId"         text="ID"        prefWidth="50"/>
+                <TableColumn fx:id="colUsername"   text="Username"  prefWidth="150"/>
+                <TableColumn fx:id="colDifficulty" text="Độ khó"    prefWidth="110"/>
+                <TableColumn fx:id="colScore"      text="Điểm"      prefWidth="90"/>
+                <TableColumn fx:id="colTime"       text="Thời gian" prefWidth="90"/>
+                <TableColumn fx:id="colPlayedAt"   text="Ngày chơi" prefWidth="150"/>
+            </columns>
+            <placeholder>
+                <Label text="Không tìm thấy dữ liệu." styleClass="muted-text"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+</VBox>
