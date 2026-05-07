@@ -15,7 +15,8 @@ public class GameResult implements Serializable {
     private int flagsUsed;
     private int minesTotal;
     private LocalDateTime playedAt;
-    private int score;               // calculated
+    private int score;
+    private int openedCells;
 
     public GameResult() {}
 
@@ -85,7 +86,7 @@ public class GameResult implements Serializable {
     public int getMinesTotal() { return minesTotal; }
     public LocalDateTime getPlayedAt() { return playedAt; }
     public int getScore() { return score; }
-
+    public int getOpenedCells() {return openedCells;}
     public String getResult() {
         return isWon ? "Thắng" : "Thua";
     }
