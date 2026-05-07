@@ -1,5 +1,6 @@
 package minesweeper.controller;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import minesweeper.model.Role;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
@@ -22,6 +22,9 @@ import java.util.Optional;
 public class AdminUserController {
 
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> cbRoleFilter;
+    @FXML private ComboBox<String> cbStatusFilter;
+
     @FXML private Label totalUsersLabel;
     @FXML private Label activeUsersLabel;
     @FXML private Label lockedUsersLabel;
@@ -33,20 +36,21 @@ public class AdminUserController {
     @FXML private Label pageLabel;
 
     @FXML private TableView<User> userTable;
+    @FXML private TableColumn<User, Boolean> colSelect;
     @FXML private TableColumn<User, Integer> colId;
-    @FXML private TableColumn<User, String> colUsername;
-    @FXML private TableColumn<User, String> colDisplayName;
-    @FXML private TableColumn<User, String> colRole;
-    @FXML private TableColumn<User, String> colStatus;
+    @FXML private TableColumn<User, String>  colUsername;
+    @FXML private TableColumn<User, String>  colDisplayName;
+    @FXML private TableColumn<User, String>  colRole;
+    @FXML private TableColumn<User, String>  colStatus;
 
     private static final int PAGE_SIZE = 20;
     private int currentPage = 0;
-    private int totalPages = 1;
+    private int totalPages  = 1;
 
     private boolean isFiltering = false;
-    private final ObservableList<User> allUsers   = FXCollections.observableArrayList();
-    private final ObservableList<User> filtered   = FXCollections.observableArrayList();
-    private final ObservableList<User> pageItems  = FXCollections.observableArrayList();
+    private final ObservableList<User> allUsers  = FXCollections.observableArrayList();
+    private final ObservableList<User> filtered  = FXCollections.observableArrayList();
+    private final ObservableList<User> pageItems = FXCollections.observableArrayList();
 
     private UserService userService;
 
@@ -56,12 +60,51 @@ public class AdminUserController {
 
     @FXML
     public void initialize() {
+        cbRoleFilter.setItems(FXCollections.observableArrayList("Tất cả", "Người chơi", "Quản trị viên"));
+        cbRoleFilter.getSelectionModel().selectFirst();
+
+        cbStatusFilter.setItems(FXCollections.observableArrayList("Tất cả", "Hoạt động", "Đã khoá"));
+        cbStatusFilter.getSelectionModel().selectFirst();
+
         userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        // Chỉ cho chọn 1 dòng — checkbox dùng để highlight rõ dòng đang chọn
+        userTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         setupColumns();
         loadUsers();
     }
 
     private void setupColumns() {
+        // Cột checkbox — radio-style: chỉ 1 dòng được tick tại 1 thời điểm
+        colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
+        colSelect.setCellFactory(col -> new TableCell<>() {
+            private final CheckBox checkBox = new CheckBox();
+            {
+                // Khi click checkbox thì select dòng đó (bỏ chọn dòng cũ tự động vì SINGLE mode)
+                checkBox.setOnAction(e -> {
+                    if (checkBox.isSelected()) {
+                        userTable.getSelectionModel().select(getIndex());
+                    } else {
+                        userTable.getSelectionModel().clearSelection();
+                    }
+                    // Refresh toàn bảng để cập nhật trạng thái checkbox các dòng khác
+                    userTable.refresh();
+                });
+            }
+
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    checkBox.setSelected(
+                            userTable.getSelectionModel().getSelectedIndex() == getIndex()
+                    );
+                    setGraphic(checkBox);
+                }
+            }
+        });
+
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colDisplayName.setCellValueFactory(new PropertyValueFactory<>("displayName"));
@@ -120,21 +163,33 @@ public class AdminUserController {
         adminCountLabel.setText(String.valueOf(admin));
     }
 
-    // ── Search ────────────────────────────────────────────────────────────────
+    // ── Search / Filter ───────────────────────────────────────────────────────
 
     @FXML
     public void onSearch() {
-        String kw = searchField.getText().toLowerCase().trim();
-        if (kw.isEmpty()) {
+        String kw           = searchField.getText().toLowerCase().trim();
+        String roleFilter   = cbRoleFilter.getValue();
+        String statusFilter = cbStatusFilter.getValue();
+
+        boolean noFilter = kw.isEmpty()
+                && "Tất cả".equals(roleFilter)
+                && "Tất cả".equals(statusFilter);
+
+        if (noFilter) {
             isFiltering = false;
             filtered.clear();
         } else {
             filtered.clear();
             for (User u : allUsers) {
-                boolean matchUser = u.getUsername().toLowerCase().contains(kw);
-                boolean matchName = u.getDisplayName() != null
-                        && u.getDisplayName().toLowerCase().contains(kw);
-                if (matchUser || matchName) filtered.add(u);
+                boolean matchKw = kw.isEmpty()
+                        || u.getUsername().toLowerCase().contains(kw)
+                        || (u.getDisplayName() != null && u.getDisplayName().toLowerCase().contains(kw));
+                boolean matchRole = "Tất cả".equals(roleFilter)
+                        || (u.getRole() != null && u.getRole().getLabel().equals(roleFilter));
+                boolean matchStatus = "Tất cả".equals(statusFilter)
+                        || ("Hoạt động".equals(statusFilter) && u.isActive())
+                        || ("Đã khoá".equals(statusFilter) && !u.isActive());
+                if (matchKw && matchRole && matchStatus) filtered.add(u);
             }
             isFiltering = true;
         }
@@ -147,6 +202,8 @@ public class AdminUserController {
     @FXML
     public void onRefresh() {
         searchField.clear();
+        cbRoleFilter.getSelectionModel().selectFirst();
+        cbStatusFilter.getSelectionModel().selectFirst();
         loadUsers();
     }
 
@@ -170,12 +227,12 @@ public class AdminUserController {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(u -> {
             try {
-                long id = userService.createUser(u.getUsername(), u.getDisplayName());
+                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole());
                 u.setId((int) id);
                 allUsers.add(u);
+                if (isFiltering) filtered.add(u);
                 updateStats(allUsers);
-                currentPage = calcTotalPages(
-                        isFiltering ? filtered.size() : allUsers.size()) - 1;
+                currentPage = calcTotalPages(isFiltering ? filtered.size() : allUsers.size()) - 1;
                 showPage();
                 statusLabel.setText("Đã thêm user: " + u.getUsername());
             } catch (Exception e) {
@@ -190,14 +247,19 @@ public class AdminUserController {
     public void onEditUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showInfo("Hãy chọn user cần sửa"); return; }
-
         Dialog<User> dialog = buildUserDialog(selected);
         Optional<User> result = dialog.showAndWait();
+
         result.ifPresent(u -> {
             try {
                 userService.updateDisplayName(selected.getId(), u.getDisplayName());
+                userService.updateRole(selected.getId(), u.getRole());
+
                 selected.setDisplayName(u.getDisplayName());
+                selected.setRole(u.getRole());
+
                 userTable.refresh();
+                updateStats(allUsers);
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
             } catch (Exception e) {
                 showError("Sửa thất bại: " + e.getMessage());
@@ -218,7 +280,7 @@ public class AdminUserController {
             userTable.refresh();
             updateStats(allUsers);
             statusLabel.setText(newStatus ? "Đã mở khoá: " + selected.getUsername()
-                    : "Đã khoá: "    + selected.getUsername());
+                    : "Đã khoá: " + selected.getUsername());
         } catch (Exception e) {
             showError("Khoá/mở khoá thất bại");
         }
@@ -241,7 +303,6 @@ public class AdminUserController {
             userService.deleteUser(selected.getId());
             allUsers.remove(selected);
             if (isFiltering) filtered.remove(selected);
-            // Adjust page nếu trang hiện tại vượt quá tổng
             if (currentPage >= calcTotalPages(isFiltering ? filtered.size() : allUsers.size())) {
                 currentPage = Math.max(0, currentPage - 1);
             }
@@ -270,28 +331,35 @@ public class AdminUserController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 20, 10, 20));
 
-        TextField tfUsername    = new TextField(isEdit ? existing.getUsername() : "");
-        TextField tfDisplayName = new TextField(isEdit && existing.getDisplayName() != null
+        TextField      tfUsername    = new TextField(isEdit ? existing.getUsername() : "");
+        TextField      tfDisplayName = new TextField(isEdit && existing.getDisplayName() != null
                 ? existing.getDisplayName() : "");
+        ComboBox<Role> cbRole        = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
 
         tfUsername.setPromptText("username");
-        tfDisplayName.setPromptText("Tên hiển thị");
-        GridPane.setHgrow(tfUsername, Priority.ALWAYS);
+        tfDisplayName.setPromptText("Tên hiển thị (nickname)");
+        cbRole.getSelectionModel().select(
+                isEdit && existing.getRole() != null ? existing.getRole() : Role.PLAYER);
+
+        GridPane.setHgrow(tfUsername,    Priority.ALWAYS);
         GridPane.setHgrow(tfDisplayName, Priority.ALWAYS);
+        GridPane.setHgrow(cbRole,        Priority.ALWAYS);
 
         if (isEdit) tfUsername.setDisable(true);
 
-        grid.add(new Label("Username:"),    0, 0); grid.add(tfUsername,    1, 0);
-        grid.add(new Label("Tên hiển thị:"), 0, 1); grid.add(tfDisplayName, 1, 1);
+        int row = 0;
+        grid.add(new Label("Username:"),     0, row); grid.add(tfUsername,    1, row++);
+        grid.add(new Label("Nickname:"),     0, row); grid.add(tfDisplayName, 1, row++);
+        grid.add(new Label("Vai trò:"),      0, row); grid.add(cbRole,        1, row++);
 
         dialog.getDialogPane().setContent(grid);
 
-        // Validate
         javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
         okNode.setDisable(!isEdit);
-        tfUsername.textProperty().addListener((obs, o, n) ->
-                okNode.setDisable(n.trim().isEmpty()));
-        if (!isEdit) okNode.setDisable(true);
+        if (!isEdit) {
+            tfUsername.textProperty().addListener((obs, o, n) ->
+                    okNode.setDisable(n.trim().isEmpty()));
+        }
 
         dialog.setResultConverter(bt -> {
             if (bt == okBtn) {
@@ -300,8 +368,8 @@ public class AdminUserController {
                 u.setDisplayName(tfDisplayName.getText().trim().isEmpty()
                         ? tfUsername.getText().trim()
                         : tfDisplayName.getText().trim());
+                u.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
                 u.setActive(true);
-                u.setRole(Role.PLAYER);
                 return u;
             }
             return null;
