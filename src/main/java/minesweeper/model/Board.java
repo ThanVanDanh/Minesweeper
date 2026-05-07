@@ -60,10 +60,7 @@ public class Board {
             return;
         }
 
-        if (!minesPlaced) {
-            placeMines(row, col);
-            gameState = GameState.PLAYING;
-        }
+
 
         Cell cell = grid[row][col];
         if (cell.isFlagged() || cell.isRevealed()) {
@@ -127,6 +124,24 @@ public class Board {
         }
         calculateNeighborMines();
         minesPlaced = true;
+    }
+
+    public void placeMinesNow() {
+        if (minesPlaced) return;
+        Random random = new Random();
+        int placed = 0;
+        while (placed < totalMines) {
+            int row = random.nextInt(rows);
+            int col = random.nextInt(cols);
+            if (grid[row][col].isMine()) {
+                continue;
+            }
+            grid[row][col].setMine(true);
+            placed++;
+        }
+        calculateNeighborMines();
+        minesPlaced = true;
+        this.gameState = GameState.PLAYING;
     }
 
     private void calculateNeighborMines() {
