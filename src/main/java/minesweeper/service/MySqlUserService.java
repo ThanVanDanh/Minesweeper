@@ -27,27 +27,14 @@ public class MySqlUserService implements UserService {
     private static final String SELECT_USER_BY_ID_SQL = "SELECT id, username, display_name FROM users WHERE id = ? LIMIT 1";
     private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT id, username, display_name FROM users WHERE username = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
+    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role) VALUES (?, ?, ?)";
     private static final String SELECT_ALL_SQL =
             "SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
 
-//    private static final String SELECT_BY_ID_SQL =
-//            "SELECT id, username, display_name, email, role, is_active FROM users WHERE id = ? LIMIT 1";
-//
-//    private static final String SELECT_BY_USERNAME_SQL =
-//            "SELECT id, username, display_name, email, role, is_active FROM users WHERE username = ? LIMIT 1";
-//
-//    private static final String INSERT_SQL =
-//            "INSERT INTO users (username, display_name) VALUES (?, ?)";
-
-    private static final String UPDATE_DISPLAY_NAME_SQL =
-            "UPDATE users SET display_name = ? WHERE id = ?";
-
-    private static final String UPDATE_ACTIVE_SQL =
-            "UPDATE users SET is_active = ? WHERE id = ?";
-
-    private static final String DELETE_SQL =
-            "DELETE FROM users WHERE id = ?";
-
+    private static final String UPDATE_DISPLAY_NAME_SQL = "UPDATE users SET display_name = ? WHERE id = ?";
+    private static final String UPDATE_ACTIVE_SQL = "UPDATE users SET is_active = ? WHERE id = ?";
+    private static final String DELETE_SQL = "DELETE FROM users WHERE id = ?";
+    private static final String UPDATE_ROLE_SQL = "UPDATE users SET role = ? WHERE id = ?";
 
     private final ConnectionFactory connectionFactory;
 
@@ -160,6 +147,36 @@ public class MySqlUserService implements UserService {
     }
 
     @Override
+    public long createUserFull(String username, String displayName, Role role) throws DataAccessException {
+        validateUsername(username);
+
+        String trimmedUsername = username.trim();
+        String trimmedDisplayName = displayName != null ? displayName.trim() : trimmedUsername;
+        String roleStr = (role != null ? role.name() : Role.PLAYER.name());
+
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement ps = connection.prepareStatement(INSERT_USER_SQL_F, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, trimmedUsername);
+            ps.setString(2, trimmedDisplayName);
+            ps.setString(3, roleStr);
+            ps.executeUpdate();
+
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    long userId = keys.getLong(1);
+                    LOG.info("User created: {} (id={})", trimmedUsername, userId);
+                    return userId;
+                }
+            }
+
+            throw new DataAccessException("Failed to create user: " + username);
+        } catch (SQLException e) {
+            LOG.error("Error creating user: {}", username, e);
+            throw new DataAccessException("Failed to create user", e);
+        }
+    }
+
+    @Override
     public List<User> getAllUsers() throws DataAccessException {
         List<User> users = new ArrayList<>();
         try (Connection conn = connectionFactory.getConnection();
@@ -221,6 +238,24 @@ public class MySqlUserService implements UserService {
         } catch (SQLException e) {
             LOG.error("Error deleting user id={}", userId, e);
             throw new DataAccessException("Failed to delete user", e);
+        }
+    }
+
+    @Override
+    public void updateRole(int userId, Role newRole) throws DataAccessException {
+        if (newRole == null) return;
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_ROLE_SQL)) {
+            ps.setString(1, newRole.name()); // Lưu tên Enum (ADMIN/PLAYER)
+            ps.setInt(2, userId);
+
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+            LOG.info("Updated role to {} for user id={}", newRole, userId);
+        } catch (SQLException e) {
+            LOG.error("Error updating role for user id={}", userId, e);
+            throw new DataAccessException("Failed to update role", e);
         }
     }
 
