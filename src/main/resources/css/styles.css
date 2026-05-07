@@ -1,0 +1,453 @@
+.root-bg {
+    -fx-background-color: #020b13;
+    -fx-background-image: url("../img/grid-bg.png");
+    -fx-background-repeat: repeat;
+    -fx-font-family: "Consolas", "JetBrains Mono", "Monospaced";
+}
+
+.app-shell {
+    -fx-background-color: rgba(2, 11, 19, 0.84);
+}
+
+.scroll-shell,
+.scroll-shell > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: rgba(45, 212, 240, 0.28);
+    -fx-background-radius: 999;
+}
+
+.top-nav {
+    -fx-background-color: rgba(1, 15, 24, 0.93);
+    -fx-border-color: rgba(22, 255, 159, 0.18);
+    -fx-border-width: 1 0 0 0;
+}
+
+.nav-separator {
+    -fx-background-color: rgba(45, 212, 240, 0.16);
+}
+
+.brand-box {
+    -fx-min-width: 260;
+}
+
+.brand-icon {
+    -fx-min-width: 35;
+    -fx-min-height: 35;
+    -fx-max-width: 35;
+    -fx-max-height: 35;
+    -fx-background-color: linear-gradient(to bottom right, #39ff8f, #2dd4f0);
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(57, 255, 143, 0.55), 18, 0.25, 0, 0);
+}
+
+.brand-symbol {
+    -fx-text-fill: #04131d;
+    -fx-font-size: 18;
+    -fx-font-weight: 900;
+}
+
+.brand-title {
+    -fx-text-fill: #39ff8f;
+    -fx-font-size: 18;
+    -fx-font-weight: 900;
+    -fx-letter-spacing: 3;
+}
+
+.brand-subtitle {
+    -fx-text-fill: #28d7ef;
+    -fx-font-size: 8;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 2;
+}
+
+.nav-menu .button,
+.nav-button,
+.nav-button-selected {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 10 13;
+    -fx-font-size: 13;
+    -fx-cursor: hand;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #249bc0;
+}
+
+.nav-button:hover {
+    -fx-text-fill: #31e7ff;
+    -fx-background-color: rgba(45, 212, 240, 0.08);
+}
+
+.nav-button-selected {
+    -fx-background-color: linear-gradient(to bottom right, #39ff8f, #2dd4f0);
+    -fx-text-fill: #04131d;
+    -fx-font-weight: 900;
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 240, 0.28), 14, 0.25, 0, 0);
+}
+
+.outline-button,
+.outline-button-large {
+    -fx-background-color: rgba(2, 22, 35, 0.65);
+    -fx-border-color: rgba(45, 212, 240, 0.55);
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-text-fill: #33d9f2;
+    -fx-font-weight: 900;
+    -fx-cursor: hand;
+}
+
+.outline-button {
+    -fx-padding: 10 16;
+    -fx-font-size: 12;
+}
+
+.outline-button-large {
+    -fx-padding: 13 22;
+    -fx-font-size: 13;
+}
+
+.outline-button:hover,
+.outline-button-large:hover {
+    -fx-background-color: rgba(45, 212, 240, 0.12);
+    -fx-border-color: #2dd4f0;
+}
+
+.primary-button-small,
+.primary-button-large,
+.start-button {
+    -fx-background-color: linear-gradient(to right, #39ff8f, #2dd4f0);
+    -fx-background-radius: 5;
+    -fx-text-fill: #04131d;
+    -fx-font-weight: 900;
+    -fx-cursor: hand;
+}
+
+.primary-button-small {
+    -fx-padding: 10 17;
+    -fx-font-size: 12;
+}
+
+.primary-button-large {
+    -fx-padding: 13 22;
+    -fx-font-size: 13;
+}
+
+.primary-button-small:hover,
+.primary-button-large:hover,
+.start-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(57, 255, 143, 0.45), 18, 0.22, 0, 0);
+}
+
+.content-wrap {
+    -fx-max-width: 1150;
+}
+
+.hero-card,
+.panel-card,
+.activity-panel,
+.side-panel,
+.challenge-panel {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-background-color: rgba(3, 21, 34, 0.76);
+    -fx-border-color: rgba(45, 212, 240, 0.28);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 18, 0.18, 0, 8);
+}
+
+.hero-card {
+    -fx-padding: 27 22;
+    -fx-border-color: rgba(57, 255, 143, 0.35);
+    -fx-background-color: linear-gradient(to right, rgba(6, 41, 39, 0.78), rgba(5, 28, 48, 0.75));
+}
+
+.hero-title {
+    -fx-text-fill: #39ff8f;
+    -fx-font-size: 25;
+    -fx-font-weight: 900;
+    -fx-letter-spacing: 1.5;
+}
+
+.hero-subtitle {
+    -fx-text-fill: #2dd4f0;
+    -fx-font-size: 12;
+}
+
+.section-title-green,
+.section-title-cyan,
+.section-title-orange,
+.section-title-purple,
+.challenge-title {
+    -fx-font-size: 15;
+    -fx-font-weight: 900;
+    -fx-letter-spacing: 1.6;
+}
+
+.section-title-green,
+.section-icon-green {
+    -fx-text-fill: #39ff8f;
+}
+
+.section-title-cyan,
+.section-icon-cyan {
+    -fx-text-fill: #2dd4f0;
+}
+
+.section-title-orange,
+.section-icon-orange {
+    -fx-text-fill: #ff9d2e;
+}
+
+.section-title-purple,
+.section-icon-purple {
+    -fx-text-fill: #f020ff;
+}
+
+.difficulty-button {
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-height: 54;
+    -fx-background-color: rgba(6, 31, 47, 0.72);
+    -fx-border-color: rgba(45, 212, 240, 0.18);
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-text-fill: #23bfe6;
+    -fx-font-weight: 900;
+    -fx-font-size: 13;
+    -fx-padding: 9 14;
+    -fx-cursor: hand;
+}
+
+.difficulty-button:hover {
+    -fx-border-color: rgba(45, 212, 240, 0.55);
+    -fx-background-color: rgba(7, 45, 66, 0.78);
+}
+
+.difficulty-button:selected {
+    -fx-border-color: #2dd4f0;
+    -fx-background-color: rgba(5, 42, 61, 0.93);
+    -fx-text-fill: #2dd4f0;
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 240, 0.28), 15, 0.25, 0, 0);
+}
+
+.start-button {
+    -fx-padding: 15 18;
+    -fx-font-size: 16;
+    -fx-letter-spacing: 2;
+}
+
+.selected-mode {
+    -fx-text-fill: rgba(45, 212, 240, 0.75);
+    -fx-font-size: 11;
+}
+
+.chart-area {
+    -fx-background-color: rgba(2, 13, 24, 0.25);
+    -fx-background-radius: 4;
+}
+
+.chart-bar,
+.chart-bar-hot {
+    -fx-background-radius: 999 999 2 2;
+}
+
+.chart-bar {
+    -fx-background-color: rgba(45, 212, 240, 0.5);
+}
+
+.chart-bar-hot {
+    -fx-background-color: linear-gradient(to top, #39ff8f, #2dd4f0);
+    -fx-effect: dropshadow(gaussian, rgba(45, 212, 240, 0.4), 12, 0.2, 0, 0);
+}
+
+.chart-label,
+.side-link,
+.rank-meta,
+.achievement-desc,
+.locked-desc,
+.challenge-meta,
+.challenge-note {
+    -fx-font-size: 10;
+}
+
+.chart-label,
+.side-link,
+.rank-meta {
+    -fx-text-fill: rgba(45, 212, 240, 0.56);
+}
+
+.side-link {
+    -fx-cursor: hand;
+}
+
+.rank-row {
+    -fx-padding: 9 10;
+    -fx-background-color: rgba(6, 31, 47, 0.7);
+    -fx-background-radius: 4;
+    -fx-border-color: rgba(45, 212, 240, 0.08);
+    -fx-border-radius: 4;
+}
+
+.rank-row-first {
+    -fx-background-color: rgba(255, 157, 46, 0.15);
+    -fx-border-color: rgba(255, 157, 46, 0.25);
+}
+
+.rank-badge-gold,
+.rank-badge-silver,
+.rank-badge-bronze,
+.rank-badge-blue {
+    -fx-alignment: CENTER;
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+    -fx-max-width: 24;
+    -fx-max-height: 24;
+    -fx-background-radius: 999;
+    -fx-font-size: 11;
+    -fx-font-weight: 900;
+}
+
+.rank-badge-gold {
+    -fx-background-color: #ff9d2e;
+    -fx-text-fill: #07111b;
+}
+
+.rank-badge-silver {
+    -fx-background-color: #b4beca;
+    -fx-text-fill: #07111b;
+}
+
+.rank-badge-bronze {
+    -fx-background-color: #bd7b3f;
+    -fx-text-fill: #07111b;
+}
+
+.rank-badge-blue {
+    -fx-background-color: rgba(45, 212, 240, 0.18);
+    -fx-text-fill: #2dd4f0;
+}
+
+.rank-name,
+.rank-name-gold {
+    -fx-font-size: 11;
+    -fx-font-weight: 900;
+}
+
+.rank-name {
+    -fx-text-fill: #2dd4f0;
+}
+
+.rank-name-gold {
+    -fx-text-fill: #ff9d2e;
+}
+
+.rank-score-green {
+    -fx-text-fill: #39ff8f;
+    -fx-font-weight: 900;
+    -fx-font-size: 12;
+}
+
+.achievement-unlocked,
+.achievement-locked {
+    -fx-padding: 10 11;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.achievement-unlocked {
+    -fx-background-color: rgba(142, 18, 180, 0.2);
+    -fx-border-color: rgba(240, 32, 255, 0.45);
+}
+
+.achievement-locked {
+    -fx-background-color: rgba(6, 31, 47, 0.28);
+    -fx-opacity: 0.46;
+}
+
+.achievement-title {
+    -fx-text-fill: #f020ff;
+    -fx-font-size: 11;
+    -fx-font-weight: 900;
+}
+
+.achievement-desc {
+    -fx-text-fill: rgba(45, 212, 240, 0.7);
+}
+
+.achievement-icon {
+    -fx-text-fill: #ff8356;
+    -fx-font-size: 18;
+}
+
+.achievement-icon-blue {
+    -fx-text-fill: #43d7ff;
+    -fx-font-size: 17;
+}
+
+.achievement-dot {
+    -fx-text-fill: #f020ff;
+    -fx-effect: dropshadow(gaussian, rgba(240, 32, 255, 0.7), 9, 0.3, 0, 0);
+}
+
+.locked-title {
+    -fx-text-fill: #2dd4f0;
+    -fx-font-size: 11;
+    -fx-font-weight: 900;
+}
+
+.locked-icon {
+    -fx-font-size: 16;
+}
+
+.challenge-panel {
+    -fx-background-color: rgba(44, 13, 18, 0.72);
+    -fx-border-color: rgba(255, 74, 105, 0.42);
+}
+
+.challenge-title,
+.challenge-icon {
+    -fx-text-fill: #ff4a69;
+}
+
+.challenge-meta {
+    -fx-text-fill: #2dd4f0;
+}
+
+.challenge-xp {
+    -fx-text-fill: #ff9d2e;
+    -fx-font-size: 22;
+    -fx-font-weight: 900;
+}
+
+.challenge-note {
+    -fx-text-fill: rgba(45, 212, 240, 0.72);
+}
+
+.challenge-button {
+    -fx-background-color: rgba(255, 74, 105, 0.18);
+    -fx-border-color: rgba(255, 74, 105, 0.65);
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-text-fill: #ff4a69;
+    -fx-font-weight: 900;
+    -fx-padding: 11 14;
+    -fx-cursor: hand;
+}
+
+.challenge-button:hover {
+    -fx-background-color: rgba(255, 74, 105, 0.28);
+}
+
+.button:pressed,
+.toggle-button:pressed {
+    -fx-translate-y: 1;
+}
