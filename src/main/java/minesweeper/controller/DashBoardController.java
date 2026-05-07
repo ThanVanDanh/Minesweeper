@@ -11,8 +11,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import minesweeper.model.Difficulty;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class DashBoardController {
     @FXML
@@ -59,6 +61,28 @@ public class DashBoardController {
     @FXML
     private void onStartBattle() {
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
+            Parent root = loader.load();
+
+            BoardGameController controller = loader.getController();
+            controller.setInitialDifficulty(getSelectedDifficulty());
+
+            Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
+            Scene gameScene = new Scene(root);
+            gameScene.getStylesheets().add(Objects.requireNonNull(
+                    getClass().getResource("/css/styles.css")
+            ).toExternalForm());
+
+            stage.setScene(gameScene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi: Không thể tải file boardgame.fxml. Hãy kiểm tra lại đường dẫn!");
+        }
+
     }
 
 
@@ -119,6 +143,15 @@ public class DashBoardController {
         selectedModeLabel.setText("Đã chọn thử thách hằng ngày: Expert mode");
     }
 
+    private Difficulty getSelectedDifficulty() {
+        if (easyButton.isSelected()) return Difficulty.EASY;
+        if (mediumButton.isSelected()) return Difficulty.MEDIUM;
+        if (hardButton.isSelected()) return Difficulty.HARD;
+        if (expertButton.isSelected()) return Difficulty.EXPERT;
+        if (customButton.isSelected()) return Difficulty.CUSTOM;
+        return Difficulty.MEDIUM;
+    }
+
     private void updateSelectedMode(String title, String meta) {
         selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta);
     }
@@ -131,6 +164,37 @@ public class DashBoardController {
     @FXML
     private void openRegisterPopup() {
         openAuthPopup(true);
+    }
+
+    @FXML
+    private void openRankingHistoryPopup() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/ranking-history.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 1100, 720);
+
+            Stage popupStage = new Stage();
+            popupStage.initStyle(StageStyle.DECORATED);
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+
+            Stage owner = null;
+            if (rootPane != null && rootPane.getScene() != null) {
+                owner = (Stage) rootPane.getScene().getWindow();
+            } else if (selectedModeLabel != null && selectedModeLabel.getScene() != null) {
+                owner = (Stage) selectedModeLabel.getScene().getWindow();
+            }
+            if (owner != null) {
+                popupStage.initOwner(owner);
+            }
+
+            popupStage.setTitle("Bảng xếp hạng & lịch sử chơi");
+            popupStage.setScene(scene);
+            popupStage.centerOnScreen();
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void openAuthPopup(boolean registerMode) {
