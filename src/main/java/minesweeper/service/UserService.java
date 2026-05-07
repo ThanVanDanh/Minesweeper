@@ -1,5 +1,6 @@
 package minesweeper.service;
 
+import minesweeper.model.Role;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
 
@@ -42,8 +43,15 @@ public interface UserService {
      */
     long createUser(String username, String displayName) throws DataAccessException;
 
+    long createUserFull(String username, String displayName, Role role) throws DataAccessException;
+
     List<User> getAllUsers() throws DataAccessException;
+
     void updateDisplayName(int userId, String newDisplayName) throws DataAccessException;
+
     void setActive(int userId, boolean active) throws DataAccessException;
+
+    void updateRole(int userId, Role newRole) throws DataAccessException;
+
     void deleteUser(int userId) throws DataAccessException;
 }
