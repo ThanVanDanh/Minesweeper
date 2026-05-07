@@ -67,8 +67,9 @@ public class MySqlGameResultRepository implements GameResultRepository {
             """;
 
     private static final String DELETE_ALL_SQL = "DELETE FROM game_sessions";
-    private static final String DELETE_BY_IDS_SQL =
-            "DELETE FROM game_sessions WHERE id = ?";
+
+    private static final String DELETE_BY_IDS_SQL = "DELETE FROM game_sessions WHERE id = ?";
+
     private final ConnectionFactory connectionFactory;
     private final UserService userService;
     private final LevelService levelService;

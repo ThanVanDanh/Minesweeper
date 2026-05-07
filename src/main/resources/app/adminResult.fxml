@@ -70,14 +70,16 @@
             <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS" minHeight="400"
                        style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:rgba(45,212,240,0.18);-fx-selection-bar-non-focused:rgba(45,212,240,0.10);-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
                 <columns>
-                    <TableColumn fx:id="colSelect"     text="✓"         prefWidth="50"  style="-fx-alignment:CENTER;-fx-text-fill: white;"/>
-                    <TableColumn fx:id="colGameId"     text="Game ID"   prefWidth="80"/>
-                    <TableColumn fx:id="colUsername"   text="Username"  prefWidth="140"/>
-                    <TableColumn fx:id="colDifficulty" text="Độ khó"    prefWidth="110"/>
-                    <TableColumn fx:id="colScore"      text="Điểm"      prefWidth="80"  style="-fx-alignment:CENTER_RIGHT;-fx-text-fill: white;"/>
-                    <TableColumn fx:id="colTime"       text="Thời gian" prefWidth="90"  style="-fx-alignment:CENTER;-fx-text-fill: white;"/>
-                    <TableColumn fx:id="colResult"     text="Kết quả"   prefWidth="90"  style="-fx-alignment:CENTER;-fx-text-fill: white;"/>
-                    <TableColumn fx:id="colPlayedAt"   text="Ngày chơi" prefWidth="160"/>
+
+                    <TableColumn fx:id="colGameId" text="Game ID"/>
+                    <TableColumn fx:id="colUsername" text="Username"/>
+                    <TableColumn fx:id="colDifficulty" text="Độ khó"/>
+                    <TableColumn fx:id="colScore" text="Điểm"/>
+                    <TableColumn fx:id="colTime" text="Thời gian"/>
+                    <TableColumn fx:id="colOpenedCells" text="Opened"/>
+                    <TableColumn fx:id="colResult" text="Kết quả"/>
+                    <TableColumn fx:id="colPlayedAt" text="Ngày chơi"/>
+
                 </columns>
                 <placeholder>
                     <Label text="Không tìm thấy dữ liệu."
