@@ -8,13 +8,16 @@ import org.slf4j.LoggerFactory;
 
 public class GameController {
     private static final Logger LOG = LoggerFactory.getLogger(GameController.class);
-    
+
     private Board board;
     private Difficulty difficulty;
+    private boolean isPaused;
 
     public void startNewGame(Difficulty difficulty) {
         this.difficulty = difficulty;
         this.board = new Board(difficulty);
+        this.isPaused = false;
+        this.board.placeMinesNow();
         LOG.info("New game started with difficulty: {}", difficulty);
     }
 
@@ -50,6 +53,14 @@ public class GameController {
         }
         LOG.debug("Toggling flag at cell: ({}, {})", row, col);
         board.toggleFlag(row, col);
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
     }
 }
 
