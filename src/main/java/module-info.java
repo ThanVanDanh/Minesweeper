@@ -13,6 +13,7 @@ module vn.edu.nlu.fit.app {
 
     opens app to javafx.fxml;
     opens minesweeper.controller to javafx.fxml;
+    opens minesweeper.model      to javafx.base;
 
     exports app;
     exports minesweeper.controller;
