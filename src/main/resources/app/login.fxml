@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane
+        fx:id="authRoot"
+        xmlns="http://javafx.com/javafx/21"
+        xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="minesweeper.controller.LoginController"
+        stylesheets="@../css/login.css"
+        styleClass="auth-root">
+
+    <VBox styleClass="auth-card" maxWidth="460" spacing="18">
+
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="3">
+                <Label text="MINESWEEPER" styleClass="brand-title"/>
+                <Label text="TACTICAL GRID ACCESS" styleClass="brand-subtitle"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="×" onAction="#closePopup" styleClass="close-button"/>
+        </HBox>
+
+        <VBox spacing="6">
+            <Label fx:id="formTitle" text="ĐĂNG NHẬP" styleClass="form-title"/>
+            <Label fx:id="formSubtitle"
+                   text="Truy cập hồ sơ chiến thuật của bạn"
+                   styleClass="form-subtitle"/>
+        </VBox>
+
+        <HBox styleClass="switch-wrapper" spacing="8">
+            <Button fx:id="loginTabButton"
+                    text="Đăng Nhập"
+                    onAction="#showLoginForm"
+                    styleClass="switch-button-active"/>
+
+            <Button fx:id="registerTabButton"
+                    text="Đăng Ký"
+                    onAction="#showRegisterForm"
+                    styleClass="switch-button"/>
+        </HBox>
+
+        <!-- LOGIN FORM -->
+        <VBox fx:id="loginForm" spacing="14">
+
+            <VBox spacing="6">
+                <Label text="TÊN ĐĂNG NHẬP" styleClass="input-label"/>
+                <TextField promptText="pilot@minesweeper.grid" styleClass="auth-input"/>
+            </VBox>
+
+            <VBox spacing="6">
+                <Label text="MẬT KHẨU" styleClass="input-label"/>
+                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+            </VBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <CheckBox text="Ghi nhớ đăng nhập" styleClass="auth-check"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Quên mật khẩu?" styleClass="link-button"/>
+            </HBox>
+
+            <Button text="ĐĂNG NHẬP →" styleClass="primary-auth-button"/>
+
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Chưa có tài khoản?" styleClass="muted-text"/>
+                <Button text="Tạo tài khoản mới" onAction="#showRegisterForm" styleClass="link-button"/>
+            </HBox>
+
+        </VBox>
+
+        <!-- REGISTER FORM -->
+        <VBox fx:id="registerForm" spacing="14" visible="false" managed="false">
+
+            <VBox spacing="6">
+                <Label text="TÊN NGƯỜI CHƠI" styleClass="input-label"/>
+                <TextField promptText="NightSapper" styleClass="auth-input"/>
+            </VBox>
+
+
+            <VBox spacing="6">
+                <Label text="MẬT KHẨU" styleClass="input-label"/>
+                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+            </VBox>
+
+            <VBox spacing="6">
+                <Label text="XÁC NHẬN MẬT KHẨU" styleClass="input-label"/>
+                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+            </VBox>
+
+            <CheckBox text="Tôi đồng ý với điều khoản chiến thuật" styleClass="auth-check"/>
+
+            <Button text="TẠO TÀI KHOẢN →" styleClass="primary-auth-button"/>
+
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Đã có tài khoản?" styleClass="muted-text"/>
+                <Button text="Đăng nhập ngay" onAction="#showLoginForm" styleClass="link-button"/>
+            </HBox>
+
+        </VBox>
+
+    </VBox>
+
+</StackPane>
