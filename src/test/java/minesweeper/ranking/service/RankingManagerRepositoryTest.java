@@ -3,6 +3,7 @@ package minesweeper.ranking.service;
 import minesweeper.model.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
+import minesweeper.repository.exception.DataAccessException;
 import minesweeper.service.RankingManager;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +67,8 @@ class RankingManagerRepositoryTest {
         public void clearAllResults() {
             results.clear();
         }
+        @Override
+        public void deleteByGameIds(List<String> gameIds) throws DataAccessException {}
     }
 }
 
