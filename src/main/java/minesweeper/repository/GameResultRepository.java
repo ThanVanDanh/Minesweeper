@@ -18,6 +18,7 @@ public interface GameResultRepository {
     List<GameResult> getAllResults() throws DataAccessException;
 
     void clearAllResults() throws DataAccessException;
+
     void deleteByGameIds(List<String> gameIds) throws DataAccessException;
 }
 
