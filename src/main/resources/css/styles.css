@@ -1,12 +1,13 @@
 .root-bg {
     -fx-background-color: #020b13;
-    -fx-background-image: url("../img/grid-bg.png");
+    /*-fx-background-image: url("../img/grid-bg.png");*/
     -fx-background-repeat: repeat;
     -fx-font-family: "Consolas", "JetBrains Mono", "Monospaced";
 }
 
 .app-shell {
-    -fx-background-color: rgba(2, 11, 19, 0.84);
+    /*-fx-background-color: rgba(2, 11, 19, 0.84);*/
+    /*-fx-background-color: transparent;*/
 }
 
 .scroll-shell,
