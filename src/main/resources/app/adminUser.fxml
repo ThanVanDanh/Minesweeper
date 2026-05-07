@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    UCN — Quản lý User (Admin)
+    Controller: minesweeper.controller.AdminUserController
+    Gắn vào nav-button "⚙ Quản lý" trong dashboard.fxml
+-->
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="minesweeper.controller.AdminUserController"
+      spacing="16">
+    <padding><Insets top="22" right="38" bottom="34" left="38"/></padding>
+
+    <!-- Tiêu đề trang -->
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="◇" styleClass="section-icon-green"/>
+        <Label text="QUẢN LÝ NGƯỜI DÙNG" styleClass="section-title-green"/>
+    </HBox>
+
+    <!-- Toolbar: tìm kiếm + refresh -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
+        <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+
+        <TextField fx:id="searchField"
+                   promptText="Tìm theo username hoặc email..."
+                   prefWidth="320"
+                   styleClass="auth-input"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button text="↺ Làm mới" onAction="#onRefresh" styleClass="nav-button"/>
+    </HBox>
+
+    <!-- Bảng danh sách user -->
+    <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+        <TableView fx:id="userTable" VBox.vgrow="ALWAYS" minHeight="400">
+            <columns>
+                <TableColumn fx:id="colId"          text="ID"           prefWidth="50"/>
+                <TableColumn fx:id="colUsername"     text="Username"     prefWidth="130"/>
+                <TableColumn fx:id="colDisplayName"  text="Tên hiển thị" prefWidth="150"/>
+                <TableColumn fx:id="colEmail"        text="Email"        prefWidth="200"/>
+                <TableColumn fx:id="colRole"         text="Vai trò"      prefWidth="110"/>
+                <TableColumn fx:id="colStatus"       text="Trạng thái"   prefWidth="100"/>
+                <TableColumn fx:id="colActions"      text="Hành động"    prefWidth="210"/>
+            </columns>
+            <placeholder>
+                <Label text="Không tìm thấy người dùng phù hợp." styleClass="muted-text"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- Thanh trạng thái -->
+    <Label fx:id="statusLabel" text="" styleClass="selected-mode"/>
+
+</VBox>

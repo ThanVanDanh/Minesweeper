@@ -47,6 +47,8 @@
                         <Button text="🏆 Bảng Xếp Hạng" styleClass="nav-button"/>
                         <Button text="↺ Lịch Sử" styleClass="nav-button"/>
                         <Button text="⚙ Cài đặt" styleClass="nav-button"/>
+                        <Button text="👤 Quản lý User" onAction="#openAdminUser"   styleClass="nav-button"/>
+                        <Button text="📋 Quản lý KQ"   onAction="#openAdminResult" styleClass="nav-button"/>
                     </HBox>
 
 <!--                    <Region HBox.hgrow="ALWAYS"/>-->
