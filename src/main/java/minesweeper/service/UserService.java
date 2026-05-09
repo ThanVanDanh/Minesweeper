@@ -24,7 +24,7 @@ public interface UserService {
 
     long createUser(String username, String displayName) throws DataAccessException;
 
-    long createUserFull(String username, String displayName, Role role) throws DataAccessException;
+    long createUserFull(String username, String displayName, Role role, String password) throws DataAccessException;
 
     List<User> getAllUsers() throws DataAccessException;
 
@@ -34,5 +34,5 @@ public interface UserService {
 
     void updateRole(long userId, Role newRole) throws DataAccessException;
 
-    void deleteUser(long userId) throws DataAccessException;
+    void deleteUser(long  userId) throws DataAccessException;
 }

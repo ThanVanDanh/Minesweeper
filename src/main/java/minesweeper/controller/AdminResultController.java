@@ -54,7 +54,14 @@ public class AdminResultController {
     @FXML
     public void initialize() {
         resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        cbDifficulty.setItems(FXCollections.observableArrayList("Tất cả", "Easy", "Medium", "Hard"));
+        cbDifficulty.setItems(FXCollections.observableArrayList(
+                "Tất cả",
+                Difficulty.EASY.getLabel(),
+                Difficulty.MEDIUM.getLabel(),
+                Difficulty.HARD.getLabel(),
+                Difficulty.EXPERT.getLabel(),
+                Difficulty.CUSTOM.getLabel()
+        ));
         cbDifficulty.getSelectionModel().selectFirst();
 
         cbResult.setItems(FXCollections.observableArrayList("Tất cả",  "Thắng", "Thua"));
@@ -133,8 +140,7 @@ public class AdminResultController {
                 String difficultyLabel = game.getDifficultyLabel();
                 boolean matchUsername = game.getPlayerName().toLowerCase().contains(usernameFilter);
                 boolean matchDifficulty = difficultyFilter.equals("Tất cả") ||
-                        (diff != null && diff.name().equalsIgnoreCase(difficultyFilter)) ||
-                        (difficultyLabel != null && difficultyLabel.equalsIgnoreCase(difficultyFilter));
+                        (diff != null && diff.getLabel().equalsIgnoreCase(difficultyFilter));
                 boolean matchResult = resultFilter.equals("Tất cả") ||
                         game.getResult().equalsIgnoreCase(resultFilter);
 
