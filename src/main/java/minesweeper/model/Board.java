@@ -183,14 +183,13 @@ public void reveal(int row, int col) {
         }
     }
 
-    public void placeMinesNow() {
-        if (minesPlaced) return;
+    public void placeMines(int safeRow, int safeCol) {
         Random random = new Random();
         int placed = 0;
         while (placed < totalMines) {
             int row = random.nextInt(rows);
             int col = random.nextInt(cols);
-            if (grid[row][col].isMine()) {
+            if ((row == safeRow && col == safeCol) || grid[row][col].isMine()) {
                 continue;
             }
             grid[row][col].setMine(true);
