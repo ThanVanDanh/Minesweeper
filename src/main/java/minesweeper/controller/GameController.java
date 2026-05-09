@@ -17,7 +17,6 @@ public class GameController {
         this.difficulty = difficulty;
         this.board = new Board(difficulty);
         this.isPaused = false;
-//        this.board.placeMinesNow();
         LOG.info("New game started with difficulty: {}", difficulty);
     }
 
@@ -57,8 +56,8 @@ public class GameController {
         }
         LOG.debug("Toggling flag at cell: ({}, {})", row, col);
 
-            board.toggleFlag(row, col); // UC10
-        }
+        board.toggleFlag(row, col); // UC10
+    }
 
     public void fastReveal(int row, int col) {
         if (board != null) board.fastReveal(row, col); // UC13
