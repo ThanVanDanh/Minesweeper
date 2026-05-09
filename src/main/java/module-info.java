@@ -1,6 +1,7 @@
 module vn.edu.nlu.fit.app {
     requires javafx.controls;
     requires javafx.fxml;
+    requires com.jfoenix;
     requires javafx.web;
     requires java.sql;
     requires com.zaxxer.hikari;
