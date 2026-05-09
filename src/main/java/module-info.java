@@ -7,6 +7,7 @@ module vn.edu.nlu.fit.app {
     requires org.slf4j;
 
     requires org.controlsfx.controls;
+    requires javafx.media;
 
     opens app to javafx.fxml;
     opens minesweeper.controller to javafx.fxml;
