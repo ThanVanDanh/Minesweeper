@@ -9,7 +9,7 @@ This project uses a simple MVC split:
 
 The leaderboard tab now follows this structure:
 
-- `minesweeper.ranking.controller.RankingHistoryController` (RankingScreen)
+- `minesweeper.controller.RankingHistoryController` (RankingScreen)
 - `minesweeper.ranking.controller.RankingController` (application/controller layer)
 - `minesweeper.ranking.repository.RankingDAO` + `minesweeper.ranking.repository.MySqlRankingDAO` (data access layer)
 - MySQL tables: `game_sessions`, `users`, `game_levels`

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -12,36 +12,43 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="minesweeper.ranking.controller.RankingHistoryController"
-            prefWidth="1100.0" prefHeight="720.0">
+            fx:controller="minesweeper.controller.RankingHistoryController"
+            prefWidth="1100.0" prefHeight="720.0"
+            styleClass="root-bg"
+            stylesheets="@../css/styles.css">
     <top>
-        <VBox spacing="6">
+        <VBox spacing="6" styleClass="ranking-header">
             <padding>
                 <Insets top="18" right="24" bottom="12" left="24"/>
             </padding>
-            <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
-            <Label text="Dữ liệu được lấy trực tiếp từ MySQL" style="-fx-opacity: 0.75;"/>
+            <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" styleClass="ranking-title"/>
+            <Label text="Dữ liệu được lấy trực tiếp từ MySQL" styleClass="ranking-subtitle"/>
         </VBox>
     </top>
     <center>
-        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">
+        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="ranking-tabs">
             <tabs>
                 <Tab text="Xếp hạng">
                     <content>
-                        <VBox spacing="10">
+                        <VBox spacing="10" styleClass="ranking-content">
                             <padding>
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Level:"/>
-                                <ComboBox fx:id="levelCombo" prefWidth="240"/>
+                                <Label text="Level:" styleClass="ranking-label"/>
+                                <ComboBox fx:id="levelCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
-                            <TableView fx:id="rankingTable" VBox.vgrow="ALWAYS">
+
+                            <TableView fx:id="rankingTable" VBox.vgrow="ALWAYS" styleClass="ranking-table">
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
                                 <columns>
-                                    <TableColumn fx:id="colRank" text="Hạng" prefWidth="80"/>
+                                    <TableColumn fx:id="colRank" text="Hạng" prefWidth="80" styleClass="col-rank"/>
                                     <TableColumn fx:id="colPlayerName" text="Người chơi" prefWidth="220"/>
                                     <TableColumn fx:id="colTotalGames" text="Tổng ván" prefWidth="100"/>
                                     <TableColumn fx:id="colWins" text="Thắng" prefWidth="80"/>
@@ -54,16 +61,20 @@
                 </Tab>
                 <Tab text="Lịch sử">
                     <content>
-                        <VBox spacing="10">
+                        <VBox spacing="10" styleClass="ranking-content">
                             <padding>
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Người chơi:"/>
-                                <ComboBox fx:id="playerCombo" prefWidth="240"/>
+                                <Label text="Người chơi:" styleClass="ranking-label"/>
+                                <ComboBox fx:id="playerCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
-                            <TableView fx:id="historyTable" VBox.vgrow="ALWAYS">
+
+                            <TableView fx:id="historyTable" VBox.vgrow="ALWAYS" styleClass="ranking-table">
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                </columnResizePolicy>
                                 <columns>
                                     <TableColumn fx:id="colDate" text="Thời gian" prefWidth="180"/>
                                     <TableColumn fx:id="colDifficulty" text="Độ khó" prefWidth="110"/>
@@ -77,13 +88,13 @@
                 </Tab>
                 <Tab text="Thống kê">
                     <content>
-                        <VBox spacing="14">
+                        <VBox spacing="14" styleClass="ranking-content">
                             <padding>
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Người chơi:"/>
-                                <ComboBox fx:id="statsPlayerCombo" prefWidth="240"/>
+                                <Label text="Người chơi:" styleClass="ranking-label"/>
+                                <ComboBox fx:id="statsPlayerCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <GridPane hgap="16" vgap="14">
@@ -91,25 +102,25 @@
                                     <ColumnConstraints percentWidth="50"/>
                                     <ColumnConstraints percentWidth="50"/>
                                 </columnConstraints>
-                                <VBox spacing="4">
-                                    <Label text="Tổng ván"/>
-                                    <Label fx:id="statsTotalGames" text="0" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <VBox spacing="4" styleClass="stats-box">
+                                    <Label text="Tổng ván" styleClass="stats-label"/>
+                                    <Label fx:id="statsTotalGames" text="0" styleClass="stats-value"/>
                                 </VBox>
-                                <VBox spacing="4" GridPane.columnIndex="1">
-                                    <Label text="Thắng / Thua"/>
-                                    <Label fx:id="statsWins" text="0 / 0" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <VBox spacing="4" GridPane.columnIndex="1" styleClass="stats-box">
+                                    <Label text="Thắng / Thua" styleClass="stats-label"/>
+                                    <Label fx:id="statsWins" text="0 / 0" styleClass="stats-value"/>
                                 </VBox>
-                                <VBox spacing="4" GridPane.rowIndex="1">
-                                    <Label text="Tỷ lệ thắng"/>
-                                    <Label fx:id="statsWinRate" text="0%" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <VBox spacing="4" GridPane.rowIndex="1" styleClass="stats-box">
+                                    <Label text="Tỷ lệ thắng" styleClass="stats-label"/>
+                                    <Label fx:id="statsWinRate" text="0%" styleClass="stats-value"/>
                                 </VBox>
-                                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <Label text="Điểm cao nhất"/>
-                                    <Label fx:id="statsBestScore" text="0" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="stats-box">
+                                    <Label text="Điểm cao nhất" styleClass="stats-label"/>
+                                    <Label fx:id="statsBestScore" text="0" styleClass="stats-value"/>
                                 </VBox>
-                                <VBox spacing="4" GridPane.rowIndex="2">
-                                    <Label text="Thời gian trung bình"/>
-                                    <Label fx:id="statsAvgTime" text="0 giây" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                                <VBox spacing="4" GridPane.rowIndex="2" styleClass="stats-box">
+                                    <Label text="Thời gian trung bình" styleClass="stats-label"/>
+                                    <Label fx:id="statsAvgTime" text="0 giây" styleClass="stats-value"/>
                                 </VBox>
                             </GridPane>
                         </VBox>
@@ -119,5 +130,3 @@
         </TabPane>
     </center>
 </BorderPane>
-
-
