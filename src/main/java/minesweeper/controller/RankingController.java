@@ -23,11 +23,11 @@ public class RankingController {
         List<RankingDTO> raw = rankingRepository.getLeaderboardByLevel(levelId);
         List<RankingDTO> formatted = new ArrayList<>(raw.size());
 
-        int rank = 1;
         for (RankingDTO row : raw) {
             String playerName = row.getPlayerName() == null ? "Unknown" : row.getPlayerName().trim();
+            // P8 fix: preserve rank computed by DENSE_RANK() in SQL — do NOT overwrite with rank++
             formatted.add(new RankingDTO(
-                    rank++,
+                    row.getRank(),
                     playerName,
                     Math.max(0, row.getTotalGames()),
                     Math.max(0, row.getWins()),

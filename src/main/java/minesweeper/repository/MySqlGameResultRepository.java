@@ -4,6 +4,7 @@ import minesweeper.model.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.config.MySqlConnectionConfig;
 import minesweeper.repository.connection.ConnectionFactory;
+import minesweeper.repository.connection.ConnectionFactoryProvider;
 import minesweeper.repository.connection.HikariConnectionFactory;
 import minesweeper.repository.exception.DataAccessException;
 import minesweeper.repository.pagination.Page;
@@ -33,15 +34,16 @@ public class MySqlGameResultRepository implements GameResultRepository {
 
     // SQL Queries
     private static final String INSERT_SESSION_SQL = """
-            INSERT INTO game_sessions (user_id, level_id, result, completion_time, score, opened_cells, flagged_cells, started_at, ended_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO game_sessions (user_id, level_id, result, completion_time, score, opened_cells, flagged_cells, started_at, first_click_at, ended_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String COUNT_ALL_SQL = "SELECT COUNT(*) AS total FROM game_sessions";
-    
+
     private static final String SELECT_ALL_SQL = """
-            SELECT gs.id AS session_id, u.username AS player_name, COALESCE(gl.level_name, '') AS level_name,
-                   gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells, gs.ended_at, gs.created_at, gs.score
+            SELECT gs.id AS session_id, u.username AS player_name,
+                   gs.level_id, COALESCE(gl.level_name, '') AS level_name,
+                   gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells, gs.started_at, gs.first_click_at, gs.ended_at, gs.created_at, gs.score
             FROM game_sessions gs
             JOIN users u ON gs.user_id = u.id
             LEFT JOIN game_levels gl ON gs.level_id = gl.id
@@ -49,15 +51,26 @@ public class MySqlGameResultRepository implements GameResultRepository {
             LIMIT ? OFFSET ?
             """;
 
+    private static final String SELECT_ALL_NO_LIMIT_SQL = """
+            SELECT gs.id AS session_id, u.username AS player_name,
+                   gs.level_id, COALESCE(gl.level_name, '') AS level_name,
+                   gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells, gs.started_at, gs.first_click_at, gs.ended_at, gs.created_at, gs.score
+            FROM game_sessions gs
+            JOIN users u ON gs.user_id = u.id
+            LEFT JOIN game_levels gl ON gs.level_id = gl.id
+            ORDER BY gs.created_at DESC, gs.id DESC
+            """;
+
     private static final String COUNT_BY_PLAYER_SQL = """
             SELECT COUNT(*) AS total FROM game_sessions gs
             JOIN users u ON gs.user_id = u.id
             WHERE LOWER(u.username) = LOWER(?)
             """;
-    
+
     private static final String SELECT_BY_PLAYER_SQL = """
-            SELECT gs.id AS session_id, u.username AS player_name, COALESCE(gl.level_name, '') AS level_name,
-                   gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells, gs.ended_at, gs.created_at, gs.score
+            SELECT gs.id AS session_id, u.username AS player_name,
+                   gs.level_id, COALESCE(gl.level_name, '') AS level_name,
+                   gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells, gs.started_at, gs.first_click_at, gs.ended_at, gs.created_at, gs.score
             FROM game_sessions gs
             JOIN users u ON gs.user_id = u.id
             LEFT JOIN game_levels gl ON gs.level_id = gl.id
@@ -70,15 +83,30 @@ public class MySqlGameResultRepository implements GameResultRepository {
 
     private static final String DELETE_BY_IDS_SQL = "DELETE FROM game_sessions WHERE id = ?";
 
+    // P1 fix: upsert into player_best_scores whenever a WIN is saved
+    private static final String UPSERT_BEST_SCORE_SQL = """
+            INSERT INTO player_best_scores (user_id, level_id, best_time, best_score, game_session_id, achieved_at)
+            SELECT ?, ?, ?, ?, LAST_INSERT_ID(), NOW()
+            FROM DUAL
+            WHERE ? IS NOT NULL
+            ON DUPLICATE KEY UPDATE
+                best_score      = IF(VALUES(best_score) > best_score, VALUES(best_score), best_score),
+                best_time       = IF(VALUES(best_score) > best_score, VALUES(best_time),
+                                    IF(VALUES(best_time) < best_time AND VALUES(best_score) = best_score, VALUES(best_time), best_time)),
+                game_session_id = IF(VALUES(best_score) > best_score, LAST_INSERT_ID(), game_session_id),
+                achieved_at     = IF(VALUES(best_score) > best_score, NOW(), achieved_at)
+            """;
+
+
     private final ConnectionFactory connectionFactory;
     private final UserService userService;
     private final LevelService levelService;
 
     public MySqlGameResultRepository() {
-        MySqlConnectionConfig config = MySqlConnectionConfig.fromResources();
-        this.connectionFactory = new HikariConnectionFactory(config);
-        this.userService = new MySqlUserService(connectionFactory);
-        this.levelService = new MySqlLevelService(connectionFactory);
+        ConnectionFactory shared = ConnectionFactoryProvider.get();
+        this.connectionFactory = shared;
+        this.userService = new MySqlUserService(shared);
+        this.levelService = new MySqlLevelService(shared);
     }
 
     public MySqlGameResultRepository(MySqlConnectionConfig config) {
@@ -103,7 +131,7 @@ public class MySqlGameResultRepository implements GameResultRepository {
     @Override
     public void saveGameResult(GameResult result) throws DataAccessException {
         validateResult(result);
-        
+
         try (Connection connection = connectionFactory.getConnection()) {
             // Use manual transaction for consistency
             connection.setAutoCommit(false);
@@ -111,7 +139,7 @@ public class MySqlGameResultRepository implements GameResultRepository {
                 long userId = userService.getOrCreateUser(result.getPlayerName());
                 Integer levelId = levelService.getLevelIdByDifficulty(result.getDifficulty());
                 insertGameSession(connection, userId, levelId, result);
-                
+
                 connection.commit();
                 LOG.info("Game result saved for player: {}", result.getPlayerName());
             } catch (SQLException e) {
@@ -128,26 +156,61 @@ public class MySqlGameResultRepository implements GameResultRepository {
     }
 
     /**
-     * Inserts game session into database
+     * Inserts game session into database.
+     * P3 fix: opened_cells now uses real value from result.
+     * P1 fix: upserts player_best_scores for WIN results.
      */
     private void insertGameSession(Connection connection, long userId, Integer levelId, GameResult result) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(INSERT_SESSION_SQL)) {
+        try (PreparedStatement ps = connection.prepareStatement(INSERT_SESSION_SQL, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, userId);
-            
+
             if (levelId == null) {
                 ps.setNull(2, java.sql.Types.INTEGER);
             } else {
                 ps.setInt(2, levelId);
             }
-            
+
             ps.setString(3, result.isWon() ? "WIN" : "LOSE");
             ps.setLong(4, result.getElapsedTimeMs());
             ps.setInt(5, result.getScore());
-            ps.setInt(6, 0);  // opened_cells unknown
+            ps.setInt(6, result.getOpenedCells()); // P3 fix: use actual opened cell count
             ps.setInt(7, result.getFlagsUsed());
-            ps.setTimestamp(8, java.sql.Timestamp.valueOf(result.getPlayedAt()));
-            ps.setTimestamp(9, java.sql.Timestamp.valueOf(result.getPlayedAt()));
-            
+            ps.setTimestamp(8, result.getStartedAt() != null ? java.sql.Timestamp.valueOf(result.getStartedAt()) : null);
+            ps.setTimestamp(9, result.getFirstClickAt() != null ? java.sql.Timestamp.valueOf(result.getFirstClickAt()) : null);
+            ps.setTimestamp(10, java.sql.Timestamp.valueOf(result.getPlayedAt()));
+
+            ps.executeUpdate();
+
+            // P1 fix: upsert player_best_scores for WIN
+            if (result.isWon() && levelId != null) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        long sessionId = generatedKeys.getLong(1);
+                        upsertBestScore(connection, userId, levelId, result.getElapsedTimeMs(), result.getScore(), sessionId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void upsertBestScore(Connection connection, long userId, int levelId,
+                                  long bestTimeMs, int bestScore, long sessionId) throws SQLException {
+        final String sql = """
+                INSERT INTO player_best_scores (user_id, level_id, best_time, best_score, game_session_id, achieved_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE
+                    best_score      = IF(VALUES(best_score) > best_score, VALUES(best_score), best_score),
+                    best_time       = IF(VALUES(best_score) > best_score, VALUES(best_time),
+                                        IF(VALUES(best_time) < best_time AND VALUES(best_score) = best_score, VALUES(best_time), best_time)),
+                    game_session_id = IF(VALUES(best_score) > best_score OR VALUES(best_time) < best_time, VALUES(game_session_id), game_session_id),
+                    achieved_at     = IF(VALUES(best_score) > best_score OR VALUES(best_time) < best_time, NOW(), achieved_at)
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, levelId);
+            ps.setLong(3, bestTimeMs);
+            ps.setInt(4, bestScore);
+            ps.setLong(5, sessionId);
             ps.executeUpdate();
         }
     }
@@ -157,7 +220,7 @@ public class MySqlGameResultRepository implements GameResultRepository {
         if (playerName == null || playerName.isBlank()) {
             return new ArrayList<>();
         }
-        
+
         try {
             PagedResult<GameResult> result = getPlayerHistory(playerName, 0, 1000);
             return result.getContent();
@@ -166,7 +229,7 @@ public class MySqlGameResultRepository implements GameResultRepository {
             throw e;
         }
     }
-    
+
     /**
      * Get player history with pagination
      */
@@ -175,13 +238,13 @@ public class MySqlGameResultRepository implements GameResultRepository {
             Page emptyPage = new Page(pageNumber, pageSize, 0);
             return new PagedResult<>(new ArrayList<>(), emptyPage);
         }
-        
+
         String trimmedName = playerName.trim();
-        
+
         try {
             // Get total count
             long total = getPlayerGameCount(trimmedName);
-            
+
             // Get paged results
             List<GameResult> results = new ArrayList<>();
             try (Connection connection = connectionFactory.getConnection();
@@ -189,16 +252,16 @@ public class MySqlGameResultRepository implements GameResultRepository {
                 statement.setString(1, trimmedName);
                 statement.setInt(2, pageSize);
                 statement.setInt(3, (int) ((long) pageNumber * pageSize));
-                
+
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         results.add(mapSessionResult(resultSet));
                     }
                 }
             }
-            
+
             Page page = new Page(pageNumber, pageSize, total);
-            LOG.info("Fetched {} of {} results for player: {} (page {}/{})", 
+            LOG.info("Fetched {} of {} results for player: {} (page {}/{})",
                     results.size(), total, playerName, pageNumber + 1, page.getTotalPages());
             return new PagedResult<>(results, page);
         } catch (SQLException e) {
@@ -206,12 +269,12 @@ public class MySqlGameResultRepository implements GameResultRepository {
             throw new DataAccessException("Failed to fetch player history", e);
         }
     }
-    
+
     private long getPlayerGameCount(String playerName) throws SQLException {
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement ps = connection.prepareStatement(COUNT_BY_PLAYER_SQL)) {
             ps.setString(1, playerName);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getLong("total");
@@ -223,15 +286,20 @@ public class MySqlGameResultRepository implements GameResultRepository {
 
     @Override
     public List<GameResult> getAllResults() throws DataAccessException {
-        try {
-            PagedResult<GameResult> result = getAllResults(0, 1000);
-            return result.getContent();
-        } catch (DataAccessException e) {
+        List<GameResult> results = new ArrayList<>();
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_ALL_NO_LIMIT_SQL);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                results.add(mapSessionResult(resultSet));
+            }
+            return results;
+        } catch (SQLException e) {
             LOG.error("Error fetching all results", e);
-            throw e;
+            throw new DataAccessException("Failed to fetch all results", e);
         }
     }
-    
+
     /**
      * Get all results with pagination
      */
@@ -239,23 +307,23 @@ public class MySqlGameResultRepository implements GameResultRepository {
         try {
             // Get total count
             long total = getTotalGameCount();
-            
+
             // Get paged results
             List<GameResult> results = new ArrayList<>();
             try (Connection connection = connectionFactory.getConnection();
                  PreparedStatement statement = connection.prepareStatement(SELECT_ALL_SQL)) {
                 statement.setInt(1, pageSize);
                 statement.setInt(2, (int) ((long) pageNumber * pageSize));
-                
+
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         results.add(mapSessionResult(resultSet));
                     }
                 }
             }
-            
+
             Page page = new Page(pageNumber, pageSize, total);
-            LOG.info("Fetched {} of {} total results (page {}/{})", 
+            LOG.info("Fetched {} of {} total results (page {}/{})",
                     results.size(), total, pageNumber + 1, page.getTotalPages());
             return new PagedResult<>(results, page);
         } catch (SQLException e) {
@@ -263,7 +331,7 @@ public class MySqlGameResultRepository implements GameResultRepository {
             throw new DataAccessException("Failed to fetch all results", e);
         }
     }
-    
+
     private long getTotalGameCount() throws SQLException {
         try (Connection connection = connectionFactory.getConnection();
              Statement statement = connection.createStatement();
@@ -288,33 +356,37 @@ public class MySqlGameResultRepository implements GameResultRepository {
     }
 
     /**
-     * Maps ResultSet to GameResult object
+     * Maps ResultSet to GameResult object.
+     * P2 fix: uses level_name from JOIN instead of hardcoded level_id switch.
      */
     private GameResult mapSessionResult(ResultSet rs) throws SQLException {
         long sessionId = rs.getLong("session_id");
         String gameId = "session-" + sessionId;
         String playerName = rs.getString("player_name");
-        String levelName = rs.getString("level_name");
         int openedCells = rs.getInt("opened_cells");
         int score = rs.getInt("score");
 
+        // P2 fix: parse difficulty from level_name string, not hardcoded level_id
+        String levelName = rs.getString("level_name");
         Difficulty difficulty = null;
         if (levelName != null && !levelName.isBlank()) {
             try {
                 difficulty = Difficulty.valueOf(levelName.trim().toUpperCase());
-            } catch (IllegalArgumentException ignored) {
-                // Difficulty not found, leave as null
+            } catch (IllegalArgumentException e) {
+                LOG.warn("Unknown level_name '{}', difficulty set to null", levelName);
             }
         }
-        
+
         boolean isWon = "WIN".equalsIgnoreCase(rs.getString("result"));
         long elapsed = rs.getLong("completion_time");
         int flagsUsed = rs.getInt("flagged_cells");
-        int minesTotal = 0;
-        
+        int minesTotal = difficulty != null ? difficulty.getMines() : 0; // P4 fix: derive from difficulty
+
         java.sql.Timestamp ended = rs.getTimestamp("ended_at");
         java.sql.Timestamp created = rs.getTimestamp("created_at");
-        
+        java.sql.Timestamp started = rs.getTimestamp("started_at");
+        java.sql.Timestamp firstClick = rs.getTimestamp("first_click_at");
+
         LocalDateTime playedAt;
         if (ended != null) {
             playedAt = ended.toLocalDateTime();
@@ -327,6 +399,8 @@ public class MySqlGameResultRepository implements GameResultRepository {
         GameResult gr = new GameResult(gameId, playerName, difficulty, isWon, elapsed, flagsUsed, minesTotal, playedAt);
         gr.setOpenedCells(openedCells);
         gr.setScore(score);
+        if (started != null) gr.setStartedAt(started.toLocalDateTime());
+        if (firstClick != null) gr.setFirstClickAt(firstClick.toLocalDateTime());
         return gr;
     }
 
