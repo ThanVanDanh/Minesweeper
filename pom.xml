@@ -57,7 +57,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.openjfx</groupId>
-                    <artifactId>*</artifactId>
+                    <artifactId>9.0.10</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
