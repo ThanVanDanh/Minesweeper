@@ -17,7 +17,7 @@ public class GameController {
         this.difficulty = difficulty;
         this.board = new Board(difficulty);
         this.isPaused = false;
-        this.board.placeMinesNow();
+//        this.board.placeMinesNow();
         LOG.info("New game started with difficulty: {}", difficulty);
     }
 
@@ -41,6 +41,9 @@ public class GameController {
         if (board == null) {
             LOG.warn("Attempted to reveal cell ({}, {}) with no active game", row, col);
             return;
+        }
+        if (board.getGameState() == GameState.IDLE) {
+            board.placeMines( row, col);
         }
         LOG.debug("Revealing cell: ({}, {})", row, col);
         board.reveal(row, col);
