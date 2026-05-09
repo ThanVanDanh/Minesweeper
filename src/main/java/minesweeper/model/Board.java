@@ -28,6 +28,18 @@ public class Board {
         initGrid();
     }
 
+//    public Board(int rows, int cols, int mines) {
+//        this.rows = rows;
+//        this.cols = cols;
+//        this.totalMines = mines;
+//        this.flagsPlaced = 0;
+//        this.gameState = GameState.IDLE;
+//        this.minesPlaced = false;
+//        this.grid = new Cell[rows][cols];
+//        this.safeCellsRemaining = (this.rows * this.cols) - this.totalMines;
+//        initGrid();
+//    }
+
     public int getRows() {
         return rows;
     }
