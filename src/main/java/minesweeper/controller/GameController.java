@@ -44,7 +44,8 @@ public class GameController {
         }
         LOG.debug("Revealing cell: ({}, {})", row, col);
         board.reveal(row, col);
-    }
+
+}
 
     public void toggleFlag(int row, int col) {
         if (board == null) {
@@ -52,7 +53,12 @@ public class GameController {
             return;
         }
         LOG.debug("Toggling flag at cell: ({}, {})", row, col);
-        board.toggleFlag(row, col);
+
+            board.toggleFlag(row, col); // UC10
+        }
+
+    public void fastReveal(int row, int col) {
+        if (board != null) board.fastReveal(row, col); // UC13
     }
 
     public boolean isPaused() {
