@@ -36,9 +36,6 @@ import java.util.UUID;
 
 public class BoardGameController implements Initializable {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(BoardGameController.class);
-//    @FXML private ToggleButton btnEasy;
-//    @FXML private ToggleButton btnMedium;
-//    @FXML private ToggleButton btnHard;
     @FXML private Label lblFlags;
     @FXML private Label lblTime;
     @FXML private GridPane minesweeperGrid;
