@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class RankingController {
+    private static final String EXPERT_LEVEL_NAME = "EXPERT";
+    private static final int TOP_RANK_LIMIT = 50;
+
     private final RankingRepository rankingRepository;
 
     public RankingController() {
@@ -23,11 +26,11 @@ public class RankingController {
         List<RankingDTO> raw = rankingRepository.getLeaderboardByLevel(levelId);
         List<RankingDTO> formatted = new ArrayList<>(raw.size());
 
-        int rank = 1;
         for (RankingDTO row : raw) {
             String playerName = row.getPlayerName() == null ? "Unknown" : row.getPlayerName().trim();
+            // P8 fix: preserve rank computed by DENSE_RANK() in SQL — do NOT overwrite with rank++
             formatted.add(new RankingDTO(
-                    rank++,
+                    row.getRank(),
                     playerName,
                     Math.max(0, row.getTotalGames()),
                     Math.max(0, row.getWins()),
@@ -39,13 +42,53 @@ public class RankingController {
         return formatted;
     }
 
+    public List<RankingDTO> getRankingTop(int levelId, int limit) throws Exception {
+        if (limit <= 0) {
+            return List.of();
+        }
+
+        List<RankingDTO> ranking = getRanking(levelId);
+        if (ranking.size() <= limit) {
+            return ranking;
+        }
+        return new ArrayList<>(ranking.subList(0, limit));
+    }
+
+    public List<RankingDTO> getExpertRankingTop50() throws Exception {
+        return getExpertRankingTop(TOP_RANK_LIMIT);
+    }
+
+    public List<RankingDTO> getExpertRankingTop(int limit) throws Exception {
+        int expertLevelId = findExpertLevelId();
+        if (expertLevelId < 0) {
+            return List.of();
+        }
+        return getRankingTop(expertLevelId, limit);
+    }
+
     public List<LevelOption> getAvailableLevels() throws Exception {
         List<RankingRepository.LevelInfo> levels = rankingRepository.getLevels();
         List<LevelOption> options = new ArrayList<>(levels.size());
         for (RankingRepository.LevelInfo level : levels) {
-            options.add(new LevelOption(level.getId(), level.getName()));
+            if (isExpertLevel(level.getName())) {
+                options.add(new LevelOption(level.getId(), level.getName()));
+            }
         }
         return options;
+    }
+
+    private int findExpertLevelId() throws Exception {
+        List<RankingRepository.LevelInfo> levels = rankingRepository.getLevels();
+        for (RankingRepository.LevelInfo level : levels) {
+            if (isExpertLevel(level.getName())) {
+                return level.getId();
+            }
+        }
+        return -1;
+    }
+
+    private boolean isExpertLevel(String levelName) {
+        return levelName != null && EXPERT_LEVEL_NAME.equalsIgnoreCase(levelName.trim());
     }
 
     public static class LevelOption {

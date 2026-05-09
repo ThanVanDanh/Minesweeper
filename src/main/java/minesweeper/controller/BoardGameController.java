@@ -21,17 +21,24 @@ import javafx.scene.layout.VBox;
 import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import minesweeper.model.Board;
 import minesweeper.model.Difficulty;
+import minesweeper.model.GameResult;
 import minesweeper.model.GameState;
+import minesweeper.repository.GameResultRepository;
+import minesweeper.repository.MySqlGameResultRepository;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class BoardGameController implements Initializable {
-    @FXML private ToggleButton btnEasy;
-    @FXML private ToggleButton btnMedium;
-    @FXML private ToggleButton btnHard;
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(BoardGameController.class);
+//    @FXML private ToggleButton btnEasy;
+//    @FXML private ToggleButton btnMedium;
+//    @FXML private ToggleButton btnHard;
     @FXML private Label lblFlags;
     @FXML private Label lblTime;
     @FXML private GridPane minesweeperGrid;
@@ -45,41 +52,21 @@ public class BoardGameController implements Initializable {
     private int secondsElapsed = 0;
     private final int BUTTON_SIZE = 35;
     private boolean isFlagMode = false;
+    private GameResultRepository gameResultRepository;
+    private String currentPlayerName = "Player";
+    private LocalDateTime gameStartedAt;
+    private LocalDateTime firstClickAt;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gameLogic = new GameController();
-
-        difficultyGroup = new ToggleGroup();
-        btnEasy.setToggleGroup(difficultyGroup);
-        btnMedium.setToggleGroup(difficultyGroup);
-        btnHard.setToggleGroup(difficultyGroup);
-
-        difficultyGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                if (oldVal != null) oldVal.setSelected(true);
-            } else if (newVal == btnEasy) {
-                startGame(Difficulty.EASY);
-            } else if (newVal == btnMedium) {
-                startGame(Difficulty.MEDIUM);
-            } else if (newVal == btnHard) {
-                startGame(Difficulty.HARD);
-            }
-        });
-
+        gameResultRepository = new MySqlGameResultRepository();
         setupTimer();
     }
 
     public void setInitialDifficulty(Difficulty selectedDifficulty) {
         if (selectedDifficulty == null) return;
-
-        if (selectedDifficulty == Difficulty.EASY) {
-            btnEasy.setSelected(true);
-        } else if (selectedDifficulty == Difficulty.MEDIUM) {
-            btnMedium.setSelected(true);
-        } else if (selectedDifficulty == Difficulty.HARD) {
-            btnHard.setSelected(true);
-        }
+        startGame(selectedDifficulty);
     }
 
     private void startGame(Difficulty diff) {
@@ -89,6 +76,8 @@ public class BoardGameController implements Initializable {
         updateStatus();
         pauseOverlay.setVisible(false);
         if (btnPause != null) btnPause.setText("Tạm dừng");
+        gameStartedAt = LocalDateTime.now();
+        firstClickAt = null;
         renderBoard();
         startTimer();
     }
@@ -114,6 +103,11 @@ public class BoardGameController implements Initializable {
                 btnCell.setOnAction(e -> {
                     if (gameLogic.isPaused()) return;
                     if (gameLogic.getGameState() == GameState.LOST || gameLogic.getGameState() == GameState.WON) return;
+
+                    if (firstClickAt == null) {
+                        firstClickAt = LocalDateTime.now();
+                    }
+
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
 
                     if (currentCell.isRevealed()) {
@@ -126,6 +120,7 @@ public class BoardGameController implements Initializable {
                         }
                     }
 
+                    // P24 fix: single if-else — sound only plays once
                     if (gameLogic.getGameState() == GameState.LOST) {
                         playExplosionSound();
                         showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
@@ -287,17 +282,52 @@ public class BoardGameController implements Initializable {
         lblOverlay.setText(message);
         lblOverlay.setStyle("-fx-text-fill: " + hexColor + "; -fx-font-size: 40; -fx-font-weight: bold;");
         pauseOverlay.setVisible(true);
+        saveGameResult();
+    }
+
+    public void setCurrentPlayer(String playerName) {
+        if (playerName != null && !playerName.isBlank()) {
+            this.currentPlayerName = playerName.trim();
+        }
+    }
+
+    private void saveGameResult() {
+        try {
+            boolean isWon = gameLogic.getGameState() == GameState.WON;
+            Board board = gameLogic.getBoard();
+
+            int openedCells = 0;
+            for (int r = 0; r < board.getRows(); r++) {
+                for (int c = 0; c < board.getCols(); c++) {
+                    if (board.getCell(r, c).isRevealed() && !board.getCell(r, c).isMine()) {
+                        openedCells++;
+                    }
+                }
+            }
+
+            GameResult result = new GameResult(
+                    UUID.randomUUID().toString(),
+                    currentPlayerName,
+                    gameLogic.getDifficulty(),
+                    isWon,
+                    (long) secondsElapsed * 1000,
+                    board.getFlagsPlaced(),
+                    board.getTotalMines(),
+                    LocalDateTime.now()
+            );
+            result.computeScore();
+            result.setOpenedCells(openedCells);
+            result.setStartedAt(gameStartedAt);
+            result.setFirstClickAt(firstClickAt);
+            gameResultRepository.saveGameResult(result);
+            LOG.info("Đã lưu kết quả game: {}", result);
+        } catch (Exception e) {
+            LOG.error("Lỗi khi lưu kết quả game", e);
+        }
     }
 
     @FXML
     public void restartGame(ActionEvent actionEvent) {
-        Difficulty currentDiff = Difficulty.EASY; // Mặc định là Dễ
-        if (btnMedium.isSelected()) {
-            currentDiff = Difficulty.MEDIUM;
-        } else if (btnHard.isSelected()) {
-            currentDiff = Difficulty.HARD;
-        }
-
         if (isFlagMode) {
             isFlagMode = false;
             btnFlat.setText("Mở ô");
@@ -310,6 +340,8 @@ public class BoardGameController implements Initializable {
             }
         }
 
-        startGame(currentDiff);
+        if (gameLogic != null && gameLogic.getDifficulty() != null) {
+            startGame(gameLogic.getDifficulty());
+        }
     }
 }

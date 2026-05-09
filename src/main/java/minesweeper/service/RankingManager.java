@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class RankingManager {
     private static final Logger LOG = LoggerFactory.getLogger(RankingManager.class);
-    
+
     private final GameResultRepository gameResultRepository;
 
     public RankingManager(GameResultRepository gameResultRepository) {
@@ -40,22 +40,40 @@ public class RankingManager {
                 if (playerName == null) {
                     continue;
                 }
-                playerStats.putIfAbsent(playerName, new PlayerStats(result.getPlayerName().trim()));
+                // P14 fix: use the username stored in DB (already has consistent casing)
+                // normalizePlayerName() returns lowercase key; display name is trimmed original
+                String displayName = result.getPlayerName().trim();
+                playerStats.putIfAbsent(playerName, new PlayerStats(displayName));
                 playerStats.get(playerName).addResult(result);
             }
 
             // Convert to ranking list
+            // P11 fix: sort by bestScore (peak skill) not totalScore (grinding)
             List<PlayerRanking> rankings = playerStats.values().stream()
                     .map(PlayerRanking::fromStats)
                     .sorted(Comparator
-                            .comparingInt(PlayerRanking::getTotalScore).reversed()
-                            .thenComparing(Comparator.comparingInt(PlayerRanking::getWins).reversed())
+                            .comparingInt(PlayerRanking::getBestScore).reversed()
+                            .thenComparingInt(PlayerRanking::getWins).reversed()
+                            .thenComparingLong(PlayerRanking::getBestTimeMs)  // P13: use ms not seconds
                             .thenComparing(PlayerRanking::getPlayerName, String.CASE_INSENSITIVE_ORDER))
                     .collect(Collectors.toList());
 
-            // Add rank number
+            // P12 fix: tie must check ALL sort keys to be correct
+            int rank = 1;
+            int prevBestScore = Integer.MIN_VALUE;
+            int prevWins = Integer.MIN_VALUE;
+            long prevBestTimeMs = Long.MAX_VALUE;
             for (int i = 0; i < rankings.size(); i++) {
-                rankings.get(i).setRank(i + 1);
+                PlayerRanking current = rankings.get(i);
+                if (current.getBestScore() != prevBestScore
+                        || current.getWins() != prevWins
+                        || current.getBestTimeMs() != prevBestTimeMs) {
+                    rank = i + 1;
+                    prevBestScore = current.getBestScore();
+                    prevWins = current.getWins();
+                    prevBestTimeMs = current.getBestTimeMs();
+                }
+                current.setRank(rank);
             }
 
             LOG.info("Global ranking calculated for {} players", rankings.size());
@@ -121,7 +139,7 @@ public class RankingManager {
                 stats.addResult(result);
             }
 
-            LOG.info("Player stats calculated for {}: {} games, {} wins", 
+            LOG.info("Player stats calculated for {}: {} games, {} wins",
                     playerName, stats.getTotalGames(), stats.getWins());
             return stats;
         } catch (DataAccessException e) {
@@ -150,7 +168,7 @@ public class RankingManager {
         private long totalTimeMs = 0;
         private int totalScore = 0;
         private int bestScore = 0;
-        private int bestTimeSeconds = Integer.MAX_VALUE;
+        private long bestTimeMs = Long.MAX_VALUE; // P13: store in ms, not seconds
 
         public PlayerStats(String playerName) {
             this.playerName = playerName;
@@ -169,9 +187,9 @@ public class RankingManager {
             totalScore += resultScore;
             bestScore = Math.max(bestScore, resultScore);
 
+            // P13 fix: keep millisecond precision throughout; only convert to seconds for display
             if (result.isWon()) {
-                int seconds = (int) result.getElapsedSeconds();
-                bestTimeSeconds = Math.min(bestTimeSeconds, seconds);
+                bestTimeMs = Math.min(bestTimeMs, result.getElapsedTimeMs());
             }
         }
 
@@ -182,8 +200,13 @@ public class RankingManager {
         public int getLosses() { return losses; }
         public int getTotalScore() { return totalScore; }
         public int getBestScore() { return bestScore; }
+        /** Best time in milliseconds (Long.MAX_VALUE means no win yet). */
+        public long getBestTimeMs() {
+            return bestTimeMs == Long.MAX_VALUE ? 0L : bestTimeMs;
+        }
+        /** Convenience: best time in whole seconds for display only. */
         public int getBestTimeSeconds() {
-            return bestTimeSeconds == Integer.MAX_VALUE ? 0 : bestTimeSeconds;
+            return (int) (getBestTimeMs() / 1000);
         }
         public double getWinRate() {
             return totalGames == 0 ? 0 : (double) wins / totalGames * 100;
@@ -210,15 +233,19 @@ public class RankingManager {
         private final int wins;
         private final int totalScore;
         private final double winRate;
+        private final int bestScore;
+        private final long bestTimeMs; // P13: ms not seconds
 
         public PlayerRanking(int rank, String playerName, int totalGames,
-                           int wins, int totalScore, double winRate) {
+                             int wins, int totalScore, double winRate, int bestScore, long bestTimeMs) {
             this.rank = rank;
             this.playerName = playerName;
             this.totalGames = totalGames;
             this.wins = wins;
             this.totalScore = totalScore;
             this.winRate = winRate;
+            this.bestScore = bestScore;
+            this.bestTimeMs = bestTimeMs;
         }
 
         public static PlayerRanking fromStats(PlayerStats stats) {
@@ -228,7 +255,9 @@ public class RankingManager {
                     stats.getTotalGames(),
                     stats.getWins(),
                     stats.getTotalScore(),
-                    stats.getWinRate()
+                    stats.getWinRate(),
+                    stats.getBestScore(),
+                    stats.getBestTimeMs()
             );
         }
 
@@ -238,6 +267,10 @@ public class RankingManager {
         public int getTotalGames() { return totalGames; }
         public int getWins() { return wins; }
         public int getTotalScore() { return totalScore; }
+        public int getBestScore() { return bestScore; }
+        public long getBestTimeMs() { return bestTimeMs; }
+        /** Convenience for display only */
+        public int getBestTimeSeconds() { return (int) (bestTimeMs / 1000); }
         public double getWinRate() { return winRate; }
         public String getWinRateFormatted() { return String.format("%.1f%%", winRate); }
     }
