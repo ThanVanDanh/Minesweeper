@@ -84,7 +84,27 @@ public class DashBoardController {
         }
 
     }
+    @FXML
+    private void openSettingsPage() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/app/settings.fxml")
+            );
 
+            Parent root = loader.load();
+
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            double currentWidth = stage.getScene().getWidth();
+            double currentHeight = stage.getScene().getHeight();
+            Scene scene = new Scene(root, currentWidth, currentHeight);
+
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     // ── Admin navigation ──────────────────────────────────────────────────────
 
