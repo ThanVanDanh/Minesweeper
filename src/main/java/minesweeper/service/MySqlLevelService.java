@@ -2,6 +2,7 @@ package minesweeper.service;
 
 import minesweeper.model.Difficulty;
 import minesweeper.repository.connection.ConnectionFactory;
+import minesweeper.repository.connection.ConnectionFactoryProvider;
 import minesweeper.repository.connection.HikariConnectionFactory;
 import minesweeper.repository.config.MySqlConnectionConfig;
 import minesweeper.repository.exception.DataAccessException;
@@ -12,9 +13,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MySQL implementation of LevelService
@@ -26,10 +27,10 @@ public class MySqlLevelService implements LevelService {
     private static final String SELECT_LEVEL_BY_ID_SQL = "SELECT id, level_name FROM game_levels WHERE id = ? LIMIT 1";
     
     private final ConnectionFactory connectionFactory;
-    private final Map<String, Integer> levelCache = new HashMap<>();
+    private final Map<String, Integer> levelCache = new ConcurrentHashMap<>();
     
     public MySqlLevelService() {
-        this(MySqlConnectionConfig.fromResources());
+        this(ConnectionFactoryProvider.get());
     }
     
     public MySqlLevelService(MySqlConnectionConfig config) {
