@@ -16,7 +16,6 @@ public class App extends Application {
         Parent root = FXMLLoader.load(Objects.requireNonNull(
                 App.class.getResource("/app/dashboard.fxml")
         ));
-
         Scene scene = new Scene(root, 1280, 760);
         scene.getStylesheets().add(Objects.requireNonNull(
                 App.class.getResource("/css/styles.css")

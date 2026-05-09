@@ -14,8 +14,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import minesweeper.model.Difficulty;
@@ -33,13 +36,15 @@ public class BoardGameController implements Initializable {
     @FXML private Label lblTime;
     @FXML private GridPane minesweeperGrid;
     @FXML private VBox pauseOverlay;
-    @FXML private Button btnPause;
+    @FXML private Button btnPause, btnFlat;
+    @FXML private Label lblOverlay;
 
     private ToggleGroup difficultyGroup;
     private GameController gameLogic;
     private Timeline timer;
     private int secondsElapsed = 0;
     private final int BUTTON_SIZE = 35;
+    private boolean isFlagMode = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -85,6 +90,7 @@ public class BoardGameController implements Initializable {
         pauseOverlay.setVisible(false);
         if (btnPause != null) btnPause.setText("Tạm dừng");
         renderBoard();
+        startTimer();
     }
 
     private void renderBoard() {
@@ -95,22 +101,49 @@ public class BoardGameController implements Initializable {
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 Button btnCell = new Button();
+
                 btnCell.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+                btnCell.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+                btnCell.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+
                 btnCell.getStyleClass().add("mine-cell-covered");
 
                 final int finalR = r;
                 final int finalC = c;
 
-                btnCell.setOnMouseClicked(e -> {
+                btnCell.setOnAction(e -> {
                     if (gameLogic.isPaused()) return;
+                    if (gameLogic.getGameState() != GameState.PLAYING) return;
 
-//                    gameLogic.reveal(finalR, finalC);
+                    minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
+
+                    if (currentCell.isRevealed()) {
+                        gameLogic.fastReveal(finalR, finalC);
+                    } else {
+                        if (isFlagMode) {
+                            gameLogic.toggleFlag(finalR, finalC);
+                        } else {
+                            gameLogic.reveal(finalR, finalC);
+                        }
+                    }
+
+                    if (gameLogic.getGameState() == GameState.LOST) {
+                        playExplosionSound();
+                    }
+                    if (gameLogic.getGameState() == GameState.LOST) {
+                        playExplosionSound();
+                        showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
+                    } else if (gameLogic.getGameState() == GameState.WON) {
+                        showGameOver("BẠN ĐÃ THẮNG!", "#39ff8f");
+                    }
+
                     updateBoardUI();
                 });
 
                 minesweeperGrid.add(btnCell, c, r);
             }
         }
+
         updateBoardUI();
     }
 
@@ -125,24 +158,35 @@ public class BoardGameController implements Initializable {
                 minesweeper.model.Cell cell = gameLogic.getBoard().getCell(r, c);
 
                 btnCell.setText("");
+                btnCell.setGraphic(null);
                 btnCell.setStyle("");
+                btnCell.getStyleClass().removeAll(
+                        "mine-cell-covered",
+                        "mine-cell-flaggedd",
+                        "mine-cell-revealed",
+                        "mine-cell-bomb",
+                        "mine-cell-number",
+                        "mine-cell-empty"
+                );
 
                 if (cell.isRevealed()) {
-                    btnCell.setDisable(true);
+                    btnCell.getStyleClass().add("mine-cell-revealed");
+
                     if (cell.isMine()) {
-                        btnCell.setText("💣");
-                        btnCell.setStyle("-fx-background-color: #ff4a69; -fx-opacity: 1;");
+                        ImageView bombIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/bomb-icon.png"))));
+                        bombIcon.setFitWidth(22);
+                        bombIcon.setFitHeight(22);
+                        btnCell.setGraphic(bombIcon);
+                        btnCell.getStyleClass().add("mine-cell-bomb");
                     } else if (cell.getNeighborMines() > 0) {
                         btnCell.setText(String.valueOf(cell.getNeighborMines()));
-                        btnCell.setStyle("-fx-text-fill: #39ff8f; -fx-font-weight: bold; -fx-opacity: 1;");
+                        btnCell.getStyleClass().add("mine-cell-number");
                     } else {
-                        btnCell.setStyle("-fx-background-color: #031522; -fx-opacity: 1;");
+                        btnCell.getStyleClass().add("mine-cell-empty");
                     }
-                } else if (cell.isFlagged()) {
-                    btnCell.setText("⚑");
-                    btnCell.setStyle("-fx-text-fill: #ff4a69;");
+                } else if (cell.isFlagged() || (gameLogic.getGameState() == GameState.WON && cell.isMine())) {
+                    btnCell.getStyleClass().add("mine-cell-flaggedd");
                 } else {
-                    btnCell.getStyleClass().clear();
                     btnCell.getStyleClass().add("mine-cell-covered");
                 }
             }
@@ -194,13 +238,6 @@ public class BoardGameController implements Initializable {
         }
     }
 
-    @FXML
-    public void btn(ActionEvent actionEvent) {
-        if (gameLogic.hasGame()) {
-            startGame(gameLogic.getDifficulty());
-        }
-    }
-
     private void setupTimer() {
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             secondsElapsed++;
@@ -215,5 +252,68 @@ public class BoardGameController implements Initializable {
 
     private void stopTimer() {
         if (timer != null) timer.pause();
+    }
+
+    @FXML
+    public void btnFlat(ActionEvent actionEvent) {
+        ImageView icon = (ImageView) btnFlat.getGraphic();
+        isFlagMode = !isFlagMode;
+
+        btnFlat.setStyle("");
+        btnFlat.getStyleClass().removeAll("btn-flat-normal", "btn-flat-flag-active");
+
+        if (isFlagMode) {
+            btnFlat.setText("Cắm cờ");
+            btnFlat.getStyleClass().add("btn-flat-flag-active");
+            icon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/flag-icon.png"))));
+        } else {
+            btnFlat.setText("Mở ô");
+            btnFlat.getStyleClass().add("btn-flat-normal");
+            icon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/bomb-icon.png"))));
+        }
+    }
+
+    private void playExplosionSound() {
+        try {
+            URL soundUrl = getClass().getResource("/sound/explosion.mp3");
+            if (soundUrl != null) {
+                AudioClip explosionSound = new AudioClip(soundUrl.toExternalForm());
+                explosionSound.play();
+            } else {
+                System.err.println("Lỗi: Không tìm thấy file âm thanh tại /sound/explosion.mp3");
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi phát âm thanh: " + ex.getMessage());
+        }
+    }
+    private void showGameOver(String message, String hexColor) {
+        stopTimer();
+        lblOverlay.setText(message);
+        lblOverlay.setStyle("-fx-text-fill: " + hexColor + "; -fx-font-size: 40; -fx-font-weight: bold;");
+        pauseOverlay.setVisible(true);
+    }
+
+    @FXML
+    public void restartGame(ActionEvent actionEvent) {
+        Difficulty currentDiff = Difficulty.EASY; // Mặc định là Dễ
+        if (btnMedium.isSelected()) {
+            currentDiff = Difficulty.MEDIUM;
+        } else if (btnHard.isSelected()) {
+            currentDiff = Difficulty.HARD;
+        }
+
+        if (isFlagMode) {
+            isFlagMode = false;
+            btnFlat.setText("Mở ô");
+            btnFlat.getStyleClass().removeAll("btn-flat-normal", "btn-flat-flag-active");
+            btnFlat.getStyleClass().add("btn-flat-normal");
+
+            ImageView icon = (ImageView) btnFlat.getGraphic();
+            if (icon != null) {
+                icon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/bomb-icon.png"))));
+            }
+        }
+
+        startGame(currentDiff);
     }
 }
