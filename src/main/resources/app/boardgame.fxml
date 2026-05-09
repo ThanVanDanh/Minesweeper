@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane styleClass="root-bg" stylesheets="@../css/styles.css, @../css/boardgame.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="minesweeper.controller.BoardGameController">
+<BorderPane styleClass="root-bg" stylesheets="@../css/styles.css, @../css/boardgame.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="minesweeper.controller.BoardGameController">
     <top>
         <fx:include source="header.fxml" />
     </top>
@@ -25,7 +25,7 @@
 
                 <BorderPane>
                     <left>
-                        <Button onAction="#backToDashboard" styleClass="outline-button" text="&lt; Về Dashboard" />
+                        <Button onAction="#backToDashboard" styleClass="outline-button" text="Trở về" />
                     </left>
                     <right>
                         <HBox alignment="CENTER">
@@ -40,16 +40,19 @@
                     <BorderPane style="-fx-background-color: rgba(2, 13, 24, 0.6); -fx-background-radius: 8; -fx-border-color: rgba(45, 212, 240, 0.1); -fx-border-radius: 8;">
                         <padding><Insets bottom="15.0" left="20.0" right="20.0" top="15.0" /></padding>
                         <left><Label fx:id="lblFlags" prefHeight="26.0" prefWidth="77.0" style="-fx-text-fill: #ff4a69; -fx-font-size: 20; -fx-font-weight: bold;" text="🚩 010" BorderPane.alignment="CENTER" /></left>
-                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="94.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
+                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="105.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
                   <center>
-                     <JFXButton ellipsisString="" onAction="#btn" prefHeight="42.0" prefWidth="27.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0; -fx-background-color: #ffffff;" BorderPane.alignment="CENTER">
+                     <JFXButton fx:id="btnFlat" ellipsisString="" onAction="#btnFlat" prefHeight="39.0" prefWidth="123.0" style="-fx-border-color: #2dd4f0;" text="Mở ô" textFill="WHITE" BorderPane.alignment="CENTER">
                         <graphic>
-                           <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                           <ImageView fitHeight="28.0" fitWidth="181.0" pickOnBounds="true" preserveRatio="true">
                               <image>
                                  <Image url="@../img/bomb-icon.png" />
                               </image>
                            </ImageView>
                         </graphic>
+                        <font>
+                           <Font name="System Bold" size="13.0" />
+                        </font>
                      </JFXButton>
                   </center>
                     </BorderPane>
@@ -59,12 +62,12 @@
                             <GridPane fx:id="minesweeperGrid" alignment="CENTER" hgap="2" styleClass="game-grid" vgap="2" />
                         </HBox>
                         <VBox fx:id="pauseOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.7);" visible="false">
-                            <Label text="TẠM DỪNG" style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblOverlay" style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;" text="TẠM DỪNG" />
                         </VBox>
                     </StackPane>
 
                     <HBox alignment="CENTER" spacing="30">
-                  <JFXButton prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Chơi lại" textFill="#2dd4f0">
+                  <JFXButton fx:id="restartGame" onAction="#restartGame" prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Chơi lại" textFill="#2dd4f0">
                      <graphic>
                         <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
                            <image>
