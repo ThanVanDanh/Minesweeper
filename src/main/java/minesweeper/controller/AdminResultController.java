@@ -54,7 +54,14 @@ public class AdminResultController {
     @FXML
     public void initialize() {
         resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        cbDifficulty.setItems(FXCollections.observableArrayList("Tất cả", "Easy", "Medium", "Hard"));
+        cbDifficulty.setItems(FXCollections.observableArrayList(
+                "Tất cả",
+                Difficulty.EASY.getLabel(),
+                Difficulty.MEDIUM.getLabel(),
+                Difficulty.HARD.getLabel(),
+                Difficulty.EXPERT.getLabel(),
+                Difficulty.CUSTOM.getLabel()
+        ));
         cbDifficulty.getSelectionModel().selectFirst();
 
         cbResult.setItems(FXCollections.observableArrayList("Tất cả",  "Thắng", "Thua"));

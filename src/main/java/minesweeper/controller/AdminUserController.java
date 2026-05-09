@@ -67,26 +67,22 @@ public class AdminUserController {
         cbStatusFilter.getSelectionModel().selectFirst();
 
         userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        // Chỉ cho chọn 1 dòng — checkbox dùng để highlight rõ dòng đang chọn
         userTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         setupColumns();
         loadUsers();
     }
 
     private void setupColumns() {
-        // Cột checkbox — radio-style: chỉ 1 dòng được tick tại 1 thời điểm
         colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
         colSelect.setCellFactory(col -> new TableCell<>() {
             private final CheckBox checkBox = new CheckBox();
             {
-                // Khi click checkbox thì select dòng đó (bỏ chọn dòng cũ tự động vì SINGLE mode)
                 checkBox.setOnAction(e -> {
                     if (checkBox.isSelected()) {
                         userTable.getSelectionModel().select(getIndex());
                     } else {
                         userTable.getSelectionModel().clearSelection();
                     }
-                    // Refresh toàn bảng để cập nhật trạng thái checkbox các dòng khác
                     userTable.refresh();
                 });
             }
@@ -97,9 +93,7 @@ public class AdminUserController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    checkBox.setSelected(
-                            userTable.getSelectionModel().getSelectedIndex() == getIndex()
-                    );
+                    checkBox.setSelected(userTable.getSelectionModel().getSelectedIndex() == getIndex());
                     setGraphic(checkBox);
                 }
             }
@@ -114,8 +108,6 @@ public class AdminUserController {
         colStatus.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().isActive() ? "Hoạt động" : "Đã khoá"));
     }
-
-    // ── Load ─────────────────────────────────────────────────────────────────
 
     private void loadUsers() {
         try {
@@ -149,7 +141,6 @@ public class AdminUserController {
         return Math.max(1, (int) Math.ceil((double) size / PAGE_SIZE));
     }
 
-    // ── Stats ─────────────────────────────────────────────────────────────────
 
     private void updateStats(List<User> users) {
         int total = users.size(), active = 0, locked = 0, admin = 0;
@@ -163,7 +154,6 @@ public class AdminUserController {
         adminCountLabel.setText(String.valueOf(admin));
     }
 
-    // ── Search / Filter ───────────────────────────────────────────────────────
 
     @FXML
     public void onSearch() {
@@ -207,7 +197,6 @@ public class AdminUserController {
         loadUsers();
     }
 
-    // ── Pagination ────────────────────────────────────────────────────────────
 
     @FXML
     public void onPrevPage() {
@@ -219,7 +208,6 @@ public class AdminUserController {
         if (currentPage < totalPages - 1) { currentPage++; showPage(); }
     }
 
-    // ── Add ───────────────────────────────────────────────────────────────────
 
     @FXML
     public void onAddUser() {
@@ -227,7 +215,7 @@ public class AdminUserController {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(u -> {
             try {
-                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole());
+                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), u.getPassword());
                 u.setId((int) id);
                 allUsers.add(u);
                 if (isFiltering) filtered.add(u);
@@ -240,8 +228,6 @@ public class AdminUserController {
             }
         });
     }
-
-    // ── Edit ──────────────────────────────────────────────────────────────────
 
     @FXML
     public void onEditUser() {
@@ -267,7 +253,6 @@ public class AdminUserController {
         });
     }
 
-    // ── Lock / Unlock ─────────────────────────────────────────────────────────
 
     @FXML
     public void onLockUser() {
@@ -286,7 +271,6 @@ public class AdminUserController {
         }
     }
 
-    // ── Delete ────────────────────────────────────────────────────────────────
 
     @FXML
     public void onDeleteUser() {
@@ -314,7 +298,6 @@ public class AdminUserController {
         }
     }
 
-    // ── Dialog helper ─────────────────────────────────────────────────────────
 
     private Dialog<User> buildUserDialog(User existing) {
         boolean isEdit = existing != null;
@@ -335,9 +318,12 @@ public class AdminUserController {
         TextField      tfDisplayName = new TextField(isEdit && existing.getDisplayName() != null
                 ? existing.getDisplayName() : "");
         ComboBox<Role> cbRole        = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
+        TextField tfPassword = new TextField(isEdit ? "" : "123456");
+        if (isEdit) tfPassword.setDisable(true);
 
         tfUsername.setPromptText("username");
         tfDisplayName.setPromptText("Tên hiển thị (nickname)");
+        tfPassword.setPromptText("Mật khẩu (mặc định: 123456)");
         cbRole.getSelectionModel().select(
                 isEdit && existing.getRole() != null ? existing.getRole() : Role.PLAYER);
 
@@ -350,6 +336,7 @@ public class AdminUserController {
         int row = 0;
         grid.add(new Label("Username:"),     0, row); grid.add(tfUsername,    1, row++);
         grid.add(new Label("Nickname:"),     0, row); grid.add(tfDisplayName, 1, row++);
+        grid.add(new Label("Mật khẩu:"), 0, row); grid.add(tfPassword, 1, row++);
         grid.add(new Label("Vai trò:"),      0, row); grid.add(cbRole,        1, row++);
 
         dialog.getDialogPane().setContent(grid);
@@ -369,6 +356,7 @@ public class AdminUserController {
                         ? tfUsername.getText().trim()
                         : tfDisplayName.getText().trim());
                 u.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
+                if (!isEdit) u.setPassword(tfPassword.getText().trim());
                 u.setActive(true);
                 return u;
             }
@@ -377,8 +365,6 @@ public class AdminUserController {
 
         return dialog;
     }
-
-    // ── Alert helpers ─────────────────────────────────────────────────────────
 
     private void showInfo(String message) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
