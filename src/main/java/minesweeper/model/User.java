@@ -3,7 +3,7 @@ package minesweeper.model;
 import java.time.LocalDateTime;
 
 public class User {
-    private int id;
+    private long id;
     private String username;
     private String passwordHash; // BCrypt hash
     private String displayName;
@@ -28,7 +28,7 @@ public class User {
     }
 
     // ── Getters ────────────────────────────────────────
-    public int getId() { return id; }
+    public long getId() { return id; }
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
     public String getDisplayName() { return displayName; }
@@ -37,9 +37,10 @@ public class User {
     public boolean isActive() { return isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public String getPassword(){return passwordHash;}
 
     // ── Setters ────────────────────────────────────────
-    public void setId(int id) { this.id = id; }
+    public void setId(long id) { this.id = id; }
     public void setUsername(String username) { this.username = username; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
@@ -48,6 +49,7 @@ public class User {
     public void setActive(boolean active) { isActive = active; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public void setPassword(String password){this.passwordHash = password;}
 }
 
 
