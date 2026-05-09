@@ -7,7 +7,7 @@ import java.util.Properties;
 
 public final class MySqlConnectionConfig {
     private static final String RESOURCE_NAME = "/mysql.properties";
-    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/minesweeper?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true";
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/minesweeper_db?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true";
     private static final String DEFAULT_USER = "root";
     private static final String DEFAULT_PASSWORD = "";
 

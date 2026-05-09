@@ -18,8 +18,8 @@ class RankingControllerTest {
             @Override
             public List<RankingDTO> getLeaderboardByLevel(int levelId) {
                 return Arrays.asList(
-                        new RankingDTO(0, "  Alice  ", 5, 4, 2500, 45000),
-                        new RankingDTO(0, null, 3, 1, 1200, -1)
+                        new RankingDTO(1, "  Alice  ", 5, 4, 2500, 45000),
+                        new RankingDTO(2, null, 3, 1, 1200, -1)
                 );
             }
 
