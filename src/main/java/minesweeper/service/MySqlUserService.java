@@ -29,14 +29,17 @@ public class MySqlUserService implements UserService {
     private static final String SELECT_USER_BY_ID_SQL = "SELECT id, username, display_name FROM users WHERE id = ? LIMIT 1";
     private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT id, username, display_name FROM users WHERE username = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
-    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role) VALUES (?, ?, ?)";
-    private static final String SELECT_ALL_SQL =
-            "SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
+    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role, password_hash) VALUES (?, ?, ?, ?)";
+    private static final String SELECT_ALL_SQL ="SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
 
     private static final String UPDATE_DISPLAY_NAME_SQL = "UPDATE users SET display_name = ? WHERE id = ?";
     private static final String UPDATE_ACTIVE_SQL = "UPDATE users SET is_active = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM users WHERE id = ?";
+    private static final String DELETE_GAME_SESSIONS_BY_USER_SQL = "DELETE FROM game_sessions WHERE user_id = ?";
     private static final String UPDATE_ROLE_SQL = "UPDATE users SET role = ? WHERE id = ?";
+
+    private static final String SELECT_USER_BY_ID_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE id = ? LIMIT 1";
+    private static final String SELECT_USER_BY_USERNAME_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE username = ? LIMIT 1";
 
     private final ConnectionFactory connectionFactory;
 
@@ -159,7 +162,7 @@ public class MySqlUserService implements UserService {
     }
 
     @Override
-    public long createUserFull(String username, String displayName, Role role) throws DataAccessException {
+    public long createUserFull(String username, String displayName, Role role, String password) throws DataAccessException {
         validateUsername(username);
 
         String trimmedUsername = username.trim();
@@ -171,6 +174,7 @@ public class MySqlUserService implements UserService {
             ps.setString(1, trimmedUsername);
             ps.setString(2, trimmedDisplayName);
             ps.setString(3, roleStr);
+            ps.setString(4, password != null ? password : "123456");
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -241,12 +245,27 @@ public class MySqlUserService implements UserService {
 
     @Override
     public void deleteUser(long userId) throws DataAccessException {
-        try (Connection conn = connectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(DELETE_SQL)) {
-            ps.setLong(1, userId);
-            int rows = ps.executeUpdate();
-            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
-            LOG.info("Deleted user id={}", userId);
+        try (Connection conn = connectionFactory.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps1 = conn.prepareStatement(DELETE_GAME_SESSIONS_BY_USER_SQL)) {
+                    ps1.setLong(1, userId);
+                    ps1.executeUpdate();
+                }
+                try (PreparedStatement ps2 = conn.prepareStatement(DELETE_SQL)) {
+                    ps2.setLong(1, userId);
+                    int rows = ps2.executeUpdate();
+                    if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+                }
+                conn.commit();
+                LOG.info("Deleted user id={} and their game sessions", userId);
+            } catch (SQLException | DataAccessException e) {
+                conn.rollback();
+                throw (e instanceof DataAccessException de) ? de
+                        : new DataAccessException("Failed to delete user", e);
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             LOG.error("Error deleting user id={}", userId, e);
             throw new DataAccessException("Failed to delete user", e);
@@ -259,7 +278,7 @@ public class MySqlUserService implements UserService {
 
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_ROLE_SQL)) {
-            ps.setString(1, newRole.name()); // Lưu tên Enum (ADMIN/PLAYER)
+            ps.setString(1, newRole.name());
             ps.setLong(2, userId);
 
             int rows = ps.executeUpdate();
