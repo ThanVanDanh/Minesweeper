@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="settingsRoot"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="minesweeper.controller.SettingsController"
+            stylesheets="@../css/styles.css,@../css/settings.css"
+            styleClass="settings-root">
+
+    <top>
+        <fx:include source="header.fxml"/>
+    </top>
+
+    <center>
+        <StackPane alignment="TOP_LEFT" styleClass="main-background">
+
+            <ScrollPane fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        vbarPolicy="AS_NEEDED"
+                        styleClass="page-scroll">
+
+                <VBox spacing="30" styleClass="content-shell">
+
+                    <!-- TITLE -->
+                    <VBox spacing="3">
+                        <Label text="CÀI ĐẶT HỆ THỐNG" styleClass="page-title"/>
+                        <Label text="// Tùy chỉnh trải nghiệm của bạn" styleClass="page-subtitle"/>
+                    </VBox>
+
+                    <!-- BODY -->
+                    <HBox spacing="30" styleClass="settings-body">
+
+                        <!-- SIDEBAR -->
+                        <VBox spacing="14"
+                              minWidth="330"
+                              prefWidth="330"
+                              maxWidth="330"
+                              styleClass="settings-sidebar">
+
+                            <Button fx:id="visualSoundTab"
+                                    text="🔊  Hình ảnh &amp; Âm thanh                    ›"
+                                    onAction="#showVisualSound"
+                                    maxWidth="Infinity"
+                                    styleClass="setting-tab"/>
+
+                            <Button fx:id="gameplayTab"
+                                    text="🎮  Gameplay                                 ..."
+                                    onAction="#showGameplay"
+                                    maxWidth="Infinity"
+                                    styleClass="setting-tab"/>
+
+                            <Button fx:id="controlTab"
+                                    text="⌨  Điều khiển                               ..."
+                                    onAction="#showControl"
+                                    maxWidth="Infinity"
+                                    styleClass="setting-tab"/>
+
+                            <Button fx:id="accountTab"
+                                    text="♟  Quản lý tài khoản                    ..."
+                                    onAction="#showAccount"
+                                    maxWidth="Infinity"
+                                    styleClass="setting-tab"/>
+
+                        </VBox>
+
+                        <!-- CONTENT RIGHT -->
+                        <StackPane HBox.hgrow="ALWAYS" styleClass="setting-content-stack">
+
+                            <!-- HÌNH ẢNH + ÂM THANH -->
+                            <VBox fx:id="visualSoundPane"
+                                  spacing="26"
+                                  maxWidth="Infinity"
+                                  styleClass="setting-card">
+
+                                <VBox spacing="6">
+                                    <Label text="🔊 CÀI ĐẶT HÌNH ẢNH &amp; ÂM THANH" styleClass="section-title"/>
+                                    <Label text="Gộp tùy chỉnh giao diện, hiệu ứng và âm thanh" styleClass="section-desc"/>
+                                </VBox>
+
+                                <Separator styleClass="cyber-separator"/>
+
+                                <HBox spacing="44">
+
+                                    <!-- HIỂN THỊ -->
+                                    <VBox spacing="22" HBox.hgrow="ALWAYS">
+
+                                        <Label text="HIỂN THỊ" styleClass="group-title"/>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Độ phân giải" styleClass="setting-label"/>
+                                                <Label text="Kích thước hiển thị trò chơi" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ComboBox fx:id="resolutionCombo"
+                                                      prefWidth="240"
+                                                      styleClass="cyber-combo"/>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Chủ đề giao diện" styleClass="setting-label"/>
+                                                <Label text="DarkTech, Neon, Classic" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ComboBox fx:id="themeCombo"
+                                                      prefWidth="240"
+                                                      styleClass="cyber-combo"/>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Hiệu ứng lưới nền" styleClass="setting-label"/>
+                                                <Label text="Bật/tắt nền grid cyber" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ToggleButton fx:id="gridEffectToggle"
+                                                          selected="true"
+                                                          styleClass="cyber-toggle"/>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Hiệu ứng particle" styleClass="setting-label"/>
+                                                <Label text="Sparkle, glow khi thao tác" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ToggleButton fx:id="particleToggle"
+                                                          selected="true"
+                                                          styleClass="cyber-toggle"/>
+                                        </HBox>
+
+                                        <VBox spacing="9">
+                                            <HBox alignment="CENTER_LEFT">
+                                                <Label text="Độ sáng giao diện" styleClass="setting-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="brightnessValue" text="80%" styleClass="percent-label"/>
+                                            </HBox>
+
+                                            <Slider fx:id="brightnessSlider"
+                                                    min="0"
+                                                    max="100"
+                                                    value="80"
+                                                    styleClass="cyber-slider"/>
+                                        </VBox>
+
+                                    </VBox>
+
+                                    <VBox styleClass="vertical-divider"/>
+
+                                    <!-- ÂM THANH -->
+                                    <VBox spacing="22" HBox.hgrow="ALWAYS">
+
+                                        <Label text="ÂM THANH" styleClass="group-title"/>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Bật/Tắt âm thanh" styleClass="setting-label"/>
+                                                <Label text="Master switch cho tất cả âm thanh" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ToggleButton fx:id="soundToggle"
+                                                          selected="true"
+                                                          styleClass="cyber-toggle"/>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Nhạc nền" styleClass="setting-label"/>
+                                                <Label text="Nhạc techno ambient trong khi chơi" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ToggleButton fx:id="musicToggle"
+                                                          selected="true"
+                                                          styleClass="cyber-toggle"/>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="20">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Thông báo" styleClass="setting-label"/>
+                                                <Label text="Âm thanh thông báo hệ thống" styleClass="setting-note"/>
+                                            </VBox>
+
+                                            <ToggleButton fx:id="notificationToggle"
+                                                          selected="true"
+                                                          styleClass="cyber-toggle"/>
+                                        </HBox>
+
+                                        <VBox spacing="9">
+                                            <HBox alignment="CENTER_LEFT">
+                                                <Label text="Âm lượng chính" styleClass="setting-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="mainVolumeValue" text="70%" styleClass="percent-label"/>
+                                            </HBox>
+
+                                            <Slider fx:id="mainVolumeSlider"
+                                                    min="0"
+                                                    max="100"
+                                                    value="70"
+                                                    styleClass="cyber-slider"/>
+                                        </VBox>
+
+                                        <VBox spacing="9">
+                                            <HBox alignment="CENTER_LEFT">
+                                                <Label text="Hiệu ứng âm thanh" styleClass="setting-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="sfxVolumeValue" text="85%" styleClass="percent-label"/>
+                                            </HBox>
+
+                                            <Slider fx:id="sfxVolumeSlider"
+                                                    min="0"
+                                                    max="100"
+                                                    value="85"
+                                                    styleClass="cyber-slider"/>
+                                        </VBox>
+
+                                        <VBox spacing="9">
+                                            <HBox alignment="CENTER_LEFT">
+                                                <Label text="Nhạc nền" styleClass="setting-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="musicVolumeValue" text="40%" styleClass="percent-label"/>
+                                            </HBox>
+
+                                            <Slider fx:id="musicVolumeSlider"
+                                                    min="0"
+                                                    max="100"
+                                                    value="40"
+                                                    styleClass="cyber-slider"/>
+                                        </VBox>
+
+                                    </VBox>
+
+                                </HBox>
+
+                                <VBox spacing="12" styleClass="preview-box">
+                                    <Label text="PREVIEW ÂM THANH" styleClass="preview-title"/>
+
+                                    <HBox spacing="12">
+                                        <Button text="▶ Mở Ô" styleClass="preview-button"/>
+                                        <Button text="▶ Cắm Cờ" styleClass="preview-button"/>
+                                        <Button text="▶ Nổ Mìn" styleClass="preview-button"/>
+                                        <Button text="▶ Chiến Thắng" styleClass="preview-button"/>
+                                    </HBox>
+                                </VBox>
+
+                                <HBox spacing="18">
+                                    <Button text="▣ LƯU CÀI ĐẶT"
+                                            onAction="#saveSettings"
+                                            styleClass="save-button"/>
+
+                                    <Button text="↺ ĐẶT LẠI MẶC ĐỊNH"
+                                            onAction="#resetSettings"
+                                            styleClass="reset-button"/>
+                                </HBox>
+
+                            </VBox>
+
+                            <!-- GAMEPLAY -->
+                            <VBox fx:id="gameplayPane"
+                                  spacing="26"
+                                  visible="false"
+                                  managed="false"
+                                  maxWidth="Infinity"
+                                  styleClass="setting-card">
+
+                                <VBox spacing="6">
+                                    <Label text="🎮 GAMEPLAY" styleClass="section-title"/>
+                                    <Label text="Tùy chỉnh luật chơi và hỗ trợ trong trận" styleClass="section-desc"/>
+                                </VBox>
+
+                                <Separator styleClass="cyber-separator"/>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Độ khó mặc định" styleClass="setting-label"/>
+                                        <Label text="Áp dụng khi bắt đầu trận mới" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ComboBox fx:id="difficultyCombo"
+                                              prefWidth="300"
+                                              styleClass="cyber-combo"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="First click an toàn" styleClass="setting-label"/>
+                                        <Label text="Lần mở ô đầu tiên chắc chắn không nổ mìn" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ToggleButton fx:id="safeFirstClickToggle"
+                                                  selected="true"
+                                                  styleClass="cyber-toggle"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Tự đánh dấu ô chắc chắn" styleClass="setting-label"/>
+                                        <Label text="Hỗ trợ đánh dấu ô nguy hiểm rõ ràng" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ToggleButton fx:id="autoFlagToggle"
+                                                  styleClass="cyber-toggle"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Cho phép dấu hỏi" styleClass="setting-label"/>
+                                        <Label text="Chuột phải lần 2 chuyển cờ sang dấu hỏi" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ToggleButton fx:id="questionMarkToggle"
+                                                  selected="true"
+                                                  styleClass="cyber-toggle"/>
+                                </HBox>
+
+                                <HBox spacing="18">
+                                    <Button text="▣ LƯU GAMEPLAY"
+                                            onAction="#saveSettings"
+                                            styleClass="save-button"/>
+
+                                    <Button text="↺ RESET GAMEPLAY"
+                                            onAction="#resetSettings"
+                                            styleClass="reset-button"/>
+                                </HBox>
+
+                            </VBox>
+
+                            <!-- ĐIỀU KHIỂN -->
+                            <VBox fx:id="controlPane"
+                                  spacing="26"
+                                  visible="false"
+                                  managed="false"
+                                  maxWidth="Infinity"
+                                  styleClass="setting-card">
+
+                                <VBox spacing="6">
+                                    <Label text="⌨ ĐIỀU KHIỂN" styleClass="section-title"/>
+                                    <Label text="Cấu hình chuột, bàn phím và tốc độ thao tác" styleClass="section-desc"/>
+                                </VBox>
+
+                                <Separator styleClass="cyber-separator"/>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Kiểu thao tác chuột" styleClass="setting-label"/>
+                                        <Label text="Chọn cách mở ô và cắm cờ" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ComboBox fx:id="clickModeCombo"
+                                              prefWidth="360"
+                                              styleClass="cyber-combo"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Double click mở nhanh" styleClass="setting-label"/>
+                                        <Label text="Mở các ô xung quanh khi đủ số cờ" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ToggleButton fx:id="doubleClickToggle"
+                                                  selected="true"
+                                                  styleClass="cyber-toggle"/>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="20">
+                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                        <Label text="Phím tắt nhanh" styleClass="setting-label"/>
+                                        <Label text="R: chơi lại, F: cắm cờ, Space: mở ô" styleClass="setting-note"/>
+                                    </VBox>
+
+                                    <ToggleButton fx:id="shortcutToggle"
+                                                  selected="true"
+                                                  styleClass="cyber-toggle"/>
+                                </HBox>
+
+                                <VBox spacing="9">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <Label text="Độ nhạy thao tác" styleClass="setting-label"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="sensitivityValue" text="60%" styleClass="percent-label"/>
+                                    </HBox>
+
+                                    <Slider fx:id="sensitivitySlider"
+                                            min="0"
+                                            max="100"
+                                            value="60"
+                                            styleClass="cyber-slider"/>
+                                </VBox>
+
+                                <HBox spacing="18">
+                                    <Button text="▣ LƯU ĐIỀU KHIỂN"
+                                            onAction="#saveSettings"
+                                            styleClass="save-button"/>
+
+                                    <Button text="↺ RESET ĐIỀU KHIỂN"
+                                            onAction="#resetSettings"
+                                            styleClass="reset-button"/>
+                                </HBox>
+
+                            </VBox>
+
+                            <!-- QUẢN LÝ TÀI KHOẢN -->
+                            <VBox fx:id="accountPane"
+                                  spacing="26"
+                                  visible="false"
+                                  managed="false"
+                                  maxWidth="Infinity"
+                                  styleClass="setting-card">
+
+                                <VBox spacing="6">
+                                    <Label text="♟ QUẢN LÝ TÀI KHOẢN" styleClass="section-title"/>
+                                    <Label text="Thay đổi tên người chơi và mật khẩu" styleClass="section-desc"/>
+                                </VBox>
+
+                                <Separator styleClass="cyber-separator"/>
+
+                                <HBox spacing="44">
+
+                                    <!-- PLAYER INFO -->
+                                    <VBox spacing="20" HBox.hgrow="ALWAYS">
+
+                                        <Label text="THÔNG TIN NGƯỜI CHƠI" styleClass="group-title"/>
+
+                                        <VBox spacing="8">
+                                            <Label text="Tên người chơi" styleClass="input-label"/>
+                                            <TextField fx:id="playerNameField"
+                                                       text="NightSapper"
+                                                       promptText="Nhập tên người chơi mới"
+                                                       styleClass="cyber-input"/>
+                                        </VBox>
+
+                                        <VBox spacing="8">
+                                            <Label text="Email tài khoản" styleClass="input-label"/>
+                                            <TextField fx:id="emailField"
+                                                       text="player@minesweeper.grid"
+                                                       editable="false"
+                                                       styleClass="cyber-input-disabled"/>
+                                        </VBox>
+
+                                        <Button text="CẬP NHẬT TÊN NGƯỜI CHƠI"
+                                                onAction="#updatePlayerName"
+                                                styleClass="save-button"/>
+
+                                    </VBox>
+
+                                    <VBox styleClass="vertical-divider"/>
+
+                                    <!-- PASSWORD -->
+                                    <VBox spacing="20" HBox.hgrow="ALWAYS">
+
+                                        <Label text="ĐỔI MẬT KHẨU" styleClass="group-title"/>
+
+                                        <VBox spacing="8">
+                                            <Label text="Mật khẩu hiện tại" styleClass="input-label"/>
+                                            <PasswordField fx:id="currentPasswordField"
+                                                           promptText="••••••••"
+                                                           styleClass="cyber-input"/>
+                                        </VBox>
+
+                                        <VBox spacing="8">
+                                            <Label text="Mật khẩu mới" styleClass="input-label"/>
+                                            <PasswordField fx:id="newPasswordField"
+                                                           promptText="••••••••"
+                                                           styleClass="cyber-input"/>
+                                        </VBox>
+
+                                        <VBox spacing="8">
+                                            <Label text="Xác nhận mật khẩu mới" styleClass="input-label"/>
+                                            <PasswordField fx:id="confirmPasswordField"
+                                                           promptText="••••••••"
+                                                           styleClass="cyber-input"/>
+                                        </VBox>
+
+                                        <Button text="ĐỔI MẬT KHẨU"
+                                                onAction="#changePassword"
+                                                styleClass="save-button"/>
+
+                                    </VBox>
+
+                                </HBox>
+
+                                <VBox spacing="10" styleClass="account-box">
+                                    <Label text="KHU VỰC TÀI KHOẢN" styleClass="danger-title"/>
+                                    <Label text="Các thay đổi tài khoản sẽ được áp dụng sau khi xác nhận thành công."
+                                           styleClass="setting-note"/>
+
+                                    <HBox spacing="14">
+                                        <Button text="ĐĂNG XUẤT" styleClass="danger-button"/>
+                                        <Button text="HỦY THAY ĐỔI"
+                                                onAction="#resetSettings"
+                                                styleClass="reset-button"/>
+                                    </HBox>
+                                </VBox>
+
+                                <Label fx:id="accountMessageLabel"
+                                       text=""
+                                       styleClass="message-label"/>
+
+                            </VBox>
+
+                        </StackPane>
+
+                    </HBox>
+
+                </VBox>
+
+            </ScrollPane>
+
+        </StackPane>
+    </center>
+
+</BorderPane>
+
