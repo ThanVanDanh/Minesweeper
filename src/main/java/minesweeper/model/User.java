@@ -37,6 +37,7 @@ public class User {
     public boolean isActive() { return isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public String getPassword(){return passwordHash;}
 
     // ── Setters ────────────────────────────────────────
     public void setId(long id) { this.id = id; }
@@ -48,6 +49,7 @@ public class User {
     public void setActive(boolean active) { isActive = active; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public void setPassword(String password){this.passwordHash = password;}
 }
 
 
