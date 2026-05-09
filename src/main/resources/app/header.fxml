@@ -32,8 +32,8 @@
 
         <HBox alignment="CENTER" spacing="6" styleClass="nav-menu">
             <Button text="▦ Dashboard" styleClass="nav-button"/>
-            <Button text="▷ Chơi" styleClass="nav-button"/>
-            <Button text="🏆 Bảng Xếp Hạng" styleClass="nav-button"/>
+<!--            <Button text="▷ Chơi" styleClass="nav-button"/>-->
+<!--            <Button text="🏆 Bảng Xếp Hạng" styleClass="nav-button"/>-->
             <Button text="↺ Lịch Sử" styleClass="nav-button"/>
             <Button text="⚙ Cài đặt" onAction="#openSettingsPage" styleClass="nav-button"/>
             <Button text="👤 Quản lý User" onAction="#openAdminUser" styleClass="nav-button"/>
