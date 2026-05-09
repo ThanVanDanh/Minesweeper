@@ -39,10 +39,12 @@ public class DashBoardController {
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
         expertButton.setToggleGroup(difficultyGroup);
-        customButton.setToggleGroup(difficultyGroup);
+//        customButton.setToggleGroup(difficultyGroup);
 
-        mediumButton.setSelected(true);
-        updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
+        easyButton.setSelected(true);
+        updateSelectedMode("DỄ", "9×9 | 10 Min");
+//        mediumButton.setSelected(true);
+//        updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
 
         difficultyGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
             if (newToggle == null) {
@@ -54,7 +56,7 @@ public class DashBoardController {
             if (newToggle == mediumButton) updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
             if (newToggle == hardButton) updateSelectedMode("KHÓ", "16×30 | 99 Min");
             if (newToggle == expertButton) updateSelectedMode("CHUYÊN GIA", "20×30 | 145 Min");
-            if (newToggle == customButton) updateSelectedMode("TÙY CHỈNH", "Tự thiết lập");
+//            if (newToggle == customButton) updateSelectedMode("TÙY CHỈNH", "Tự thiết lập");
         });
     }
 
@@ -168,7 +170,6 @@ public class DashBoardController {
         if (mediumButton.isSelected()) return Difficulty.MEDIUM;
         if (hardButton.isSelected()) return Difficulty.HARD;
         if (expertButton.isSelected()) return Difficulty.EXPERT;
-        if (customButton.isSelected()) return Difficulty.CUSTOM;
         return Difficulty.MEDIUM;
     }
 

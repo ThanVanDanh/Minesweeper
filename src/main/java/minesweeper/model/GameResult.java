@@ -51,7 +51,6 @@ public class GameResult implements Serializable {
                 case MEDIUM -> 300;
                 case HARD -> 500;
                 case EXPERT -> 700;
-                case CUSTOM -> 200;
             };
         }
 

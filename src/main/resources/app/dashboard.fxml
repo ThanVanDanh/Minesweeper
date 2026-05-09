@@ -80,9 +80,9 @@
                                     <ToggleButton fx:id="expertButton" text="●  CHUYÊN GIA&#10;     20×30 | 145 Min"
                                                   GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="customButton" text="⚡  TÙY CHỈNH&#10;     Tự thiết lập"
-                                                  GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth="Infinity"
-                                                  styleClass="difficulty-button"/>
+<!--                                    <ToggleButton fx:id="customButton" text="⚡  TÙY CHỈNH&#10;     Tự thiết lập"-->
+<!--                                                  GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth="Infinity"-->
+<!--                                                  styleClass="difficulty-button"/>-->
                                 </GridPane>
 
                                 <Button text="▷ BẮT ĐẦU CHIẾN ĐẤU" onAction="#onStartBattle" maxWidth="Infinity"

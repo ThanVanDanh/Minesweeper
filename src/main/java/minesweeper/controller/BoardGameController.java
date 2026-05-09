@@ -36,9 +36,6 @@ import java.util.UUID;
 
 public class BoardGameController implements Initializable {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(BoardGameController.class);
-    @FXML private ToggleButton btnEasy;
-    @FXML private ToggleButton btnMedium;
-    @FXML private ToggleButton btnHard;
     @FXML private Label lblFlags;
     @FXML private Label lblTime;
     @FXML private GridPane minesweeperGrid;
@@ -61,37 +58,12 @@ public class BoardGameController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         gameLogic = new GameController();
         gameResultRepository = new MySqlGameResultRepository();
-
-        difficultyGroup = new ToggleGroup();
-        btnEasy.setToggleGroup(difficultyGroup);
-        btnMedium.setToggleGroup(difficultyGroup);
-        btnHard.setToggleGroup(difficultyGroup);
-
-        difficultyGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                if (oldVal != null) oldVal.setSelected(true);
-            } else if (newVal == btnEasy) {
-                startGame(Difficulty.EASY);
-            } else if (newVal == btnMedium) {
-                startGame(Difficulty.MEDIUM);
-            } else if (newVal == btnHard) {
-                startGame(Difficulty.HARD);
-            }
-        });
-
         setupTimer();
     }
 
     public void setInitialDifficulty(Difficulty selectedDifficulty) {
         if (selectedDifficulty == null) return;
-
-        if (selectedDifficulty == Difficulty.EASY) {
-            btnEasy.setSelected(true);
-        } else if (selectedDifficulty == Difficulty.MEDIUM) {
-            btnMedium.setSelected(true);
-        } else if (selectedDifficulty == Difficulty.HARD) {
-            btnHard.setSelected(true);
-        }
+        startGame(selectedDifficulty);
     }
 
     private void startGame(Difficulty diff) {
@@ -127,7 +99,7 @@ public class BoardGameController implements Initializable {
 
                 btnCell.setOnAction(e -> {
                     if (gameLogic.isPaused()) return;
-                    if (gameLogic.getGameState() != GameState.PLAYING) return;
+                    if (gameLogic.getGameState() == GameState.LOST || gameLogic.getGameState() == GameState.WON) return;
 
                     if (firstClickAt == null) {
                         firstClickAt = LocalDateTime.now();
@@ -321,7 +293,6 @@ public class BoardGameController implements Initializable {
             boolean isWon = gameLogic.getGameState() == GameState.WON;
             Board board = gameLogic.getBoard();
 
-            // Đếm số ô đã mở từ grid vì Board không có getOpenedCells()
             int openedCells = 0;
             for (int r = 0; r < board.getRows(); r++) {
                 for (int c = 0; c < board.getCols(); c++) {
@@ -354,13 +325,6 @@ public class BoardGameController implements Initializable {
 
     @FXML
     public void restartGame(ActionEvent actionEvent) {
-        Difficulty currentDiff = Difficulty.EASY; // Mặc định là Dễ
-        if (btnMedium.isSelected()) {
-            currentDiff = Difficulty.MEDIUM;
-        } else if (btnHard.isSelected()) {
-            currentDiff = Difficulty.HARD;
-        }
-
         if (isFlagMode) {
             isFlagMode = false;
             btnFlat.setText("Mở ô");
@@ -373,6 +337,8 @@ public class BoardGameController implements Initializable {
             }
         }
 
-        startGame(currentDiff);
+        if (gameLogic != null && gameLogic.getDifficulty() != null) {
+            startGame(gameLogic.getDifficulty());
+        }
     }
 }
