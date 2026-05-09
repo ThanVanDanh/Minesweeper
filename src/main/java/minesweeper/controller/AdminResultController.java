@@ -59,8 +59,7 @@ public class AdminResultController {
                 Difficulty.EASY.getLabel(),
                 Difficulty.MEDIUM.getLabel(),
                 Difficulty.HARD.getLabel(),
-                Difficulty.EXPERT.getLabel(),
-                Difficulty.CUSTOM.getLabel()
+                Difficulty.EXPERT.getLabel()
         ));
         cbDifficulty.getSelectionModel().selectFirst();
 

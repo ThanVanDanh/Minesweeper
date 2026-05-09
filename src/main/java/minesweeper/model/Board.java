@@ -28,6 +28,18 @@ public class Board {
         initGrid();
     }
 
+//    public Board(int rows, int cols, int mines) {
+//        this.rows = rows;
+//        this.cols = cols;
+//        this.totalMines = mines;
+//        this.flagsPlaced = 0;
+//        this.gameState = GameState.IDLE;
+//        this.minesPlaced = false;
+//        this.grid = new Cell[rows][cols];
+//        this.safeCellsRemaining = (this.rows * this.cols) - this.totalMines;
+//        initGrid();
+//    }
+
     public int getRows() {
         return rows;
     }
@@ -183,14 +195,13 @@ public void reveal(int row, int col) {
         }
     }
 
-    public void placeMinesNow() {
-        if (minesPlaced) return;
+    public void placeMines(int safeRow, int safeCol) {
         Random random = new Random();
         int placed = 0;
         while (placed < totalMines) {
             int row = random.nextInt(rows);
             int col = random.nextInt(cols);
-            if (grid[row][col].isMine()) {
+            if ((row == safeRow && col == safeCol) || grid[row][col].isMine()) {
                 continue;
             }
             grid[row][col].setMine(true);

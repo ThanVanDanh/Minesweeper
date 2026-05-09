@@ -4,8 +4,7 @@ public enum Difficulty {
     EASY(9, 9, 10, "Dễ"),
     MEDIUM(16, 16, 40, "Trung Bình"),
     HARD(16, 30, 99, "Khó"),
-    EXPERT(20, 30, 145, "Chuyên Gia"),
-    CUSTOM(10, 10, 10, "Tùy Chỉnh");
+    EXPERT(20, 30, 145, "Chuyên Gia");
 
     private final int rows;
     private final int cols;
