@@ -14,14 +14,16 @@ public class GameResult implements Serializable {
     private long elapsedTimeMs;      // milliseconds
     private int flagsUsed;
     private int minesTotal;
-    private LocalDateTime playedAt;
+    private LocalDateTime playedAt; // Equivalent to ended_at
+    private LocalDateTime startedAt;
+    private LocalDateTime firstClickAt;
     private int score;
     private int openedCells;
 
     public GameResult() {}
 
     public GameResult(String gameId, String playerName, Difficulty difficulty,
-                      boolean isWon, long elapsedTimeMs, int flagsUsed, 
+                      boolean isWon, long elapsedTimeMs, int flagsUsed,
                       int minesTotal, LocalDateTime playedAt) {
         this.gameId = gameId;
         this.playerName = playerName;
@@ -31,6 +33,9 @@ public class GameResult implements Serializable {
         this.flagsUsed = flagsUsed;
         this.minesTotal = minesTotal;
         this.playedAt = playedAt;
+    }
+
+    public void computeScore() {
         this.score = calculateScore();
     }
 
@@ -45,12 +50,11 @@ public class GameResult implements Serializable {
                 case EASY -> 100;
                 case MEDIUM -> 300;
                 case HARD -> 500;
-                default -> 0;
+                case EXPERT -> 700;
+                case CUSTOM -> 200;
             };
         }
 
-        // Time bonus using logarithmic decay (rewards speed with diminishing returns)
-        // Fast games get high bonus, slow games still get some bonus
         long elapsedSeconds = elapsedTimeMs / 1000;
         int timeBonus = calculateTimeBonus(elapsedSeconds);
 
@@ -68,7 +72,7 @@ public class GameResult implements Serializable {
         if (elapsedSeconds <= 0) {
             return 300; // Max bonus for instant completion
         }
-        
+
         // Logarithmic formula: 300 * ln(1 + 600/seconds)
         // This ensures diminishing returns and never hits 0
         double timeBonus = 300.0 * Math.log(1.0 + 600.0 / elapsedSeconds);
@@ -90,8 +94,12 @@ public class GameResult implements Serializable {
         return isWon ? "Thắng" : "Thua";
     }
     public int getOpenedCells() {return openedCells;}
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public LocalDateTime getFirstClickAt() { return firstClickAt; }
 
     // Setter
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+    public void setFirstClickAt(LocalDateTime firstClickAt) { this.firstClickAt = firstClickAt; }
     public void setOpenedCells(int openedCells) { this.openedCells = openedCells; }
     public void setScore(int score) { this.score = score; }
     public String getDifficultyLabel() {
