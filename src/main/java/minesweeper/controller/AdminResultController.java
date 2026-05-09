@@ -140,8 +140,7 @@ public class AdminResultController {
                 String difficultyLabel = game.getDifficultyLabel();
                 boolean matchUsername = game.getPlayerName().toLowerCase().contains(usernameFilter);
                 boolean matchDifficulty = difficultyFilter.equals("Tất cả") ||
-                        (diff != null && diff.name().equalsIgnoreCase(difficultyFilter)) ||
-                        (difficultyLabel != null && difficultyLabel.equalsIgnoreCase(difficultyFilter));
+                        (diff != null && diff.getLabel().equalsIgnoreCase(difficultyFilter));
                 boolean matchResult = resultFilter.equals("Tất cả") ||
                         game.getResult().equalsIgnoreCase(resultFilter);
 
