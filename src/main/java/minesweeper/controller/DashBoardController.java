@@ -189,7 +189,11 @@ public class DashBoardController {
     @FXML
     private void openRankingHistoryPopup() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/ranking-history.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/app/ranking-history.fxml")
+
+            );
+            System.out.println(getClass().getResource("/app/ranking-history.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1100, 720);
