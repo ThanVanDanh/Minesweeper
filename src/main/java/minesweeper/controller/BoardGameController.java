@@ -113,8 +113,7 @@ public class BoardGameController implements Initializable {
 
                 btnCell.setOnAction(e -> {
                     if (gameLogic.isPaused()) return;
-                    if (gameLogic.getGameState() != GameState.PLAYING) return;
-
+                    if (gameLogic.getGameState() == GameState.LOST || gameLogic.getGameState() == GameState.WON) return;
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
 
                     if (currentCell.isRevealed()) {
@@ -127,9 +126,6 @@ public class BoardGameController implements Initializable {
                         }
                     }
 
-                    if (gameLogic.getGameState() == GameState.LOST) {
-                        playExplosionSound();
-                    }
                     if (gameLogic.getGameState() == GameState.LOST) {
                         playExplosionSound();
                         showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
