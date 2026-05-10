@@ -1,5 +1,7 @@
 package minesweeper.model;
 
+import minesweeper.model.enums.Difficulty;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
