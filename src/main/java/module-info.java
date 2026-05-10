@@ -20,4 +20,6 @@ module vn.edu.nlu.fit.app {
     exports minesweeper.dto;
     exports minesweeper.service;
     exports utils;
+    exports minesweeper.model.enums;
+    opens minesweeper.model.enums to javafx.base;
 }
