@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class User {
     private long id;
     private String username;
-    private String passwordHash; // BCrypt hash
+    private String passwordHash; // MD5 hash
     private String displayName;
     private String email;
     private Role role;
@@ -37,7 +37,6 @@ public class User {
     public boolean isActive() { return isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
-    public String getPassword(){return passwordHash;}
 
     // ── Setters ────────────────────────────────────────
     public void setId(long id) { this.id = id; }
@@ -49,7 +48,4 @@ public class User {
     public void setActive(boolean active) { isActive = active; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
-    public void setPassword(String password){this.passwordHash = password;}
 }
-
-
