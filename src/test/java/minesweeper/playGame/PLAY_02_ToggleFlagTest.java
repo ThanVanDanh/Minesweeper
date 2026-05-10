@@ -2,6 +2,7 @@ package minesweeper.playGame;
 
 import minesweeper.model.*;
 import minesweeper.controller.GameController;
+import minesweeper.model.enums.Difficulty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

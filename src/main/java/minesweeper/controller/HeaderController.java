@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import minesweeper.model.Role;
+import minesweeper.model.enums.Role;
 import minesweeper.model.User;
 import minesweeper.service.SessionManager;
 import javafx.stage.StageStyle;
