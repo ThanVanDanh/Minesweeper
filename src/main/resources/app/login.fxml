@@ -56,12 +56,12 @@
 
             <VBox spacing="6">
                 <Label text="TÊN ĐĂNG NHẬP" styleClass="input-label"/>
-                <TextField promptText="pilot@minesweeper.grid" styleClass="auth-input"/>
+                <TextField fx:id="loginUsernameField" promptText="pilot@minesweeper.grid" styleClass="auth-input"/>
             </VBox>
 
             <VBox spacing="6">
                 <Label text="MẬT KHẨU" styleClass="input-label"/>
-                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+                <PasswordField fx:id="loginPasswordField" promptText="••••••••" styleClass="auth-input"/>
             </VBox>
 
             <HBox alignment="CENTER_LEFT" spacing="10">
@@ -70,7 +70,7 @@
                 <Button text="Quên mật khẩu?" styleClass="link-button"/>
             </HBox>
 
-            <Button text="ĐĂNG NHẬP →" styleClass="primary-auth-button"/>
+            <Button text="ĐĂNG NHẬP →" onAction="#handleLogin" styleClass="primary-auth-button"/>
 
             <HBox alignment="CENTER" spacing="6">
                 <Label text="Chưa có tài khoản?" styleClass="muted-text"/>
@@ -83,24 +83,28 @@
         <VBox fx:id="registerForm" spacing="14" visible="false" managed="false">
 
             <VBox spacing="6">
-                <Label text="TÊN NGƯỜI CHƠI" styleClass="input-label"/>
-                <TextField promptText="NightSapper" styleClass="auth-input"/>
+                <Label text="TÊN ĐĂNG NHẬP" styleClass="input-label"/>
+                <TextField fx:id="registerUsernameField" promptText="pilot_neo" styleClass="auth-input"/>
             </VBox>
 
+            <VBox spacing="6">
+                <Label text="TÊN NGƯỜI CHƠI" styleClass="input-label"/>
+                <TextField fx:id="registerDisplayNameField" promptText="NightSapper" styleClass="auth-input"/>
+            </VBox>
 
             <VBox spacing="6">
                 <Label text="MẬT KHẨU" styleClass="input-label"/>
-                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+                <PasswordField fx:id="registerPasswordField" promptText="••••••••" styleClass="auth-input"/>
             </VBox>
 
             <VBox spacing="6">
                 <Label text="XÁC NHẬN MẬT KHẨU" styleClass="input-label"/>
-                <PasswordField promptText="••••••••" styleClass="auth-input"/>
+                <PasswordField fx:id="registerConfirmPasswordField" promptText="••••••••" styleClass="auth-input"/>
             </VBox>
 
             <CheckBox text="Tôi đồng ý với điều khoản chiến thuật" styleClass="auth-check"/>
 
-            <Button text="TẠO TÀI KHOẢN →" styleClass="primary-auth-button"/>
+            <Button text="TẠO TÀI KHOẢN →" onAction="#handleRegister" styleClass="primary-auth-button"/>
 
             <HBox alignment="CENTER" spacing="6">
                 <Label text="Đã có tài khoản?" styleClass="muted-text"/>
