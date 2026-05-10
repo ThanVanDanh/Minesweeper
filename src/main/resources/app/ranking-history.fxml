@@ -13,19 +13,35 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="minesweeper.controller.RankingHistoryController"
-            prefWidth="1100.0" prefHeight="720.0"
-            styleClass="root-bg"
-            stylesheets="@../css/styles.css">
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.Button?>
+<?import java.net.URL?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="minesweeper.controller.RankingHistoryController"
+           styleClass="auth-root">
+
+    <stylesheets>
+        <URL value="@../css/styles.css" />
+        <URL value="@../css/login.css" />
+    </stylesheets>
+
+    <!-- Khối nền rỗng chịu trách nhiệm render bóng đổ (giúp giảm lag) -->
+    <Region styleClass="auth-card" />
+
+    <!-- Khối nội dung nằm đè lên trên, không có effect để tránh giật lag khi scroll/animate -->
+    <BorderPane prefWidth="1100.0" prefHeight="720.0" style="-fx-padding: 28px;">
     <top>
         <VBox spacing="6" styleClass="ranking-header">
             <padding>
                 <Insets top="18" right="24" bottom="12" left="24"/>
             </padding>
-            <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" styleClass="ranking-title" style="-fx-text-fill: white;"/>
-            <Label text="Dữ liệu được lấy trực tiếp từ MySQL" styleClass="ranking-subtitle" style="-fx-text-fill: white;"/>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" styleClass="ranking-title" style="-fx-text-fill: white;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="×" onAction="#closePopup" styleClass="close-button"/>
+            </HBox>
         </VBox>
     </top>
     <center>
@@ -128,4 +144,5 @@
             </tabs>
         </TabPane>
     </center>
-</BorderPane>
+    </BorderPane>
+</StackPane>
