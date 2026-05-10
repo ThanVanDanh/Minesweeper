@@ -123,6 +123,19 @@ public class HeaderController {
     }
 
     @FXML
+    private void openDashboardPage() {
+        if (headerRoot == null || headerRoot.getScene() == null) {
+            return;
+        }
+
+        if (headerRoot.getScene().getRoot().getStyleClass().contains("root-bg")) {
+            return; // Đang ở dashboard rồi thì không load lại
+        }
+
+        swapScene("/app/dashboard.fxml");
+    }
+
+    @FXML
     public void openAdminUser() {
         openAdminWindow("/app/adminUser.fxml", "Quản lý Người dùng – Admin");
     }
@@ -141,6 +154,10 @@ public class HeaderController {
             double currentWidth = stage.getScene().getWidth();
             double currentHeight = stage.getScene().getHeight();
             Scene scene = new Scene(root, currentWidth, currentHeight);
+            String sharedStyles = Objects.requireNonNull(
+                    getClass().getResource("/css/styles.css")
+            ).toExternalForm();
+            scene.getStylesheets().add(sharedStyles);
 
             stage.setScene(scene);
             stage.show();
