@@ -1,6 +1,5 @@
 package minesweeper.controller;
 
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -10,7 +9,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import minesweeper.dto.RankingDTO;
 
 import java.util.List;
-import java.util.Locale;
 
 public class RankingHistoryController {
 
@@ -35,8 +33,6 @@ public class RankingHistoryController {
     @FXML
     private TableColumn<RankingDTO, Integer> colScore;
 
-    @FXML
-    private TableColumn<RankingDTO, String> colWinRate;
 
     private final RankingController rankingController = new RankingController();
 
@@ -44,7 +40,6 @@ public class RankingHistoryController {
     private void initialize() {
         setupRankingTable();
         setupExpertOnlyLevelFilter();
-        loadExpertTop50();
     }
 
     private void setupRankingTable() {
@@ -53,35 +48,40 @@ public class RankingHistoryController {
         colTotalGames.setCellValueFactory(new PropertyValueFactory<>("totalGames"));
         colWins.setCellValueFactory(new PropertyValueFactory<>("wins"));
         colScore.setCellValueFactory(new PropertyValueFactory<>("bestScore"));
-        colWinRate.setCellValueFactory(cellData -> {
-            RankingDTO row = cellData.getValue();
-            double winRate = row.getTotalGames() <= 0 ? 0.0 : (row.getWins() * 100.0 / row.getTotalGames());
-            return new ReadOnlyStringWrapper(String.format(Locale.ROOT, "%.1f%%", winRate));
-        });
     }
 
     private void setupExpertOnlyLevelFilter() {
-        List<RankingController.LevelOption> expertLevels;
+        List<RankingController.LevelOption> allLevels;
         try {
-            expertLevels = rankingController.getAvailableLevels();
+            allLevels = rankingController.getAllLevels();
         } catch (Exception e) {
-            expertLevels = List.of();
+            allLevels = List.of();
         }
 
-        levelCombo.setItems(FXCollections.observableArrayList(expertLevels));
-        levelCombo.setDisable(true);
-        if (!expertLevels.isEmpty()) {
+        levelCombo.setItems(FXCollections.observableArrayList(allLevels));
+        if (!allLevels.isEmpty()) {
             levelCombo.getSelectionModel().selectFirst();
+            // Load ranking khi chọn level
+            levelCombo.setOnAction(event -> loadRankingBySelectedLevel());
+            loadRankingBySelectedLevel();
         }
     }
 
-    private void loadExpertTop50() {
+    private void loadRankingBySelectedLevel() {
+        RankingController.LevelOption selected = levelCombo.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            rankingTable.setItems(FXCollections.observableArrayList());
+            return;
+        }
+
         try {
-            List<RankingDTO> rankings = rankingController.getExpertRankingTop(50);
+            List<RankingDTO> rankings = rankingController.getRankingTop(selected.getId(), 50);
             rankingTable.setItems(FXCollections.observableArrayList(rankings));
+            System.out.println("INFO: Loaded ranking for level " + selected.getDisplayName() + " with " + rankings.size() + " items");
         } catch (Exception e) {
             rankingTable.setItems(FXCollections.observableArrayList());
-            System.err.println("Không thể tải bảng xếp hạng Expert Top 50: " + e.getMessage());
+            System.err.println("❌ FAIL: Không thể tải bảng xếp hạng cho level " + selected.getDisplayName());
+            e.printStackTrace();
         }
     }
 }

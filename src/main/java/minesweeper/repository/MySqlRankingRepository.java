@@ -30,30 +30,18 @@ public class MySqlRankingRepository implements RankingRepository {
 
     private static final String SELECT_LEADERBOARD_BY_LEVEL_SQL = """
             SELECT
-                player_name,
-                total_games,
-                wins,
-                best_score,
-                best_time_ms,
-                DENSE_RANK() OVER (
-                    ORDER BY best_score DESC,
-                             COALESCE(best_time_ms, 999999999) ASC,
-                             wins DESC,
-                             player_name ASC
-                ) AS rank
-            FROM (
-                SELECT
-                    u.username AS player_name,
-                    COUNT(gs.id) AS total_games,
-                    SUM(CASE WHEN UPPER(gs.result) = 'WIN' THEN 1 ELSE 0 END) AS wins,
-                    MAX(gs.score) AS best_score,
-                    MIN(CASE WHEN UPPER(gs.result) = 'WIN' THEN gs.completion_time END) AS best_time_ms
-                FROM game_sessions gs
-                JOIN users u ON u.id = gs.user_id
-                WHERE gs.level_id = ?
-                GROUP BY u.id, u.username
-            ) AS aggregated
-            ORDER BY rank ASC, player_name ASC
+                u.username AS player_name,
+                COUNT(gs.id) AS total_games,
+                SUM(CASE WHEN UPPER(gs.result) = 'WIN' THEN 1 ELSE 0 END) AS wins,
+                MAX(gs.score) AS best_score,
+                MIN(CASE WHEN UPPER(gs.result) = 'WIN' THEN gs.completion_time END) AS best_time_ms
+            FROM game_sessions gs
+            JOIN users u ON u.id = gs.user_id
+            WHERE gs.level_id = ?
+            GROUP BY u.id, u.username
+            ORDER BY best_score DESC, 
+                     COALESCE(best_time_ms, 999999999) ASC,
+                     player_name ASC
             """;
 
 
@@ -98,17 +86,18 @@ public class MySqlRankingRepository implements RankingRepository {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setInt(1, levelId);
                 try (ResultSet rs = statement.executeQuery()) {
+                    int rank = 1 + (pageInfo.getPageNumber() * pageInfo.getPageSize()); // Start rank based on page
                     while (rs.next()) {
-                        // P8 fix: rank is now computed by DENSE_RANK() in SQL
-                        int sqlRank = rs.getInt("rank");
+                        // Calculate rank from row order (SQL is already sorted)
                         rankings.add(new RankingDTO(
-                                sqlRank,
+                                rank,
                                 rs.getString("player_name"),
                                 rs.getInt("total_games"),
                                 rs.getInt("wins"),
                                 rs.getInt("best_score"),
                                 rs.getLong("best_time_ms")
                         ));
+                        rank++;
                     }
                 }
             }
