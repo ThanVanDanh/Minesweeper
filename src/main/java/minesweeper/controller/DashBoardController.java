@@ -60,12 +60,14 @@ public class DashBoardController {
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
         expertButton.setToggleGroup(difficultyGroup);
+//        customButton.setToggleGroup(difficultyGroup);
 
         easyButton.setSelected(true);
         updateSelectedMode("DỄ", "9×9 | 10 Min");
 //        mediumButton.setSelected(true);
 //        updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
 
+        // UC03 - Chọn độ khó
         difficultyGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
             if (newToggle == null) {
                 oldToggle.setSelected(true);
@@ -122,6 +124,7 @@ public class DashBoardController {
             Parent root = loader.load();
 
             BoardGameController controller = loader.getController();
+            // UC04 - Bắt đầu ván mới
 
             // Truyền thông tin user từ session vào controller
             minesweeper.model.User currentUser = minesweeper.service.SessionManager.getCurrentUser();
@@ -223,6 +226,7 @@ public class DashBoardController {
         selectedModeLabel.setText("Đã chọn thử thách hằng ngày: Expert mode");
     }
 
+    // UC03 - Chọn độ khó
     private Difficulty getSelectedDifficulty() {
         if (easyButton.isSelected()) return Difficulty.EASY;
         if (mediumButton.isSelected()) return Difficulty.MEDIUM;
