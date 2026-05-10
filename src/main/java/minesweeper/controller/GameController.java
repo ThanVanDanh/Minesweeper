@@ -13,9 +13,13 @@ public class GameController {
     private Difficulty difficulty;
     private boolean isPaused;
 
+    //UC04 - Bắt đầu ván mới.
     public void startNewGame(Difficulty difficulty) {
+        // UC03 - Chọn độ khó
         this.difficulty = difficulty;
+        // UC04 - Bắt đầu ván mới
         this.board = new Board(difficulty);
+        // UC05/UC06 - Tạm dừng / Tiếp tục ván game
         this.isPaused = false;
         LOG.info("New game started with difficulty: {}", difficulty);
     }
@@ -28,6 +32,7 @@ public class GameController {
         return board;
     }
 
+    //UC03 - Chọn độ khó.
     public Difficulty getDifficulty() {
         return difficulty;
     }
@@ -35,7 +40,7 @@ public class GameController {
     public GameState getGameState() {
         return board == null ? GameState.IDLE : board.getGameState();
     }
-
+    // UC09 - Mở ô
     public void reveal(int row, int col) {
         if (board == null) {
             LOG.warn("Attempted to reveal cell ({}, {}) with no active game", row, col);
@@ -48,7 +53,7 @@ public class GameController {
         board.reveal(row, col);
 
 }
-
+    // UC10 - Cắm cờ / Gỡ cờ.
     public void toggleFlag(int row, int col) {
         if (board == null) {
             LOG.warn("Attempted to toggle flag at ({}, {}) with no active game", row, col);
@@ -58,15 +63,15 @@ public class GameController {
 
         board.toggleFlag(row, col); // UC10
     }
-
+    // UC13 - Mở ô hàng loạt
     public void fastReveal(int row, int col) {
-        if (board != null) board.fastReveal(row, col); // UC13
+        if (board != null) board.fastReveal(row, col);
     }
-
+    // UC05/UC06 - Tạm dừng/ tiếp tục ván game
     public boolean isPaused() {
         return isPaused;
     }
-
+    // UC05/UC06 - Tạm dừng/ tiếp tục ván game
     public void setPaused(boolean paused) {
         isPaused = paused;
     }
