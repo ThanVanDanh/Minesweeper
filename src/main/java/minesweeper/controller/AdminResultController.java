@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import minesweeper.model.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
@@ -236,6 +237,10 @@ public class AdminResultController {
             if (isFiltering) showFilteredPage();
             else loadResults();
         }
+    }
+    @FXML
+    private void closePopup() {
+        ((Stage) resultTable.getScene().getWindow()).close();
     }
 
     private void showInfo(String message) {
