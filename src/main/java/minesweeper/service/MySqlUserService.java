@@ -26,17 +26,28 @@ import java.util.Objects;
 public class MySqlUserService implements UserService {
     private static final Logger LOG = LoggerFactory.getLogger(MySqlUserService.class);
 
-    private static final String SELECT_USER_BY_ID_SQL = "SELECT id, username, display_name FROM users WHERE id = ? LIMIT 1";
-    private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT id, username, display_name FROM users WHERE username = ? LIMIT 1";
+    private static final String SELECT_USER_BY_ID_SQL =
+            "SELECT id, username, display_name, role, is_active FROM users WHERE id = ? LIMIT 1";
+    private static final String SELECT_USER_BY_USERNAME_SQL =
+            "SELECT id, username, display_name, role, is_active FROM users WHERE username = ? LIMIT 1";
+    private static final String SELECT_USER_AUTH_BY_USERNAME_SQL =
+            "SELECT id, username, display_name, password_hash, role, is_active FROM users WHERE username = ? LIMIT 1";
+    private static final String SELECT_PASSWORD_HASH_BY_ID_SQL =
+            "SELECT password_hash FROM users WHERE id = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
-    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role, password_hash) VALUES (?, ?, ?, ?)";
-    private static final String SELECT_ALL_SQL ="SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
+    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role) VALUES (?, ?, ?)";
+    private static final String INSERT_USER_WITH_PASSWORD_SQL =
+            "INSERT INTO users (username, display_name, password_hash, role) VALUES (?, ?, ?, ?)";
+    private static final String SELECT_ALL_SQL =
+            "SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
 
     private static final String UPDATE_DISPLAY_NAME_SQL = "UPDATE users SET display_name = ? WHERE id = ?";
     private static final String UPDATE_ACTIVE_SQL = "UPDATE users SET is_active = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM users WHERE id = ?";
     private static final String DELETE_GAME_SESSIONS_BY_USER_SQL = "DELETE FROM game_sessions WHERE user_id = ?";
     private static final String UPDATE_ROLE_SQL = "UPDATE users SET role = ? WHERE id = ?";
+    private static final String UPDATE_PASSWORD_SQL = "UPDATE users SET password_hash = ? WHERE id = ?";
+    private static final String UPDATE_LAST_LOGIN_SQL = "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?";
 
     private static final String SELECT_USER_BY_ID_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE id = ? LIMIT 1";
     private static final String SELECT_USER_BY_USERNAME_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE username = ? LIMIT 1";
@@ -290,6 +301,112 @@ public class MySqlUserService implements UserService {
         }
     }
 
+    public User getAuthUserByUsername(String username) throws DataAccessException {
+        if (username == null || username.isBlank()) {
+            return null;
+        }
+
+        String trimmed = username.trim();
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SELECT_USER_AUTH_BY_USERNAME_SQL)) {
+            ps.setString(1, trimmed);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = mapAuthUser(rs);
+                    LOG.debug("Auth user found: {} (id={})", trimmed, user.getId());
+                    return user;
+                }
+            }
+
+            LOG.debug("Auth user not found: {}", trimmed);
+            return null;
+        } catch (SQLException e) {
+            LOG.error("Error fetching auth user by username: {}", username, e);
+            throw new DataAccessException("Failed to fetch auth user by username", e);
+        }
+    }
+
+    public String getPasswordHashById(long userId) throws DataAccessException {
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SELECT_PASSWORD_HASH_BY_ID_SQL)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("password_hash");
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            LOG.error("Error fetching password hash for user id={}", userId, e);
+            throw new DataAccessException("Failed to fetch password hash", e);
+        }
+    }
+
+    public long createUserWithPassword(String username, String displayName, String passwordHash, Role role)
+            throws DataAccessException {
+        validateUsername(username);
+        if (passwordHash == null || passwordHash.isBlank()) {
+            throw new DataAccessException("Password hash cannot be blank");
+        }
+
+        String trimmedUsername = username.trim();
+        String trimmedDisplayName = displayName != null ? displayName.trim() : trimmedUsername;
+        String roleStr = (role != null ? role.name() : Role.PLAYER.name());
+
+        try (Connection connection = connectionFactory.getConnection();
+             PreparedStatement ps = connection.prepareStatement(INSERT_USER_WITH_PASSWORD_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, trimmedUsername);
+            ps.setString(2, trimmedDisplayName);
+            ps.setString(3, passwordHash);
+            ps.setString(4, roleStr);
+            ps.executeUpdate();
+
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    long userId = keys.getLong(1);
+                    LOG.info("User created (auth): {} (id={})", trimmedUsername, userId);
+                    return userId;
+                }
+            }
+
+            throw new DataAccessException("Failed to create user with password: " + username);
+        } catch (SQLException e) {
+            LOG.error("Error creating user with password: {}", username, e);
+            throw new DataAccessException("Failed to create user with password", e);
+        }
+    }
+
+    public void updatePasswordHash(long userId, String newPasswordHash) throws DataAccessException {
+        if (newPasswordHash == null || newPasswordHash.isBlank()) {
+            throw new DataAccessException("Password hash cannot be blank");
+        }
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_PASSWORD_SQL)) {
+            ps.setString(1, newPasswordHash);
+            ps.setLong(2, userId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new DataAccessException("User not found: id=" + userId);
+            LOG.info("Updated password hash for user id={}", userId);
+        } catch (SQLException e) {
+            LOG.error("Error updating password hash for user id={}", userId, e);
+            throw new DataAccessException("Failed to update password", e);
+        }
+    }
+
+    public void updateLastLogin(long userId) throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_LAST_LOGIN_SQL)) {
+            ps.setLong(1, userId);
+            ps.executeUpdate();
+            LOG.info("Updated last login for user id={}", userId);
+        } catch (SQLException e) {
+            LOG.error("Error updating last login for user id={}", userId, e);
+            throw new DataAccessException("Failed to update last login", e);
+        }
+    }
+
     private User mapUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("id"));
@@ -300,9 +417,12 @@ public class MySqlUserService implements UserService {
         if (role != null) {
             user.setRole(Role.valueOf(role));
         }
+        return user;
+    }
 
-
-
+    private User mapAuthUser(ResultSet rs) throws SQLException {
+        User user = mapUser(rs);
+        user.setPasswordHash(rs.getString("password_hash"));
         return user;
     }
 
