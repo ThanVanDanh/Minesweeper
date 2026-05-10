@@ -4,6 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -15,14 +16,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane styleClass="root-bg" stylesheets="@../css/styles.css, @../css/boardgame.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="minesweeper.controller.BoardGameController">
+<BorderPane prefHeight="760.0" prefWidth="1280.0" styleClass="root-bg" stylesheets="@../css/styles.css, @../css/boardgame.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="minesweeper.controller.BoardGameController">
     <top>
         <fx:include source="header.fxml" />
     </top>
 
     <center>
         <VBox alignment="CENTER" styleClass="app-shell">
-            <VBox maxWidth="850" spacing="20">
+            <VBox maxWidth="1100" spacing="20" VBox.vgrow="ALWAYS">
 
                 <BorderPane>
                     <left>
@@ -30,11 +31,11 @@
                     </left>
                 </BorderPane>
 
-                <VBox spacing="30">
+                <VBox spacing="30" VBox.vgrow="ALWAYS">
                     <BorderPane style="-fx-background-color: rgba(2, 13, 24, 0.6); -fx-background-radius: 8; -fx-border-color: rgba(45, 212, 240, 0.1); -fx-border-radius: 8;">
                         <padding><Insets bottom="15.0" left="20.0" right="20.0" top="15.0" /></padding>
                         <left><Label fx:id="lblFlags" prefHeight="26.0" prefWidth="77.0" style="-fx-text-fill: #ff4a69; -fx-font-size: 20; -fx-font-weight: bold;" text="🚩 010" BorderPane.alignment="CENTER" /></left>
-                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="145.0" minWidth="145.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
+                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="105.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
                         <center>
                             <JFXButton fx:id="btnFlat" ellipsisString="" onAction="#btnFlat" prefHeight="39.0" prefWidth="123.0" style="-fx-border-color: #2dd4f0;" text="Mở ô" textFill="WHITE" BorderPane.alignment="CENTER">
                                 <graphic>
@@ -51,12 +52,23 @@
                         </center>
                     </BorderPane>
 
-                    <StackPane>
-                        <HBox alignment="CENTER">
-                            <GridPane fx:id="minesweeperGrid" alignment="CENTER" hgap="2" styleClass="game-grid" vgap="2" />
-                        </HBox>
+                    <StackPane VBox.vgrow="ALWAYS">
+                        <ScrollPane fitToWidth="true" fitToHeight="true" pannable="true"
+                                    style="-fx-background-color: transparent; -fx-background: transparent;"
+                                    hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
+                            <content>
+                                <HBox alignment="CENTER">
+                                    <GridPane fx:id="minesweeperGrid" alignment="CENTER" hgap="2" styleClass="game-grid" vgap="2" />
+                                </HBox>
+                            </content>
+                        </ScrollPane>
+
                         <VBox fx:id="pauseOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.7);" visible="false">
-                            <Label fx:id="lblOverlay" style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;" text="TẠM DỪNG" />
+                            <Label style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;" text="TẠM DỪNG" />
+                        </VBox>
+
+                        <VBox fx:id="gameOverOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.8);" visible="false">
+                            <Label fx:id="lblGameOver" style="-fx-font-size: 44; -fx-font-weight: bold;" text="KẾT QUẢ" />
                         </VBox>
                     </StackPane>
 
