@@ -15,6 +15,11 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import minesweeper.model.User;
+import minesweeper.repository.exception.DataAccessException;
+import minesweeper.service.AuthService;
+import minesweeper.service.MySqlUserService;
+import minesweeper.service.SessionManager;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -62,20 +67,43 @@ public class SettingsController {
     @FXML private Label sensitivityValue;
 
     @FXML private TextField playerNameField;
-    @FXML private TextField emailField;
-
     @FXML private PasswordField currentPasswordField;
     @FXML private PasswordField newPasswordField;
     @FXML private PasswordField confirmPasswordField;
 
     @FXML private Label accountMessageLabel;
 
+    private final AuthService authService = new AuthService();
+
     @FXML
     private void initialize() {
         setupComboBoxes();
         setupSliders();
         setupDefaultValues();
+        setupAccountTab();
         showVisualSound();
+    }
+
+    private void setupAccountTab() {
+        User currentUser = SessionManager.getCurrentUser();
+        boolean isLoggedIn = SessionManager.isLoggedIn();
+
+        if (!isLoggedIn || currentUser == null) {
+            // Not logged in: hide account tab
+            accountTab.setVisible(false);
+            accountTab.setManaged(false);
+            accountPane.setVisible(false);
+            accountPane.setManaged(false);
+        } else {
+            // Logged in: show account tab and load user info
+            accountTab.setVisible(true);
+            accountTab.setManaged(true);
+
+            // Load user info into fields
+            if (playerNameField != null) {
+                playerNameField.setText(currentUser.getDisplayName());
+            }
+        }
     }
 
     private void setupComboBoxes() {
@@ -250,7 +278,26 @@ public class SettingsController {
             return;
         }
 
-        accountMessageLabel.setText("Đã cập nhật tên người chơi thành: " + newName.trim());
+        User currentUser = SessionManager.getCurrentUser();
+        if (currentUser == null) {
+            accountMessageLabel.setText("Vui lòng đăng nhập để cập nhật tên.");
+            return;
+        }
+
+        try {
+            // Update in database via authService (which uses MySqlUserService)
+            MySqlUserService userService = new MySqlUserService();
+            userService.updateDisplayName(currentUser.getId(), newName.trim());
+            
+            // Update current session
+            currentUser.setDisplayName(newName.trim());
+            SessionManager.createSession(currentUser);
+            
+            accountMessageLabel.setText("Đã cập nhật tên người chơi thành: " + newName.trim());
+        } catch (Exception e) {
+            accountMessageLabel.setText("Không thể cập nhật tên. Vui lòng thử lại.");
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -266,21 +313,65 @@ public class SettingsController {
             return;
         }
 
-        if (newPassword.length() < 6) {
-            accountMessageLabel.setText("Mật khẩu mới cần ít nhất 6 ký tự.");
-            return;
-        }
-
         if (!newPassword.equals(confirmPassword)) {
             accountMessageLabel.setText("Mật khẩu xác nhận không khớp.");
             return;
         }
 
-        currentPasswordField.clear();
-        newPasswordField.clear();
-        confirmPasswordField.clear();
+        User currentUser = SessionManager.getCurrentUser();
+        if (currentUser == null) {
+            accountMessageLabel.setText("Vui lòng đăng nhập để đổi mật khẩu.");
+            return;
+        }
 
-        accountMessageLabel.setText("Đổi mật khẩu thành công.");
+        try {
+            authService.changePassword(currentUser.getId(), currentPassword, newPassword);
+            currentPasswordField.clear();
+            newPasswordField.clear();
+            confirmPasswordField.clear();
+            accountMessageLabel.setText("Đổi mật khẩu thành công.");
+        } catch (IllegalArgumentException e) {
+            accountMessageLabel.setText(e.getMessage());
+        } catch (DataAccessException e) {
+            accountMessageLabel.setText("Không thể đổi mật khẩu. Vui lòng thử lại.");
+        }
+    }
+
+    @FXML
+    private void logout() {
+        authService.logout();
+        clearAccountFields();
+        navigateToDashboard();
+    }
+
+    private void clearAccountFields() {
+        if (playerNameField != null) playerNameField.clear();
+        if (currentPasswordField != null) currentPasswordField.clear();
+        if (newPasswordField != null) newPasswordField.clear();
+        if (confirmPasswordField != null) confirmPasswordField.clear();
+        if (accountMessageLabel != null) accountMessageLabel.setText("");
+    }
+
+    private void navigateToDashboard() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/dashboard.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) settingsRoot.getScene().getWindow();
+            double currentWidth = stage.getScene().getWidth();
+            double currentHeight = stage.getScene().getHeight();
+            Scene scene = new Scene(root, currentWidth, currentHeight);
+
+            String sharedStyles = Objects.requireNonNull(
+                    getClass().getResource("/css/styles.css")
+            ).toExternalForm();
+            scene.getStylesheets().add(sharedStyles);
+
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
