@@ -8,11 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * PLAY_01: Thuật toán loang - Flood Fill Algorithm
- * Khi user click vào ô không có mìn xung quanh (0 mìn), hệ thống tự động mở
- * tất cả các ô trống liên tiếp (Flood Fill).
- */
 @DisplayName("PLAY_01: Thuật toán loang")
 class PLAY_01_FloodFillTest {
 
@@ -29,14 +24,11 @@ class PLAY_01_FloodFillTest {
     @Test
     @DisplayName("PLAY_01.1: Click ô trống → Các ô lân cận mở tự động")
     void testFloodFillOpensAdjacentCells() {
-        // Dữ liệu: Click ô (0,0)
         gameController.reveal(0, 0);
 
-        // Kết quả: Ô được mở
         assertTrue(board.getCell(0, 0).isRevealed(),
             "Ô click phải được mở");
 
-        // Kết quả: Nếu là ô trống (0 mìn), các ô lân cận cũng mở
         if (board.getCell(0, 0).getNeighborMines() == 0) {
             boolean adjacentOpened = false;
             for (int dr = -1; dr <= 1; dr++) {
@@ -63,7 +55,6 @@ class PLAY_01_FloodFillTest {
         gameController.startNewGame(Difficulty.EASY);
         gameController.reveal(0, 0);
 
-        // Kiểm tra trạng thái: Game PLAYING hoặc WON
         assertTrue(gameController.getGameState() == GameState.PLAYING ||
                    gameController.getGameState() == GameState.WON,
             "Game phải PLAYING hoặc WON");
