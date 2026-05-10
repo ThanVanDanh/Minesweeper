@@ -694,3 +694,13 @@
 .admin-popup-card .combo-box > .list-cell {
     -fx-text-fill: #ffffff;
 }
+.mine-cell-wrong-flag {
+    -fx-background-color: rgba(255, 74, 105, 0.25);
+    -fx-border-color: #ff4a69;
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-text-fill: #ff4a69;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
