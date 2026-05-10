@@ -1,7 +1,6 @@
 module vn.edu.nlu.fit.app {
     requires javafx.controls;
     requires javafx.fxml;
-    requires com.jfoenix;
     requires javafx.web;
     requires java.sql;
     requires com.zaxxer.hikari;
@@ -12,7 +11,6 @@ module vn.edu.nlu.fit.app {
 
     opens app to javafx.fxml;
     opens minesweeper.controller to javafx.fxml;
-    opens minesweeper.dto to javafx.base;
     opens minesweeper.model      to javafx.base;
 
     exports app;
@@ -21,4 +19,5 @@ module vn.edu.nlu.fit.app {
     exports minesweeper.repository;
     exports minesweeper.dto;
     exports minesweeper.service;
+    exports utils;
 }

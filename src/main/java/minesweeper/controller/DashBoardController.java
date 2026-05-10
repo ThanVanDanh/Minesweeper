@@ -1,22 +1,27 @@
 package minesweeper.controller;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import minesweeper.model.Difficulty;
+import minesweeper.model.User;
+import minesweeper.service.SessionManager;
+import utils.AuthPopupHelper;
 
 import java.io.IOException;
 import java.util.Objects;
 
 public class DashBoardController {
+    private static DashBoardController instance;
+
     @FXML
     private ToggleButton easyButton;
     @FXML
@@ -27,6 +32,9 @@ public class DashBoardController {
     private ToggleButton expertButton;
     @FXML
     private ToggleButton customButton;
+
+    @FXML
+    private Button openPopupLogin;
     @FXML
     private Label selectedModeLabel;
     @FXML
@@ -35,6 +43,7 @@ public class DashBoardController {
 
     @FXML
     private void initialize() {
+        instance = this;
         easyButton.setToggleGroup(difficultyGroup);
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
@@ -58,6 +67,33 @@ public class DashBoardController {
             if (newToggle == expertButton) updateSelectedMode("CHUYÊN GIA", "20×30 | 145 Min");
 //            if (newToggle == customButton) updateSelectedMode("TÙY CHỈNH", "Tự thiết lập");
         });
+        updateUiBasedOnSession();
+
+    }
+
+    private void updateUiBasedOnSession() {
+        boolean isLoggedIn = SessionManager.isLoggedIn();
+        User currentUser = SessionManager.getCurrentUser();
+
+        if (!isLoggedIn || currentUser == null) {
+            // Not logged in: show login button, hide player label
+            openPopupLogin.setVisible(true);
+            openPopupLogin.setManaged(true);
+        } else {
+            // Logged in: hide login button, show player label
+            openPopupLogin.setVisible(false);
+            openPopupLogin.setManaged(false);
+        }
+    }
+
+    public void refreshUI() {
+        updateUiBasedOnSession();
+    }
+
+    public static void refreshAllInstances() {
+        if (instance != null) {
+            instance.refreshUI();
+        }
     }
 
     @FXML
@@ -224,41 +260,9 @@ public class DashBoardController {
 
     private void openAuthPopup(boolean registerMode) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/app/login.fxml")
-            );
-
-            Parent root = loader.load();
-
-            LoginController controller = loader.getController();
-
-            if (registerMode) {
-                controller.openAsRegister();
-            } else {
-                controller.openAsLogin();
-            }
-
-            Scene scene = new Scene(root);
-            scene.setFill(Color.TRANSPARENT);
-
-            Stage popupStage = new Stage();
-            popupStage.initStyle(StageStyle.TRANSPARENT);
-            popupStage.initModality(Modality.APPLICATION_MODAL);
-
-            Stage owner = null;
-            if (rootPane != null && rootPane.getScene() != null) {
-                owner = (Stage) rootPane.getScene().getWindow();
-            } else if (selectedModeLabel != null && selectedModeLabel.getScene() != null) {
-                owner = (Stage) selectedModeLabel.getScene().getWindow();
-            }
-            if (owner != null) {
-                popupStage.initOwner(owner);
-            }
-
-            popupStage.setScene(scene);
-            popupStage.setResizable(false);
-            popupStage.centerOnScreen();
-            popupStage.showAndWait();
+            Object ownerNode = rootPane != null ? rootPane : selectedModeLabel;
+            AuthPopupHelper.openAuthPopup(ownerNode, registerMode, this::updateUiBasedOnSession);
+            updateUiBasedOnSession();
 
         } catch (IOException e) {
             e.printStackTrace();
