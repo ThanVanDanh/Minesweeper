@@ -215,7 +215,7 @@ public class AdminUserController {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(u -> {
             try {
-                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), u.getPassword());
+                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), u.getPasswordHash());
                 u.setId((int) id);
                 allUsers.add(u);
                 if (isFiltering) filtered.add(u);
@@ -356,7 +356,7 @@ public class AdminUserController {
                         ? tfUsername.getText().trim()
                         : tfDisplayName.getText().trim());
                 u.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
-                if (!isEdit) u.setPassword(tfPassword.getText().trim());
+                if (!isEdit) u.setPasswordHash(tfPassword.getText().trim());
                 u.setActive(true);
                 return u;
             }
