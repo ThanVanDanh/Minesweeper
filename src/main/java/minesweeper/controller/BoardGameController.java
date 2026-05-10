@@ -23,16 +23,15 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import minesweeper.model.Board;
 import minesweeper.model.Difficulty;
-import minesweeper.model.GameResult;
 import minesweeper.model.GameState;
-import minesweeper.repository.GameResultRepository;
-import minesweeper.repository.MySqlGameResultRepository;
+import minesweeper.repository.GameSessionData;
+import minesweeper.repository.GameSessionRepository;
+import minesweeper.repository.GameSessionResult;
 
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.UUID;
 
 public class BoardGameController implements Initializable {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(BoardGameController.class);
@@ -51,15 +50,16 @@ public class BoardGameController implements Initializable {
     private int secondsElapsed = 0;
     private final int BUTTON_SIZE = 35;
     private boolean isFlagMode = false;
-    private GameResultRepository gameResultRepository;
-    private String currentPlayerName = "Player";
+    private GameSessionRepository gameSessionRepository;
+    private long currentUserId;
+    private String currentUsername = "Player";
     private LocalDateTime gameStartedAt;
     private LocalDateTime firstClickAt;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gameLogic = new GameController();
-        gameResultRepository = new MySqlGameResultRepository();
+        gameSessionRepository = new GameSessionRepository();
         setupTimer();
     }
 
@@ -294,17 +294,26 @@ public class BoardGameController implements Initializable {
         saveGameResult();
     }
 
-    public void setCurrentPlayer(String playerName) {
-        if (playerName != null && !playerName.isBlank()) {
-            this.currentPlayerName = playerName.trim();
-        }
+    /**
+     * Nhận thông tin user từ SessionManager (được gọi bởi DashBoardController trước khi start game).
+     */
+    public void setCurrentUser(long userId, String username) {
+        this.currentUserId   = userId;
+        this.currentUsername = (username != null && !username.isBlank()) ? username.trim() : "Player";
     }
 
     private void saveGameResult() {
+        if (currentUserId <= 0) {
+            LOG.warn("Bỏ qua lưu kết quả: chưa đăng nhập (userId={})", currentUserId);
+            return;
+        }
+
         try {
             boolean isWon = gameLogic.getGameState() == GameState.WON;
-            Board board = gameLogic.getBoard();
+            Board board   = gameLogic.getBoard();
+            LocalDateTime endedAt = LocalDateTime.now();
 
+            // Đếm số ô đã mở (không tính ô mìn)
             int openedCells = 0;
             for (int r = 0; r < board.getRows(); r++) {
                 for (int c = 0; c < board.getCols(); c++) {
@@ -314,22 +323,41 @@ public class BoardGameController implements Initializable {
                 }
             }
 
-            GameResult result = new GameResult(
-                    UUID.randomUUID().toString(),
-                    currentPlayerName,
+            // completionTime = từ first_click_at đến ended_at (ms)
+            long completionTimeMs = (long) secondsElapsed * 1000;
+
+            // Tính score tạm bằng GameResult để tái dụng logic
+            minesweeper.model.GameResult tmp = new minesweeper.model.GameResult(
+                    java.util.UUID.randomUUID().toString(),
+                    currentUsername,
                     gameLogic.getDifficulty(),
                     isWon,
-                    (long) secondsElapsed * 1000,
+                    completionTimeMs,
                     board.getFlagsPlaced(),
                     board.getTotalMines(),
-                    LocalDateTime.now()
+                    endedAt
             );
-            result.computeScore();
-            result.setOpenedCells(openedCells);
-            result.setStartedAt(gameStartedAt);
-            result.setFirstClickAt(firstClickAt);
-            gameResultRepository.saveGameResult(result);
-            LOG.info("Đã lưu kết quả game: {}", result);
+            tmp.computeScore();
+
+            GameSessionData data = GameSessionData.builder()
+                    .userId(currentUserId)
+                    .difficulty(gameLogic.getDifficulty())
+                    .won(isWon)
+                    .completionTimeMs(completionTimeMs)
+                    .score(tmp.getScore())
+                    .openedCells(openedCells)
+                    .flaggedCells(board.getFlagsPlaced())
+                    .startedAt(gameStartedAt)
+                    .firstClickAt(firstClickAt)
+                    .endedAt(endedAt)
+                    .build();
+
+            GameSessionResult saved = gameSessionRepository.saveGameResult(data);
+            LOG.info("Đã lưu kết quả: user={}, sessionId={}, newRecord={}, rank={}",
+                     currentUsername, saved.getSessionId(), saved.isNewRecord(), saved.getNewRank());
+
+            // TODO: nếu muốn hiển thị thông báo kỷ lục → dùng saved.isNewRecord() / saved.getNewRank()
+
         } catch (Exception e) {
             LOG.error("Lỗi khi lưu kết quả game", e);
         }
