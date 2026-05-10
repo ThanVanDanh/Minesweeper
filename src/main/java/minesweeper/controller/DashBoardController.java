@@ -50,7 +50,7 @@ public class DashBoardController {
     private Parent rootPane;
     @FXML
     private VBox rankingContainer;
-    
+
     private final ToggleGroup difficultyGroup = new ToggleGroup();
 
     @FXML
@@ -299,7 +299,7 @@ public class DashBoardController {
             RankingController rankingController = new RankingController();
             // Lấy top 5 ranking của level Expert
             List<RankingDTO> topRanks = rankingController.getExpertRankingTop(5);
-            
+
             if (topRanks.isEmpty()) {
                 Label emptyLabel = new Label("Chưa có dữ liệu xếp hạng.");
                 emptyLabel.setStyle("-fx-text-fill: gray;");
@@ -309,7 +309,7 @@ public class DashBoardController {
 
             for (int i = 0; i < topRanks.size(); i++) {
                 RankingDTO rank = topRanks.get(i);
-                
+
                 HBox row = new HBox();
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setSpacing(12);
@@ -327,7 +327,7 @@ public class DashBoardController {
                 Label nameLabel = new Label(rank.getPlayerName());
                 if (rank.getRank() == 1) nameLabel.getStyleClass().add("rank-name-gold");
                 else nameLabel.getStyleClass().add("rank-name");
-                
+
                 Label metaLabel = new Label("Trận: " + rank.getTotalGames() + " | Thắng: " + rank.getWins());
                 metaLabel.getStyleClass().add("rank-meta");
                 nameBox.getChildren().addAll(nameLabel, metaLabel);
@@ -338,14 +338,14 @@ public class DashBoardController {
                 VBox scoreBox = new VBox();
                 scoreBox.setAlignment(Pos.CENTER_RIGHT);
                 scoreBox.setSpacing(1);
-                
+
                 long timeSeconds = rank.getBestTimeMs() / 1000;
                 Label timeLabel = new Label(timeSeconds + "s");
                 timeLabel.getStyleClass().add("rank-score-green");
-                
+
                 Label scoreLabel = new Label(String.format("%,d", rank.getBestScore()));
                 scoreLabel.getStyleClass().add("rank-meta");
-                
+
                 scoreBox.getChildren().addAll(timeLabel, scoreLabel);
 
                 row.getChildren().addAll(badge, nameBox, spacer, scoreBox);
