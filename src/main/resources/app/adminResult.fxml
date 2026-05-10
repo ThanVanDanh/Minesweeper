@@ -8,6 +8,7 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="minesweeper.controller.AdminResultController"
            style="-fx-background-color:rgba(0,0,0,0.6);"
+           stylesheets="@../css/styles.css"
            prefWidth="1100" prefHeight="720">
 
     <VBox maxWidth="1060" maxHeight="680"
