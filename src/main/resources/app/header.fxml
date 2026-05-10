@@ -32,7 +32,7 @@
 
         <HBox alignment="CENTER" spacing="6" styleClass="nav-menu">
             <Button fx:id="dashboardButton" text="▦ Dashboard" onAction="#openDashboardPage" styleClass="nav-button"/>
-            <Button fx:id="historyButton" text="↺ Lịch Sử" styleClass="nav-button" visible="false" managed="false"/>
+            <Button fx:id="historyButton" text="↺ Lịch Sử" onAction="#openHistoryPage" styleClass="nav-button" visible="false" managed="false"/>
             <Button fx:id="settingsButton" text="⚙ Cài đặt" onAction="#openSettingsPage" styleClass="nav-button"/>
             <Button fx:id="adminUserButton" text="👤 Quản lý User" onAction="#openAdminUser" styleClass="nav-button" visible="false" managed="false"/>
             <Button fx:id="adminResultButton" text="📋 Quản lý KQ" onAction="#openAdminResult" styleClass="nav-button" visible="false" managed="false"/>
