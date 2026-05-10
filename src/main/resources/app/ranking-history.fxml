@@ -53,7 +53,6 @@
                                     <TableColumn fx:id="colTotalGames" text="Tổng ván" prefWidth="100"/>
                                     <TableColumn fx:id="colWins" text="Thắng" prefWidth="80"/>
                                     <TableColumn fx:id="colScore" text="Điểm" prefWidth="100"/>
-                                    <TableColumn fx:id="colWinRate" text="Tỷ lệ thắng" prefWidth="120"/>
                                 </columns>
                             </TableView>
                         </VBox>
