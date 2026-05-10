@@ -90,6 +90,12 @@
   -fx-background-color: rgba(45, 212, 240, 0.08);
 }
 
+.nav-label {
+  -fx-text-fill: #249bc0;
+  -fx-font-size: 13;
+  -fx-padding: 10 13;
+}
+
 .nav-button-selected {
   -fx-background-color: linear-gradient(to bottom right, #39ff8f, #2dd4f0);
   -fx-text-fill: #04131d;
