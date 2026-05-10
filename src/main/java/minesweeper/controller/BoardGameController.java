@@ -63,11 +63,13 @@ public class BoardGameController implements Initializable {
         setupTimer();
     }
 
+    // UC04 - Bắt đầu ván mới
     public void setInitialDifficulty(Difficulty selectedDifficulty) {
         if (selectedDifficulty == null) return;
         startGame(selectedDifficulty);
     }
 
+    // UC04 - Bắt đầu ván mới
     private void startGame(Difficulty diff) {
         gameLogic.startNewGame(diff);
         stopTimer();
@@ -197,6 +199,7 @@ public class BoardGameController implements Initializable {
         lblTime.setText(String.format("Time %02d:%02d", mins, secs));
     }
 
+    // UC05/UC06 - Tạm dừng / Tiếp tục ván game
     @FXML
     private void togglePause() {
         if (gameLogic.getGameState() != GameState.PLAYING && !gameLogic.isPaused()) return;
@@ -206,9 +209,11 @@ public class BoardGameController implements Initializable {
         if (pauseOverlay != null) pauseOverlay.setVisible(isNowPaused);
 
         if (isNowPaused) {
+            // UC05 - Tạm dừng
             stopTimer();
             if (btnPause != null) btnPause.setText("Tiếp tục");
         } else {
+            // UC06 - Tiếp tục ván game
             startTimer();
             if (btnPause != null) btnPause.setText("Tạm dừng");
         }
@@ -232,6 +237,7 @@ public class BoardGameController implements Initializable {
         }
     }
 
+    // UC21 - Đếm thời gian
     private void setupTimer() {
         if (timer != null) timer.stop(); // Dọn dẹp timer cũ trước khi setup
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
@@ -241,10 +247,12 @@ public class BoardGameController implements Initializable {
         timer.setCycleCount(Animation.INDEFINITE);
     }
 
+    // UC21 - Đếm thời gian
     private void startTimer() {
         if (timer != null) timer.play();
     }
 
+    // UC21 - Đếm thời gian
     private void stopTimer() {
         if (timer != null) timer.pause();
     }
@@ -363,6 +371,7 @@ public class BoardGameController implements Initializable {
         }
     }
 
+    // UC04 - Bắt đầu ván mới
     @FXML
     public void restartGame(ActionEvent actionEvent) {
         if (isFlagMode) {
