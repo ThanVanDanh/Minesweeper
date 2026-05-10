@@ -1,6 +1,6 @@
 package minesweeper.service;
 
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.repository.connection.ConnectionFactory;
 import minesweeper.repository.connection.ConnectionFactoryProvider;
 import minesweeper.repository.connection.HikariConnectionFactory;

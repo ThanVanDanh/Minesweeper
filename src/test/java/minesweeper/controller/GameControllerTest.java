@@ -1,8 +1,8 @@
 package minesweeper.controller;
 
 import minesweeper.model.Board;
-import minesweeper.model.Difficulty;
-import minesweeper.model.GameState;
+import minesweeper.model.enums.Difficulty;
+import minesweeper.model.enums.GameState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
