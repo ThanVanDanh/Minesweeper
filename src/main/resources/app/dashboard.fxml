@@ -79,9 +79,6 @@
                                     <ToggleButton fx:id="expertButton" text="●  CHUYÊN GIA&#10;     20×30 | 145 Min"
                                                   GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-<!--                                    <ToggleButton fx:id="customButton" text="⚡  TÙY CHỈNH&#10;     Tự thiết lập"-->
-<!--                                                  GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth="Infinity"-->
-<!--                                                  styleClass="difficulty-button"/>-->
                                 </GridPane>
 
                                 <Button text="▷ BẮT ĐẦU CHIẾN ĐẤU" onAction="#onStartBattle" maxWidth="Infinity"
@@ -147,71 +144,8 @@
                                     <Button text="Xem tất cả ›" onAction="#openRankingHistoryPopup" styleClass="side-link"/>
                                 </HBox>
 
-                                <VBox spacing="7">
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rank-row rank-row-first">
-                                        <Label text="1" styleClass="rank-badge-gold"/>
-                                        <VBox spacing="1">
-                                            <Label text="NightSapper" styleClass="rank-name-gold"/>
-                                            <Label text="LV.42" styleClass="rank-meta"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <VBox alignment="CENTER_RIGHT" spacing="1">
-                                            <Label text="32s" styleClass="rank-score-green"/>
-                                            <Label text="98,420" styleClass="rank-meta"/>
-                                        </VBox>
-                                    </HBox>
-
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rank-row">
-                                        <Label text="2" styleClass="rank-badge-silver"/>
-                                        <VBox spacing="1">
-                                            <Label text="BombDisposer" styleClass="rank-name"/>
-                                            <Label text="LV.38" styleClass="rank-meta"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <VBox alignment="CENTER_RIGHT" spacing="1">
-                                            <Label text="38s" styleClass="rank-score-green"/>
-                                            <Label text="87,310" styleClass="rank-meta"/>
-                                        </VBox>
-                                    </HBox>
-
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rank-row">
-                                        <Label text="3" styleClass="rank-badge-bronze"/>
-                                        <VBox spacing="1">
-                                            <Label text="GridMaster_VN" styleClass="rank-name"/>
-                                            <Label text="LV.35" styleClass="rank-meta"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <VBox alignment="CENTER_RIGHT" spacing="1">
-                                            <Label text="41s" styleClass="rank-score-green"/>
-                                            <Label text="76,100" styleClass="rank-meta"/>
-                                        </VBox>
-                                    </HBox>
-
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rank-row">
-                                        <Label text="4" styleClass="rank-badge-blue"/>
-                                        <VBox spacing="1">
-                                            <Label text="QuantumSweep" styleClass="rank-name"/>
-                                            <Label text="LV.31" styleClass="rank-meta"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <VBox alignment="CENTER_RIGHT" spacing="1">
-                                            <Label text="45s" styleClass="rank-score-green"/>
-                                            <Label text="65,200" styleClass="rank-meta"/>
-                                        </VBox>
-                                    </HBox>
-
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="rank-row">
-                                        <Label text="5" styleClass="rank-badge-blue"/>
-                                        <VBox spacing="1">
-                                            <Label text="ShadowMiner" styleClass="rank-name"/>
-                                            <Label text="LV.28" styleClass="rank-meta"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <VBox alignment="CENTER_RIGHT" spacing="1">
-                                            <Label text="48s" styleClass="rank-score-green"/>
-                                            <Label text="54,800" styleClass="rank-meta"/>
-                                        </VBox>
-                                    </HBox>
+                                <VBox fx:id="rankingContainer" spacing="7">
+                                    <!-- Dữ liệu xếp hạng sẽ được load động từ DB -->
                                 </VBox>
                             </VBox>
 

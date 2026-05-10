@@ -112,9 +112,6 @@ VALUES
                          cols_count  = VALUES(cols_count),
                          mines_count = VALUES(mines_count),
                          sort_order  = VALUES(sort_order);
-INSERT INTO game_levels (level_name, rows_count, cols_count, mines_count, sort_order, level_type)
-VALUES ('CUSTOM', 10, 10, 10, 5, 'CUSTOM')
-ON DUPLICATE KEY UPDATE sort_order = VALUES(sort_order);
 
 -- P15: ranking snapshot table for time-series rank history queries
 CREATE TABLE IF NOT EXISTS ranking_snapshots (
