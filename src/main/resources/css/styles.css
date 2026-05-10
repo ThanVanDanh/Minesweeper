@@ -461,146 +461,153 @@
 /* ========== RANKING HISTORY STYLES ========== */
 
 .ranking-header {
-  -fx-background-color: rgba(1, 15, 24, 0.93);
-  -fx-border-color: rgba(22, 255, 159, 0.18);
-  -fx-border-width: 0 0 1 0;
+  -fx-background-color: rgba(30, 80, 110, 0.95);
+  -fx-border-color: rgba(100, 240, 255, 0.5);
+  -fx-border-width: 0 0 2 0;
 }
 
 .ranking-title {
-  -fx-text-fill: #39ff8f;
-  -fx-font-size: 22;
+  -fx-text-fill: #00ff99;
+  -fx-font-size: 24;
   -fx-font-weight: 900;
   -fx-letter-spacing: 1.5;
 }
 
 .ranking-subtitle {
-  -fx-text-fill: rgba(45, 212, 240, 0.75);
-  -fx-font-size: 11;
+  -fx-text-fill: #4fff00;
+  -fx-font-size: 12;
+  -fx-font-weight: 600;
 }
 
 .ranking-tabs {
   -fx-padding: 0;
-  -fx-tab-min-width: 80;
+  -fx-tab-min-width: 100;
   -fx-tab-max-width: 200;
 }
 
 .ranking-tabs .tab-header-area {
-  -fx-background-color: rgba(1, 15, 24, 0.93);
-  -fx-border-color: rgba(45, 212, 240, 0.18);
-  -fx-border-width: 0 0 1 0;
+  -fx-background-color: rgba(30, 80, 110, 0.95);
+  -fx-border-color: rgba(100, 240, 255, 0.4);
+  -fx-border-width: 0 0 2 0;
 }
 
 .ranking-tabs .tab-header-background {
-  -fx-background-color: rgba(1, 15, 24, 0.93);
+  -fx-background-color: rgba(30, 80, 110, 0.95);
 }
 
 .ranking-tabs .tab {
-  -fx-background-color: rgba(1, 15, 24, 0.5);
-  -fx-border-color: rgba(45, 212, 240, 0.1);
+  -fx-background-color: rgba(25, 70, 95, 0.7);
+  -fx-border-color: rgba(100, 240, 255, 0.2);
   -fx-border-width: 0 1 0 0;
-  -fx-text-fill: #249bc0;
-  -fx-padding: 12 18;
-  -fx-font-size: 12;
+  -fx-text-fill: #64ffb3;
+  -fx-padding: 13 20;
+  -fx-font-size: 13;
   -fx-font-weight: 700;
   -fx-cursor: hand;
 }
 
 .ranking-tabs .tab:hover {
-  -fx-text-fill: #31e7ff;
-  -fx-background-color: rgba(45, 212, 240, 0.08);
+  -fx-text-fill: #00ff99;
+  -fx-background-color: rgba(50, 120, 160, 0.85);
 }
 
 .ranking-tabs .tab:selected {
-  -fx-text-fill: #2dd4f0;
-  -fx-background-color: rgba(2, 11, 19, 0.95);
-  -fx-border-color: rgba(45, 212, 240, 0.65) transparent transparent transparent;
+  -fx-text-fill: #00ff99;
+  -fx-background-color: rgba(40, 110, 150, 0.95);
+  -fx-border-color: rgba(100, 240, 255, 0.8) transparent transparent transparent;
   -fx-border-width: 0 0 3 0;
 }
 
 .ranking-tabs .tab-content-area {
-  -fx-background-color: #020b13;
+  -fx-background-color: #0a1520;
   -fx-border-color: transparent;
   -fx-padding: 0;
 }
 
 .ranking-content {
-  -fx-background-color: #020b13;
+   -fx-background-color: #0a1520;
 }
 
 .ranking-label {
-  -fx-text-fill: #2dd4f0;
-  -fx-font-size: 12;
-  -fx-font-weight: 700;
+   -fx-text-fill: #00ff99;
+   -fx-font-size: 14;
+   -fx-font-weight: 700;
 }
 
 .ranking-combo,
 .ranking-combo .list-cell {
-  -fx-background-color: rgba(6, 31, 47, 0.85);
-  -fx-text-fill: #2dd4f0;
-  -fx-border-color: rgba(45, 212, 240, 0.35);
-  -fx-border-radius: 4;
-  -fx-background-radius: 4;
-  -fx-padding: 8 12;
-  -fx-font-size: 12;
-  -fx-cursor: hand;
+   -fx-background-color: rgba(35, 100, 130, 0.95);
+   -fx-text-fill: #4fff00;
+   -fx-border-color: rgba(100, 240, 255, 0.8);
+   -fx-border-radius: 4;
+   -fx-background-radius: 4;
+   -fx-padding: 10 14;
+   -fx-font-size: 12;
+   -fx-font-weight: 600;
+   -fx-cursor: hand;
 }
 
 .ranking-combo:focused,
 .ranking-combo:showing {
-  -fx-border-color: #2dd4f0;
-  -fx-border-width: 1;
+   -fx-border-color: #00ff99;
+   -fx-border-width: 2;
+   -fx-background-color: rgba(50, 130, 160, 1.0);
 }
 
 .ranking-table {
-  -fx-background-color: rgba(6, 31, 47, 0.4);
+   -fx-background-color: rgba(25, 75, 100, 0.8);
 }
 
 .ranking-table .table-view {
-  -fx-background-color: transparent;
+   -fx-background-color: transparent;
 }
 
 .ranking-table .column-header {
-  -fx-background-color: rgba(1, 15, 24, 0.93);
-  -fx-border-color: rgba(45, 212, 240, 0.18);
-  -fx-text-fill: #39ff8f;
-  -fx-font-weight: 900;
-  -fx-font-size: 11;
-  -fx-padding: 10 8;
+   -fx-background-color: rgba(40, 120, 160, 1.0);
+   -fx-border-color: rgba(100, 240, 255, 0.6);
+   -fx-text-fill: #00ff99;
+   -fx-font-weight: 900;
+   -fx-font-size: 13;
+   -fx-padding: 14 10;
 }
 
 .ranking-table .table-row-cell {
-  -fx-background-color: rgba(6, 31, 47, 0.35);
-  -fx-text-fill: #2dd4f0;
-  -fx-padding: 8 0;
-  -fx-border-color: rgba(45, 212, 240, 0.08);
-  -fx-border-width: 0 0 1 0;
-  -fx-font-size: 11;
+   -fx-background-color: rgba(30, 90, 120, 0.8);
+   -fx-text-fill: #4fff00;
+   -fx-padding: 12 0;
+   -fx-border-color: rgba(100, 240, 255, 0.3);
+   -fx-border-width: 0 0 1 0;
+   -fx-font-size: 12;
+   -fx-font-weight: 600;
 }
 
 .ranking-table .table-row-cell:hover {
-  -fx-background-color: rgba(45, 212, 240, 0.12);
+   -fx-background-color: rgba(60, 180, 220, 0.6);
+   -fx-text-fill: #7fff33;
 }
 
 .ranking-table .table-row-cell:odd {
-  -fx-background-color: rgba(3, 21, 34, 0.3);
+   -fx-background-color: rgba(20, 70, 100, 0.75);
 }
 
 .ranking-table .table-row-cell:odd:hover {
-  -fx-background-color: rgba(45, 212, 240, 0.12);
+   -fx-background-color: rgba(60, 180, 220, 0.6);
+   -fx-text-fill: #7fff33;
 }
 
 .ranking-table .table-cell {
-  -fx-text-fill: #2dd4f0;
-  -fx-padding: 8 12;
-  -fx-font-size: 11;
-  -fx-alignment: CENTER_LEFT;
+   -fx-text-fill: #4fff00;
+   -fx-padding: 12 14;
+   -fx-font-size: 12;
+   -fx-alignment: CENTER_LEFT;
+   -fx-font-weight: 600;
 }
 
 /* Thay thế đoạn code lỗi của bạn bằng đoạn này */
 .ranking-table .col-rank {
-  -fx-text-fill: #39ff8f;
-  -fx-font-weight: 900;
-  -fx-alignment: CENTER; /* Căn giữa số hạng cho đẹp */
+   -fx-text-fill: #ffff00;
+   -fx-font-weight: 900;
+   -fx-alignment: CENTER; /* Căn giữa số hạng cho đẹp */
 }
 
 .ranking-table .scroll-bar:vertical,
@@ -609,67 +616,68 @@
 }
 
 .ranking-table .scroll-bar .thumb {
-  -fx-background-color: rgba(45, 212, 240, 0.28);
+  -fx-background-color: rgba(100, 240, 255, 0.7);
   -fx-background-radius: 999;
 }
 
 .ranking-table .scroll-bar .thumb:hover {
-  -fx-background-color: rgba(45, 212, 240, 0.5);
+  -fx-background-color: rgba(100, 240, 255, 0.95);
 }
 
 .stats-box {
-  -fx-background-color: rgba(6, 31, 47, 0.7);
-  -fx-border-color: rgba(45, 212, 240, 0.25);
-  -fx-border-radius: 4;
-  -fx-background-radius: 4;
-  -fx-padding: 14 12;
+   -fx-background-color: rgba(35, 100, 130, 0.95);
+   -fx-border-color: rgba(100, 240, 255, 0.7);
+   -fx-border-radius: 6;
+   -fx-background-radius: 6;
+   -fx-padding: 18 16;
+   -fx-border-width: 2;
 }
 
 .stats-label {
-  -fx-text-fill: rgba(45, 212, 240, 0.65);
-  -fx-font-size: 11;
-  -fx-font-weight: 700;
+   -fx-text-fill: #00ff99;
+   -fx-font-size: 12;
+   -fx-font-weight: 700;
 }
 
 .stats-value {
-  -fx-text-fill: #39ff8f;
-  -fx-font-size: 20;
-  -fx-font-weight: 900;
+   -fx-text-fill: #ffff00;
+   -fx-font-size: 26;
+   -fx-font-weight: 900;
 }
 /* 1. Xử lý nền tổng quát của TableView */
 .ranking-table.table-view {
-  -fx-background-color: transparent; /* Để lộ nền của VBox/Vùng chứa */
-  -fx-padding: 0;
+   -fx-background-color: transparent; /* Để lộ nền của VBox/Vùng chứa */
+   -fx-padding: 0;
 }
 
 /* 2. Đồng bộ màu toàn bộ thanh Header (bao gồm cả phần dư) */
 .ranking-table .column-header-background {
-  -fx-background-color: rgba(1, 15, 24, 0.93); /* Khớp với màu .ranking-header của bạn */
-  -fx-background-insets: 0;
+   -fx-background-color: rgba(40, 120, 160, 1.0);
+   -fx-background-insets: 0;
 }
 
 /* 3. Sửa lỗi màu trắng/xám ở phần Filler (khoảng trống sau cột cuối) */
 .ranking-table .column-header-background .filler {
-  -fx-background-color: transparent;
-  -fx-border-color: rgba(45, 212, 240, 0.18);
-  -fx-border-width: 0 0 1 0; /* Chỉ giữ đường kẻ dưới cho đồng bộ */
+   -fx-background-color: rgba(40, 120, 160, 1.0);
+   -fx-border-color: rgba(100, 240, 255, 0.5);
+   -fx-border-width: 0 0 1 0; /* Chỉ giữ đường kẻ dưới cho đồng bộ */
 }
 
 /* 4. Quan trọng: Xóa cái nút nhỏ "Show/Hide Column" ở góc phải tiêu đề */
 /* Đây là nguyên nhân hay gây ra một ô vuông màu sáng bị lệch tông */
 .ranking-table .show-hide-columns-button {
-  -fx-background-color: transparent;
+   -fx-background-color: transparent;
 }
 
 /* 5. Xử lý góc trống (Corner) nơi giao nhau giữa 2 thanh cuộn */
 .ranking-table .table-view .corner {
-  -fx-background-color: transparent;
+   -fx-background-color: transparent;
 }
 
-/* 6. Chỉnh lại đường kẻ dọc giữa các cột để không bị quá sáng */
+/* Chỉnh lại đường kẻ dọc giữa các cột để sáng hơn và dễ nhìn */
 .ranking-table .column-header {
-  -fx-border-color: rgba(45, 212, 240, 0.1);
-  -fx-border-width: 0 1 1 0;
+   -fx-border-color: rgba(100, 240, 255, 0.5);
+   -fx-border-width: 0 1 1 0;
 }
 /* Reset style cho .side-link bất kể nó là Button hay Label */
 .side-link {
