@@ -7,7 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
 import minesweeper.repository.MySqlGameResultRepository;

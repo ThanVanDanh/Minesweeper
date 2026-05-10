@@ -1,8 +1,8 @@
 package minesweeper.controller;
 
 import minesweeper.model.Board;
-import minesweeper.model.Difficulty;
-import minesweeper.model.GameState;
+import minesweeper.model.enums.Difficulty;
+import minesweeper.model.enums.GameState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

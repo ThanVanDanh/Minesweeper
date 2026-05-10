@@ -1,5 +1,8 @@
 package minesweeper.model;
 
+import minesweeper.model.enums.Difficulty;
+import minesweeper.model.enums.GameState;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.Random;

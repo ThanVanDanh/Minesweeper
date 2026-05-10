@@ -1,6 +1,6 @@
 package minesweeper.repository;
 
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 
 import java.time.LocalDateTime;
 

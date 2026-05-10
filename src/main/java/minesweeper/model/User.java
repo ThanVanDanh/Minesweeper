@@ -1,5 +1,7 @@
 package minesweeper.model;
 
+import minesweeper.model.enums.Role;
+
 import java.time.LocalDateTime;
 
 public class User {
