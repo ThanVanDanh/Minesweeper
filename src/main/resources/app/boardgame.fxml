@@ -35,7 +35,7 @@
                     <BorderPane style="-fx-background-color: rgba(2, 13, 24, 0.6); -fx-background-radius: 8; -fx-border-color: rgba(45, 212, 240, 0.1); -fx-border-radius: 8;">
                         <padding><Insets bottom="15.0" left="20.0" right="20.0" top="15.0" /></padding>
                         <left><Label fx:id="lblFlags" prefHeight="26.0" prefWidth="77.0" style="-fx-text-fill: #ff4a69; -fx-font-size: 20; -fx-font-weight: bold;" text="🚩 010" BorderPane.alignment="CENTER" /></left>
-                        <right><Label fx:id="lblTime" prefWidth="145.0" minWidth="145.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
+                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="145.0" minWidth="145.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
                         <center>
                             <JFXButton fx:id="btnFlat" ellipsisString="" onAction="#btnFlat" prefHeight="39.0" prefWidth="123.0" style="-fx-border-color: #2dd4f0;" text="Mở ô" textFill="WHITE" BorderPane.alignment="CENTER">
                                 <graphic>
