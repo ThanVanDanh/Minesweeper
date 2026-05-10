@@ -61,9 +61,13 @@ public class RankingController {
     public List<RankingDTO> getExpertRankingTop(int limit) throws Exception {
         int expertLevelId = findExpertLevelId();
         if (expertLevelId < 0) {
+            System.err.println("ERROR: Expert level không tìm được trong DB!");
             return List.of();
         }
-        return getRankingTop(expertLevelId, limit);
+        System.out.println("DEBUG: Expert level ID = " + expertLevelId + ", fetching top " + limit);
+        List<RankingDTO> result = getRankingTop(expertLevelId, limit);
+        System.out.println("DEBUG: Lấy được " + result.size() + " ranking");
+        return result;
     }
 
     public List<LevelOption> getAvailableLevels() throws Exception {
@@ -73,6 +77,15 @@ public class RankingController {
             if (isExpertLevel(level.getName())) {
                 options.add(new LevelOption(level.getId(), level.getName()));
             }
+        }
+        return options;
+    }
+
+    public List<LevelOption> getAllLevels() throws Exception {
+        List<RankingRepository.LevelInfo> levels = rankingRepository.getLevels();
+        List<LevelOption> options = new ArrayList<>(levels.size());
+        for (RankingRepository.LevelInfo level : levels) {
+            options.add(new LevelOption(level.getId(), level.getName()));
         }
         return options;
     }

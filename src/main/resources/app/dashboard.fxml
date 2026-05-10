@@ -145,7 +145,7 @@
                                         <Label text="BẢNG XẾP HẠNG" styleClass="section-title-orange"/>
                                     </HBox>
                                     <Region HBox.hgrow="ALWAYS"/>
-                                    <Label text="Xem tất cả ›" styleClass="side-link"/>
+                                    <Button text="Xem tất cả ›" onAction="#openRankingHistoryPopup" styleClass="side-link"/>
                                 </HBox>
 
                                 <VBox spacing="7">
@@ -226,7 +226,7 @@
                                         <Label text="THÀNH TÍCH" styleClass="section-title-purple"/>
                                     </HBox>
                                     <Region HBox.hgrow="ALWAYS"/>
-                                    <Label text="Xem tất cả ›" styleClass="side-link"/>
+                                    <Button text="Xem tất cả ›" onAction="#openRankingHistoryPopup" styleClass="side-link"/>
                                 </HBox>
 
                                 <VBox spacing="8">
