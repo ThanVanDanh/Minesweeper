@@ -1,4 +1,4 @@
-package minesweeper.model;
+package minesweeper.model.enums;
 
 public enum GameState {
     IDLE,       // Chưa bắt đầu (trước click đầu tiên)

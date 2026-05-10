@@ -11,7 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-import minesweeper.model.Role;
+import minesweeper.model.enums.Role;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
 import minesweeper.service.MySqlUserService;
