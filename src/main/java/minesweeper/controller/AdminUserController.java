@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Stage;
 import minesweeper.model.Role;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
@@ -226,7 +227,11 @@ public class AdminUserController {
                 showPage();
                 statusLabel.setText("Đã thêm user: " + u.getUsername());
             } catch (Exception e) {
-                showError("Thêm user thất bại: " + e.getMessage());
+                e.printStackTrace();
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                showError("Thêm user thất bại!\n"
+                        + e.getClass().getSimpleName() + ": " + e.getMessage()
+                        + (cause != e ? "\nCause: " + cause.getMessage() : ""));
             }
         });
     }
@@ -325,7 +330,9 @@ public class AdminUserController {
 
         tfUsername.setPromptText("username");
         tfDisplayName.setPromptText("Tên hiển thị (nickname)");
-        tfPassword.setPromptText("Mật khẩu (mặc định: 123456)");
+        if(!isEdit) {
+            tfPassword.setPromptText("Mật khẩu (mặc định: 123456)");
+        }
         cbRole.getSelectionModel().select(
                 isEdit && existing.getRole() != null ? existing.getRole() : Role.PLAYER);
 
@@ -336,10 +343,12 @@ public class AdminUserController {
         if (isEdit) tfUsername.setDisable(true);
 
         int row = 0;
-        grid.add(new Label("Username:"),     0, row); grid.add(tfUsername,    1, row++);
-        grid.add(new Label("Nickname:"),     0, row); grid.add(tfDisplayName, 1, row++);
-        grid.add(new Label("Mật khẩu:"), 0, row); grid.add(tfPassword, 1, row++);
-        grid.add(new Label("Vai trò:"),      0, row); grid.add(cbRole,        1, row++);
+        grid.add(new Label("Username:"), 0, row); grid.add(tfUsername, 1, row++);
+        grid.add(new Label("Nickname:"), 0, row); grid.add(tfDisplayName, 1, row++);
+        if (!isEdit) {
+            grid.add(new Label("Mật khẩu:"), 0, row); grid.add(tfPassword, 1, row++);
+        }
+        grid.add(new Label("Vai trò:"), 0, row); grid.add(cbRole, 1, row++);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -350,6 +359,7 @@ public class AdminUserController {
                     okNode.setDisable(n.trim().isEmpty()));
         }
 
+        final TextField finalTfPassword = tfPassword;
         dialog.setResultConverter(bt -> {
             if (bt == okBtn) {
                 User u = isEdit ? existing : new User();
@@ -358,7 +368,8 @@ public class AdminUserController {
                         ? tfUsername.getText().trim()
                         : tfDisplayName.getText().trim());
                 u.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
-                if (!isEdit) u.setPasswordHash(tfPassword.getText().trim());
+                if (!isEdit && finalTfPassword != null)
+                    u.setPasswordHash(finalTfPassword.getText().trim());
                 u.setActive(true);
                 return u;
             }
@@ -366,6 +377,10 @@ public class AdminUserController {
         });
 
         return dialog;
+    }
+    @FXML
+    private void closePopup() {
+        ((Stage) userTable.getScene().getWindow()).close();
     }
 
     private void showInfo(String message) {
