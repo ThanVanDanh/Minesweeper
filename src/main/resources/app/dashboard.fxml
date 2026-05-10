@@ -41,8 +41,7 @@
                         </VBox>
                         <Region HBox.hgrow="ALWAYS"/>
                         <HBox spacing="10" alignment="CENTER_RIGHT">
-                            <Button text="Đăng Nhập" onAction="#openLoginPopup" styleClass="outline-button-large"/>
-                            <Button text="Bắt đầu Ngay →" onAction="#openRegisterPopup" styleClass="primary-button-large"/>
+                            <Button text="Bắt đầu Ngay →" fx:id="openPopupLogin" onAction="#openRegisterPopup" styleClass="primary-button-large"/>
                         </HBox>
                     </HBox>
 
