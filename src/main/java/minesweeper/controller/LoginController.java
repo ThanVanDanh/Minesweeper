@@ -9,8 +9,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import minesweeper.repository.exception.DataAccessException;
-import minesweeper.controller.DashBoardController;
-import minesweeper.controller.HeaderController;
 import minesweeper.service.AuthService;
 
 public class LoginController {

@@ -1,6 +1,6 @@
 package minesweeper.ranking.service;
 
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
 import minesweeper.repository.exception.DataAccessException;
