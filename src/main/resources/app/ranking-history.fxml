@@ -24,8 +24,8 @@
             <padding>
                 <Insets top="18" right="24" bottom="12" left="24"/>
             </padding>
-            <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" styleClass="ranking-title"/>
-            <Label text="Dữ liệu được lấy trực tiếp từ MySQL" styleClass="ranking-subtitle"/>
+            <Label text="BẢNG XẾP HẠNG &amp; LỊCH SỬ CHƠI" styleClass="ranking-title" style="-fx-text-fill: white;"/>
+            <Label text="Dữ liệu được lấy trực tiếp từ MySQL" styleClass="ranking-subtitle" style="-fx-text-fill: white;"/>
         </VBox>
     </top>
     <center>
@@ -38,7 +38,7 @@
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Level:" styleClass="ranking-label"/>
+                                <Label text="Level:" styleClass="ranking-label" style="-fx-text-fill: white;"/>
                                 <ComboBox fx:id="levelCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
@@ -65,7 +65,7 @@
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Người chơi:" styleClass="ranking-label"/>
+                                <Label text="Người chơi:" styleClass="ranking-label" style="-fx-text-fill: white;"/>
                                 <ComboBox fx:id="playerCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
@@ -92,7 +92,7 @@
                                 <Insets top="12" right="12" bottom="12" left="12"/>
                             </padding>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label text="Người chơi:" styleClass="ranking-label"/>
+                                <Label text="Người chơi:" styleClass="ranking-label" style="-fx-text-fill: white;"/>
                                 <ComboBox fx:id="statsPlayerCombo" prefWidth="240" styleClass="ranking-combo"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
@@ -102,24 +102,24 @@
                                     <ColumnConstraints percentWidth="50"/>
                                 </columnConstraints>
                                 <VBox spacing="4" styleClass="stats-box">
-                                    <Label text="Tổng ván" styleClass="stats-label"/>
-                                    <Label fx:id="statsTotalGames" text="0" styleClass="stats-value"/>
+                                    <Label text="Tổng ván" styleClass="stats-label" style="-fx-text-fill: white;"/>
+                                    <Label fx:id="statsTotalGames" text="0" styleClass="stats-value" style="-fx-text-fill: white;"/>
                                 </VBox>
                                 <VBox spacing="4" GridPane.columnIndex="1" styleClass="stats-box">
-                                    <Label text="Thắng / Thua" styleClass="stats-label"/>
-                                    <Label fx:id="statsWins" text="0 / 0" styleClass="stats-value"/>
+                                    <Label text="Thắng / Thua" styleClass="stats-label" style="-fx-text-fill: white;"/>
+                                    <Label fx:id="statsWins" text="0 / 0" styleClass="stats-value" style="-fx-text-fill: white;"/>
                                 </VBox>
                                 <VBox spacing="4" GridPane.rowIndex="1" styleClass="stats-box">
-                                    <Label text="Tỷ lệ thắng" styleClass="stats-label"/>
-                                    <Label fx:id="statsWinRate" text="0%" styleClass="stats-value"/>
+                                    <Label text="Tỷ lệ thắng" styleClass="stats-label" style="-fx-text-fill: white;"/>
+                                    <Label fx:id="statsWinRate" text="0%" styleClass="stats-value" style="-fx-text-fill: white;"/>
                                 </VBox>
                                 <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="stats-box">
-                                    <Label text="Điểm cao nhất" styleClass="stats-label"/>
-                                    <Label fx:id="statsBestScore" text="0" styleClass="stats-value"/>
+                                    <Label text="Điểm cao nhất" styleClass="stats-label" style="-fx-text-fill: white;"/>
+                                    <Label fx:id="statsBestScore" text="0" styleClass="stats-value" style="-fx-text-fill: white;"/>
                                 </VBox>
                                 <VBox spacing="4" GridPane.rowIndex="2" styleClass="stats-box">
-                                    <Label text="Thời gian trung bình" styleClass="stats-label"/>
-                                    <Label fx:id="statsAvgTime" text="0 giây" styleClass="stats-value"/>
+                                    <Label text="Thời gian trung bình" styleClass="stats-label" style="-fx-text-fill: white;"/>
+                                    <Label fx:id="statsAvgTime" text="0 giây" styleClass="stats-value" style="-fx-text-fill: white;"/>
                                 </VBox>
                             </GridPane>
                         </VBox>
