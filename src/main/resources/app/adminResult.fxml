@@ -3,89 +3,103 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="minesweeper.controller.AdminResultController"
-      styleClass="root-bg"
-      spacing="0">
 
-    <!-- Header bar -->
-    <HBox styleClass="top-nav" alignment="CENTER_LEFT" spacing="14">
-        <padding><Insets top="14" right="30" bottom="14" left="30"/></padding>
-        <Label text="📋" style="-fx-font-size:18;"/>
-        <Label text="QUẢN LÝ KẾT QUẢ" styleClass="section-title-orange"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="statusLabel" styleClass="selected-mode"/>
-    </HBox>
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="minesweeper.controller.AdminResultController"
+           style="-fx-background-color:rgba(0,0,0,0.6);"
+           prefWidth="1100" prefHeight="720">
 
-    <VBox spacing="14" VBox.vgrow="ALWAYS">
-        <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
+    <VBox maxWidth="1060" maxHeight="680"
+          style="-fx-background-color:linear-gradient(to bottom right,rgba(5,20,28,0.98),rgba(5,10,18,0.98));
+                 -fx-background-radius:12;
+                 -fx-border-radius:12;
+                 -fx-border-width:1.2;
+                 -fx-border-color:rgba(48,255,170,0.45);
+                 -fx-effect:dropshadow(gaussian,rgba(39,255,185,0.35),30,0.2,0,0);"
+          spacing="0">
 
-        <!-- Filter panel -->
-        <VBox styleClass="panel-card" spacing="0">
-            <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-            <HBox spacing="16" alignment="CENTER_LEFT">
-                <VBox spacing="5">
-                    <Label text="ĐỘ KHÓ" style="-fx-text-fill: white;" styleClass="input-label"/>
-                    <ComboBox fx:id="cbDifficulty" prefWidth="148"
-                              style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
-                </VBox>
-                <VBox spacing="5">
-                    <Label text="USERNAME" style="-fx-text-fill: white;" styleClass="input-label"/>
-                    <TextField fx:id="tfUsername" promptText="Nhập username..." prefWidth="220" styleClass="auth-input"/>
-                </VBox>
-                <VBox spacing="5">
-                    <Label text="KẾT QUẢ" style="-fx-text-fill: white;" styleClass="input-label"/>
-                    <ComboBox fx:id="cbResult" prefWidth="130"
-                              style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
-                </VBox>
-                <Region HBox.hgrow="ALWAYS"/>
-                <VBox spacing="8" alignment="BOTTOM_RIGHT">
-                    <Button text="▷  LỌC"      onAction="#onFilter" styleClass="start-button" prefWidth="110"/>
-                    <Button text="↺  Đặt lại"  onAction="#onReset"  styleClass="nav-button"   prefWidth="110"/>
-                </VBox>
-            </HBox>
-        </VBox>
-
-        <!-- Toolbar -->
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
-            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
-            <Button text="☑  Chọn / Bỏ chọn tất cả" onAction="#onSelectAll" styleClass="outline-button"/>
-            <Label fx:id="selectedCountLabel" text="0 đã chọn" styleClass="selected-mode" style="-fx-padding:0 8;"/>
+        <!-- Header bar -->
+        <HBox styleClass="top-nav" alignment="CENTER_LEFT" spacing="14">
+            <padding><Insets top="14" right="30" bottom="14" left="30"/></padding>
+            <Label text="📋" style="-fx-font-size:18;"/>
+            <Label text="QUẢN LÝ KẾT QUẢ" styleClass="section-title-orange"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="⚑  XÓA GIAN LẬN" onAction="#onDeleteFraud"
-                    style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-padding:9 16;-fx-cursor:hand;"/>
+            <Label fx:id="statusLabel" styleClass="selected-mode"/>
+            <Button text="×" onAction="#closePopup" styleClass="close-button"/>
         </HBox>
 
-        <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
-            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-            <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS"
-                       style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:transparent;-fx-selection-bar-text:#2dd4f0;-fx-selection-bar-non-focused:transparent;-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
-                <columns>
-                    <TableColumn fx:id="colSelect" text="" minWidth="40" maxWidth="40"/>
-                    <TableColumn fx:id="colGameId" text="Game ID"/>
-                    <TableColumn fx:id="colUsername" text="Username"/>
-                    <TableColumn fx:id="colDifficulty" text="Độ khó"/>
-                    <TableColumn fx:id="colScore" text="Điểm"/>
-                    <TableColumn fx:id="colTime" text="Thời gian"/>
-                    <TableColumn fx:id="colOpenedCells" text="Opened"/>
-                    <TableColumn fx:id="colResult" text="Kết quả"/>
-                    <TableColumn fx:id="colPlayedAt" text="Ngày chơi" minWidth="145"/>
-                </columns>
-                <placeholder>
-                    <Label text="Không tìm thấy dữ liệu."
-                           style="-fx-text-fill:rgba(45,212,240,0.45);-fx-font-size:13;"/>
-                </placeholder>
-            </TableView>
+        <VBox spacing="14" VBox.vgrow="ALWAYS">
+            <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
+
+            <!-- Filter panel -->
+            <VBox styleClass="panel-card" spacing="0">
+                <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <VBox spacing="5">
+                        <Label text="ĐỘ KHÓ" style="-fx-text-fill:white;" styleClass="input-label"/>
+                        <ComboBox fx:id="cbDifficulty" prefWidth="148"
+                                  style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="USERNAME" style="-fx-text-fill:white;" styleClass="input-label"/>
+                        <TextField fx:id="tfUsername" promptText="Nhập username..." prefWidth="220" styleClass="auth-input"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="KẾT QUẢ" style="-fx-text-fill:white;" styleClass="input-label"/>
+                        <ComboBox fx:id="cbResult" prefWidth="130"
+                                  style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <VBox spacing="8" alignment="BOTTOM_RIGHT">
+                        <Button text="▷  LỌC"     onAction="#onFilter" styleClass="start-button" prefWidth="110"/>
+                        <Button text="↺  Đặt lại" onAction="#onReset"  styleClass="nav-button"   prefWidth="110"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Toolbar -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="panel-card">
+                <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+                <Button text="☑  Chọn / Bỏ chọn tất cả" onAction="#onSelectAll" styleClass="outline-button"/>
+                <Label fx:id="selectedCountLabel" text="0 đã chọn" styleClass="selected-mode" style="-fx-padding:0 8;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="⚑  XÓA GIAN LẬN" onAction="#onDeleteFraud"
+                        style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-padding:9 16;-fx-cursor:hand;"/>
+            </HBox>
+
+            <!-- Table -->
+            <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <TableView fx:id="resultTable" editable="true" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-selection-bar:transparent;-fx-selection-bar-text:#2dd4f0;-fx-selection-bar-non-focused:transparent;-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+                    <columns>
+                        <TableColumn fx:id="colSelect"      text=""          minWidth="40" maxWidth="40"/>
+                        <TableColumn fx:id="colGameId"      text="Game ID"/>
+                        <TableColumn fx:id="colUsername"    text="Username"/>
+                        <TableColumn fx:id="colDifficulty"  text="Độ khó"/>
+                        <TableColumn fx:id="colScore"       text="Điểm"/>
+                        <TableColumn fx:id="colTime"        text="Thời gian"/>
+                        <TableColumn fx:id="colOpenedCells" text="Opened"/>
+                        <TableColumn fx:id="colResult"      text="Kết quả"/>
+                        <TableColumn fx:id="colPlayedAt"    text="Ngày chơi" minWidth="145"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="Không tìm thấy dữ liệu."
+                               style="-fx-text-fill:rgba(45,212,240,0.45);-fx-font-size:13;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- Pagination -->
+            <HBox spacing="10" alignment="CENTER" styleClass="panel-card" minHeight="50" maxHeight="50">
+                <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+                <Button fx:id="btnPrevPage" text="◀ Trước" onAction="#onPrevPage" styleClass="nav-button"/>
+                <Label fx:id="pageLabel" text="Trang 1 / 1" styleClass="selected-mode"/>
+                <Button fx:id="btnNextPage" text="Sau ▶"    onAction="#onNextPage" styleClass="nav-button"/>
+            </HBox>
+
         </VBox>
-
-        <HBox spacing="10" alignment="CENTER" styleClass="panel-card"
-              minHeight="50" maxHeight="50">
-            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
-            <Button fx:id="btnPrevPage" text="◀ Trước" onAction="#onPrevPage" styleClass="nav-button"/>
-            <Label fx:id="pageLabel" text="Trang 1 / 1" styleClass="selected-mode"/>
-            <Button fx:id="btnNextPage" text="Sau ▶" onAction="#onNextPage" styleClass="nav-button"/>
-        </HBox>
-
     </VBox>
-</VBox>
+
+</StackPane>
