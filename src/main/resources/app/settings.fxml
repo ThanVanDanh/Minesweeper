@@ -54,13 +54,13 @@
                               styleClass="settings-sidebar">
 
                             <Button fx:id="visualSoundTab"
-                                    text="🔊  Hình ảnh &amp; Âm thanh                    ›"
+                                    text="  Hình ảnh &amp; Âm thanh                    ›"
                                     onAction="#showVisualSound"
                                     maxWidth="Infinity"
                                     styleClass="setting-tab"/>
 
                             <Button fx:id="gameplayTab"
-                                    text="🎮  Gameplay                                 ..."
+                                    text="  Gameplay                                 ..."
                                     onAction="#showGameplay"
                                     maxWidth="Infinity"
                                     styleClass="setting-tab"/>
@@ -89,7 +89,7 @@
                                   styleClass="setting-card">
 
                                 <VBox spacing="6">
-                                    <Label text="🔊 CÀI ĐẶT HÌNH ẢNH &amp; ÂM THANH" styleClass="section-title"/>
+                                    <Label text=" CÀI ĐẶT HÌNH ẢNH &amp; ÂM THANH" styleClass="section-title"/>
                                     <Label text="Gộp tùy chỉnh giao diện, hiệu ứng và âm thanh" styleClass="section-desc"/>
                                 </VBox>
 
@@ -280,7 +280,7 @@
                                   styleClass="setting-card">
 
                                 <VBox spacing="6">
-                                    <Label text="🎮 GAMEPLAY" styleClass="section-title"/>
+                                    <Label text=" GAMEPLAY" styleClass="section-title"/>
                                     <Label text="Tùy chỉnh luật chơi và hỗ trợ trong trận" styleClass="section-desc"/>
                                 </VBox>
 
@@ -440,17 +440,8 @@
                                         <VBox spacing="8">
                                             <Label text="Tên người chơi" styleClass="input-label"/>
                                             <TextField fx:id="playerNameField"
-                                                       text="NightSapper"
                                                        promptText="Nhập tên người chơi mới"
                                                        styleClass="cyber-input"/>
-                                        </VBox>
-
-                                        <VBox spacing="8">
-                                            <Label text="Email tài khoản" styleClass="input-label"/>
-                                            <TextField fx:id="emailField"
-                                                       text="player@minesweeper.grid"
-                                                       editable="false"
-                                                       styleClass="cyber-input-disabled"/>
                                         </VBox>
 
                                         <Button text="CẬP NHẬT TÊN NGƯỜI CHƠI"
@@ -501,7 +492,7 @@
                                            styleClass="setting-note"/>
 
                                     <HBox spacing="14">
-                                        <Button text="ĐĂNG XUẤT" styleClass="danger-button"/>
+                                        <Button text="ĐĂNG XUẤT" onAction="#logout" styleClass="danger-button"/>
                                         <Button text="HỦY THAY ĐỔI"
                                                 onAction="#resetSettings"
                                                 styleClass="reset-button"/>
@@ -526,4 +517,3 @@
     </center>
 
 </BorderPane>
-
