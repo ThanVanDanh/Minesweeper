@@ -9,8 +9,17 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import minesweeper.dto.RankingDTO;
 
 import java.util.List;
+import javafx.stage.Stage;
+import minesweeper.model.GameResult;
+import minesweeper.model.User;
+import minesweeper.repository.MySqlGameResultRepository;
+import minesweeper.service.SessionManager;
+import javafx.scene.control.Label;
 
 public class RankingHistoryController {
+
+    @FXML
+    private javafx.scene.control.TabPane tabPane;
 
     @FXML
     private ComboBox<RankingController.LevelOption> levelCombo;
@@ -33,13 +42,56 @@ public class RankingHistoryController {
     @FXML
     private TableColumn<RankingDTO, Integer> colScore;
 
+    // --- Tab Lịch sử ---
+    @FXML
+    private ComboBox<String> playerCombo;
+
+    @FXML
+    private TableView<GameResult> historyTable;
+
+    @FXML
+    private TableColumn<GameResult, String> colDate;
+
+    @FXML
+    private TableColumn<GameResult, String> colDifficulty;
+
+    @FXML
+    private TableColumn<GameResult, String> colResult;
+
+    @FXML
+    private TableColumn<GameResult, String> colTime;
+
+    @FXML
+    private TableColumn<GameResult, Integer> colHistoryScore;
+
+    // --- Tab Thống kê ---
+    @FXML
+    private ComboBox<String> statsPlayerCombo;
+
+    @FXML
+    private Label statsTotalGames;
+
+    @FXML
+    private Label statsWins;
+
+    @FXML
+    private Label statsWinRate;
+
+    @FXML
+    private Label statsBestScore;
+
+    @FXML
+    private Label statsAvgTime;
 
     private final RankingController rankingController = new RankingController();
+    private final MySqlGameResultRepository gameResultRepository = new MySqlGameResultRepository();
 
     @FXML
     private void initialize() {
         setupRankingTable();
         setupExpertOnlyLevelFilter();
+        
+        setupHistoryAndStats();
     }
 
     private void setupRankingTable() {
@@ -77,11 +129,88 @@ public class RankingHistoryController {
         try {
             List<RankingDTO> rankings = rankingController.getRankingTop(selected.getId(), 50);
             rankingTable.setItems(FXCollections.observableArrayList(rankings));
-            System.out.println("INFO: Loaded ranking for level " + selected.getDisplayName() + " with " + rankings.size() + " items");
         } catch (Exception e) {
             rankingTable.setItems(FXCollections.observableArrayList());
-            System.err.println("❌ FAIL: Không thể tải bảng xếp hạng cho level " + selected.getDisplayName());
             e.printStackTrace();
+        }
+    }
+
+    private void setupHistoryAndStats() {
+        // Cấu hình cột bảng lịch sử
+        colDate.setCellValueFactory(new PropertyValueFactory<>("playedAtFormatted"));
+        colDifficulty.setCellValueFactory(new PropertyValueFactory<>("difficultyLabel"));
+        colResult.setCellValueFactory(new PropertyValueFactory<>("result"));
+        colTime.setCellValueFactory(new PropertyValueFactory<>("timeFormatted"));
+        colHistoryScore.setCellValueFactory(new PropertyValueFactory<>("score"));
+
+        if (!SessionManager.isLoggedIn()) {
+            playerCombo.setItems(FXCollections.observableArrayList("Vui lòng đăng nhập"));
+            statsPlayerCombo.setItems(FXCollections.observableArrayList("Vui lòng đăng nhập"));
+            playerCombo.getSelectionModel().selectFirst();
+            statsPlayerCombo.getSelectionModel().selectFirst();
+            return;
+        }
+
+        User currentUser = SessionManager.getCurrentUser();
+        String username = currentUser.getUsername();
+
+        playerCombo.setItems(FXCollections.observableArrayList(username));
+        playerCombo.getSelectionModel().selectFirst();
+        playerCombo.setDisable(true); // Khoá combobox
+
+        statsPlayerCombo.setItems(FXCollections.observableArrayList(username));
+        statsPlayerCombo.getSelectionModel().selectFirst();
+        statsPlayerCombo.setDisable(true); // Khoá combobox
+
+        loadPlayerHistoryAndStats(username);
+    }
+
+    private void loadPlayerHistoryAndStats(String username) {
+        try {
+            List<GameResult> history = gameResultRepository.getPlayerHistory(username);
+            historyTable.setItems(FXCollections.observableArrayList(history));
+
+            // Tính toán thống kê
+            int totalGames = history.size();
+            int wins = 0;
+            int bestScore = 0;
+            long totalWinTimeMs = 0;
+
+            for (GameResult r : history) {
+                if (r.isWon()) {
+                    wins++;
+                    totalWinTimeMs += r.getElapsedTimeMs();
+                }
+                if (r.getScore() > bestScore) {
+                    bestScore = r.getScore();
+                }
+            }
+
+            statsTotalGames.setText(String.valueOf(totalGames));
+            statsWins.setText(wins + " / " + (totalGames - wins));
+            
+            double winRate = totalGames > 0 ? (double) wins / totalGames * 100 : 0;
+            statsWinRate.setText(String.format("%.1f%%", winRate));
+            
+            statsBestScore.setText(String.format("%,d", bestScore));
+
+            if (wins > 0) {
+                long avgMs = totalWinTimeMs / wins;
+                statsAvgTime.setText((avgMs / 1000) + " giây");
+            } else {
+                statsAvgTime.setText("0 giây");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void closePopup() {
+        if (levelCombo != null && levelCombo.getScene() != null) {
+            Stage stage = (Stage) levelCombo.getScene().getWindow();
+            stage.close();
         }
     }
 }
