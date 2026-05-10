@@ -8,6 +8,7 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="minesweeper.controller.AdminUserController"
            style="-fx-background-color:rgba(0,0,0,0.6);"
+           stylesheets="@../css/styles.css"
            prefWidth="1100" prefHeight="720">
     <VBox maxWidth="1060" maxHeight="680"
           style="-fx-background-color: linear-gradient(to bottom right, rgba(5,20,28,0.98), rgba(5,10,18,0.98));
@@ -93,8 +94,8 @@
                         <TableColumn fx:id="colId"          text="ID"           prefWidth="50"  style="-fx-alignment:CENTER;"/>
                         <TableColumn fx:id="colUsername"    text="Username"     prefWidth="160"/>
                         <TableColumn fx:id="colDisplayName" text="Tên hiển thị" prefWidth="180"/>
-                        <TableColumn fx:id="colRole"        text="Vai trò"      prefWidth="130" style="-fx-alignment:CENTER;"/>
-                        <TableColumn fx:id="colStatus"      text="Trạng thái"   prefWidth="120" style="-fx-alignment:CENTER;"/>
+                        <TableColumn fx:id="colRole"        text="Vai trò"      prefWidth="130" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
+                        <TableColumn fx:id="colStatus"      text="Trạng thái"   prefWidth="120" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
                     </columns>
                     <placeholder>
                         <Label text="Không tìm thấy người dùng phù hợp."
