@@ -213,5 +213,14 @@ public class RankingHistoryController {
             stage.close();
         }
     }
+
+    /**
+     * Chuyển TabPane sang Tab Lịch sử (index 1)
+     */
+    public void selectHistoryTab() {
+        if (tabPane != null) {
+            tabPane.getSelectionModel().select(1);
+        }
+    }
 }
 
