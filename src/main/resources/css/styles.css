@@ -691,3 +691,6 @@
     -fx-font-size: 26;
     -fx-font-weight: 900;
 }
+.admin-popup-card .combo-box > .list-cell {
+    -fx-text-fill: #ffffff;
+}
