@@ -23,8 +23,7 @@ class RankingControllerTest {
 			public List<LevelInfo> getLevels() {
 				return List.of(
 						new LevelInfo(1, "Easy"),
-						new LevelInfo(4, "EXPERT"),
-						new LevelInfo(5, "Custom")
+						new LevelInfo(4, "EXPERT")
 				);
 			}
 		};
