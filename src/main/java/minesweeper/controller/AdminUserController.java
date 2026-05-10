@@ -15,6 +15,7 @@ import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
 import minesweeper.service.MySqlUserService;
 import minesweeper.service.UserService;
+import utils.CryptUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -215,7 +216,8 @@ public class AdminUserController {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(u -> {
             try {
-                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), u.getPasswordHash());
+                String passwordHash = CryptUtils.md5(u.getPasswordHash());
+                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), passwordHash);
                 u.setId((int) id);
                 allUsers.add(u);
                 if (isFiltering) filtered.add(u);

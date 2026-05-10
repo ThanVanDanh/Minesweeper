@@ -35,7 +35,7 @@ public class MySqlUserService implements UserService {
     private static final String SELECT_PASSWORD_HASH_BY_ID_SQL =
             "SELECT password_hash FROM users WHERE id = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
-    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role) VALUES (?, ?, ?)";
+    private static final String INSERT_USER_SQL_F = "INSERT INTO users (username, display_name, role, password_hash) VALUES (?, ?, ?,?)";
     private static final String INSERT_USER_WITH_PASSWORD_SQL =
             "INSERT INTO users (username, display_name, password_hash, role) VALUES (?, ?, ?, ?)";
     private static final String SELECT_ALL_SQL =
