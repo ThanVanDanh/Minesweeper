@@ -36,25 +36,23 @@
     -fx-border-color: #ff4a69;
 }
 .flag-mode-active {
-    -fx-background-color:#ff4a69 ; /* Nền màu hồng */
+    -fx-background-color:#ff4a69 ;
     -fx-background-image: url("../img/flag-icon.png");
-    /* BẮT BUỘC PHẢI THÊM 3 DÒNG NÀY: */
-    -fx-background-size: 24px 24px;      /* Chỉnh kích thước icon vừa với nút */
-    -fx-background-repeat: no-repeat;    /* Không cho ảnh lặp lại nhiều lần */
-    -fx-background-position: center;     /* Căn giữa hình ảnh vào nút */
+    -fx-background-size: 24px 24px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
 
-    -fx-border-color: #000000 #fffffe #fffffe #000000; /* Hiệu ứng lõm xuống */
+    -fx-border-color: #000000 #fffffe #fffffe #000000;
     -fx-padding: 3px 0px 0px 3px;
 }
 .btnFlat {
     -fx-border-color: #fffffe #000000 #000000 #fffffe;
     -fx-border-width: 3px;
-    -fx-background-color: #ff8906; /* Nền cam nổi bật */
+    -fx-background-color: #ff8906;
     -fx-background-image: url("../img/bomb-icon.png");
 
-    /* BẮT BUỘC PHẢI THÊM 3 DÒNG NÀY: */
-    -fx-background-size: 24px 24px;      /* Chỉnh kích thước icon vừa với nút */
-    -fx-background-repeat: no-repeat;    /* Không cho ảnh lặp lại nhiều lần */
+    -fx-background-size: 24px 24px;
+    -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-text-fill: #0f0e17;
     -fx-font-weight: bold;
@@ -64,18 +62,15 @@
     -fx-cursor: hand;
 }
 .mine-cell-flaggedd {
-    /* 1. KẾ THỪA MÀU NỀN VÀ VIỀN CỦA Ô CHƯA MỞ */
     -fx-background-color: rgba(6, 31, 47, 0.95);
     -fx-border-color: rgba(45, 212, 240, 0.15);
     -fx-border-width: 1;
     -fx-cursor: hand;
-    /* 2. HIỂN THỊ ẢNH LÁ CỜ (Giữ nguyên như cũ) */
     -fx-background-image: url("../img/flag-icon.png");
     -fx-background-size: 24px 24px;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
 }
-/* --- CÁC CLASS MỚI CHO GIAO DIỆN GAME LOGIC --- */
 
 .mine-cell-bomb {
     -fx-background-color: #ff4a69;
@@ -103,5 +98,14 @@
 .btn-flat-flag-active {
     -fx-border-color: #ff4a69;
     -fx-text-fill: #ff4a69;
+}
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
 }
 
