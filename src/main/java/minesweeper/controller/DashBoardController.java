@@ -18,6 +18,17 @@ import utils.AuthPopupHelper;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.List;
+
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
+
+import minesweeper.dto.RankingDTO;
+import minesweeper.controller.RankingController;
 
 public class DashBoardController {
     private static DashBoardController instance;
@@ -30,8 +41,6 @@ public class DashBoardController {
     private ToggleButton hardButton;
     @FXML
     private ToggleButton expertButton;
-    @FXML
-    private ToggleButton customButton;
 
     @FXML
     private Button openPopupLogin;
@@ -39,6 +48,9 @@ public class DashBoardController {
     private Label selectedModeLabel;
     @FXML
     private Parent rootPane;
+    @FXML
+    private VBox rankingContainer;
+    
     private final ToggleGroup difficultyGroup = new ToggleGroup();
 
     @FXML
@@ -48,7 +60,6 @@ public class DashBoardController {
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
         expertButton.setToggleGroup(difficultyGroup);
-//        customButton.setToggleGroup(difficultyGroup);
 
         easyButton.setSelected(true);
         updateSelectedMode("DỄ", "9×9 | 10 Min");
@@ -65,10 +76,9 @@ public class DashBoardController {
             if (newToggle == mediumButton) updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
             if (newToggle == hardButton) updateSelectedMode("KHÓ", "16×30 | 99 Min");
             if (newToggle == expertButton) updateSelectedMode("CHUYÊN GIA", "20×30 | 145 Min");
-//            if (newToggle == customButton) updateSelectedMode("TÙY CHỈNH", "Tự thiết lập");
         });
         updateUiBasedOnSession();
-
+        loadTopRanking();
     }
 
     private void updateUiBasedOnSession() {
@@ -88,6 +98,7 @@ public class DashBoardController {
 
     public void refreshUI() {
         updateUiBasedOnSession();
+        loadTopRanking();
     }
 
     public static void refreshAllInstances() {
@@ -98,6 +109,12 @@ public class DashBoardController {
 
     @FXML
     private void onStartBattle() {
+        // Yêu cầu đăng nhập trước khi chơi
+        if (!minesweeper.service.SessionManager.isLoggedIn()) {
+            openLoginPopup();
+            return;
+        }
+
         selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
 
         try {
@@ -105,6 +122,11 @@ public class DashBoardController {
             Parent root = loader.load();
 
             BoardGameController controller = loader.getController();
+
+            // Truyền thông tin user từ session vào controller
+            minesweeper.model.User currentUser = minesweeper.service.SessionManager.getCurrentUser();
+            controller.setCurrentUser(currentUser.getId(), currentUser.getUsername());
+
             controller.setInitialDifficulty(getSelectedDifficulty());
 
             Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
@@ -234,9 +256,10 @@ public class DashBoardController {
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1100, 720);
+            scene.setFill(Color.TRANSPARENT);
 
             Stage popupStage = new Stage();
-            popupStage.initStyle(StageStyle.DECORATED);
+            popupStage.initStyle(StageStyle.TRANSPARENT);
             popupStage.initModality(Modality.APPLICATION_MODAL);
 
             Stage owner = null;
@@ -266,6 +289,73 @@ public class DashBoardController {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadTopRanking() {
+        if (rankingContainer == null) return;
+        rankingContainer.getChildren().clear();
+        try {
+            RankingController rankingController = new RankingController();
+            // Lấy top 5 ranking của level Expert
+            List<RankingDTO> topRanks = rankingController.getExpertRankingTop(5);
+            
+            if (topRanks.isEmpty()) {
+                Label emptyLabel = new Label("Chưa có dữ liệu xếp hạng.");
+                emptyLabel.setStyle("-fx-text-fill: gray;");
+                rankingContainer.getChildren().add(emptyLabel);
+                return;
+            }
+
+            for (int i = 0; i < topRanks.size(); i++) {
+                RankingDTO rank = topRanks.get(i);
+                
+                HBox row = new HBox();
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setSpacing(12);
+                row.getStyleClass().add("rank-row");
+                if (i == 0) row.getStyleClass().add("rank-row-first");
+
+                Label badge = new Label(String.valueOf(rank.getRank()));
+                if (rank.getRank() == 1) badge.getStyleClass().add("rank-badge-gold");
+                else if (rank.getRank() == 2) badge.getStyleClass().add("rank-badge-silver");
+                else if (rank.getRank() == 3) badge.getStyleClass().add("rank-badge-bronze");
+                else badge.getStyleClass().add("rank-badge-blue");
+
+                VBox nameBox = new VBox();
+                nameBox.setSpacing(1);
+                Label nameLabel = new Label(rank.getPlayerName());
+                if (rank.getRank() == 1) nameLabel.getStyleClass().add("rank-name-gold");
+                else nameLabel.getStyleClass().add("rank-name");
+                
+                Label metaLabel = new Label("Trận: " + rank.getTotalGames() + " | Thắng: " + rank.getWins());
+                metaLabel.getStyleClass().add("rank-meta");
+                nameBox.getChildren().addAll(nameLabel, metaLabel);
+
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                VBox scoreBox = new VBox();
+                scoreBox.setAlignment(Pos.CENTER_RIGHT);
+                scoreBox.setSpacing(1);
+                
+                long timeSeconds = rank.getBestTimeMs() / 1000;
+                Label timeLabel = new Label(timeSeconds + "s");
+                timeLabel.getStyleClass().add("rank-score-green");
+                
+                Label scoreLabel = new Label(String.format("%,d", rank.getBestScore()));
+                scoreLabel.getStyleClass().add("rank-meta");
+                
+                scoreBox.getChildren().addAll(timeLabel, scoreLabel);
+
+                row.getChildren().addAll(badge, nameBox, spacer, scoreBox);
+                rankingContainer.getChildren().add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Label errorLabel = new Label("Lỗi tải xếp hạng.");
+            errorLabel.setStyle("-fx-text-fill: red;");
+            rankingContainer.getChildren().add(errorLabel);
         }
     }
 }
