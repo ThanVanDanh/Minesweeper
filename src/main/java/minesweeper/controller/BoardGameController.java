@@ -42,6 +42,8 @@ public class BoardGameController implements Initializable {
     @FXML private VBox pauseOverlay;
     @FXML private Button btnPause, btnFlat;
     @FXML private Label lblOverlay;
+    @FXML private VBox gameOverOverlay;
+    @FXML private Label lblGameOver;
 
     private ToggleGroup difficultyGroup;
     private GameController gameLogic;
@@ -71,7 +73,11 @@ public class BoardGameController implements Initializable {
         stopTimer();
         secondsElapsed = 0;
         updateStatus();
-        pauseOverlay.setVisible(false);
+
+        // GIẤU CẢ 2 MÀN HÌNH ĐEN KHI BẮT ĐẦU VÁN MỚI
+        if (pauseOverlay != null) pauseOverlay.setVisible(false);
+        if (gameOverOverlay != null) gameOverOverlay.setVisible(false);
+
         if (btnPause != null) btnPause.setText("Tạm dừng");
         gameStartedAt = LocalDateTime.now();
         firstClickAt = null;
@@ -117,7 +123,6 @@ public class BoardGameController implements Initializable {
                         }
                     }
 
-                    // P24 fix: single if-else — sound only plays once
                     if (gameLogic.getGameState() == GameState.LOST) {
                         playExplosionSound();
                         showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
@@ -197,14 +202,14 @@ public class BoardGameController implements Initializable {
 
         boolean isNowPaused = !gameLogic.isPaused();
         gameLogic.setPaused(isNowPaused);
-        pauseOverlay.setVisible(isNowPaused);
+        if (pauseOverlay != null) pauseOverlay.setVisible(isNowPaused);
 
         if (isNowPaused) {
             stopTimer();
-            btnPause.setText("Tiếp tục");
+            if (btnPause != null) btnPause.setText("Tiếp tục");
         } else {
             startTimer();
-            btnPause.setText("Tạm dừng");
+            if (btnPause != null) btnPause.setText("Tạm dừng");
         }
     }
 
@@ -227,6 +232,7 @@ public class BoardGameController implements Initializable {
     }
 
     private void setupTimer() {
+        if (timer != null) timer.stop(); // Dọn dẹp timer cũ trước khi setup
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             secondsElapsed++;
             updateStatus();
@@ -274,11 +280,16 @@ public class BoardGameController implements Initializable {
             System.err.println("Lỗi khi phát âm thanh: " + ex.getMessage());
         }
     }
+
     private void showGameOver(String message, String hexColor) {
         stopTimer();
-        lblOverlay.setText(message);
-        lblOverlay.setStyle("-fx-text-fill: " + hexColor + "; -fx-font-size: 40; -fx-font-weight: bold;");
-        pauseOverlay.setVisible(true);
+        if (lblGameOver != null) {
+            lblGameOver.setText(message);
+            lblGameOver.setStyle("-fx-text-fill: " + hexColor + "; -fx-font-size: 40; -fx-font-weight: bold;");
+        }
+
+        if (gameOverOverlay != null) gameOverOverlay.setVisible(true);
+        if (pauseOverlay != null) pauseOverlay.setVisible(false);
         saveGameResult();
     }
 
