@@ -68,6 +68,8 @@ public class LoginController {
 
         loginTabButton.getStyleClass().add("switch-button-active");
         registerTabButton.getStyleClass().add("switch-button");
+
+        reCenterStage();
     }
 
     public void showRegisterForm() {
@@ -85,6 +87,8 @@ public class LoginController {
 
         loginTabButton.getStyleClass().add("switch-button");
         registerTabButton.getStyleClass().add("switch-button-active");
+
+        reCenterStage();
     }
 
     public void openAsLogin() {
@@ -181,5 +185,16 @@ public class LoginController {
         alert.setHeaderText("Thông báo");
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void reCenterStage() {
+        if (formTitle != null && formTitle.getScene() != null) {
+            Stage stage = (Stage) formTitle.getScene().getWindow();
+            // Đợi 1 nhịp UI để JavaFX tính toán lại kích thước mới của các thành phần bên trong
+            javafx.application.Platform.runLater(() -> {
+                stage.sizeToScene();
+                stage.centerOnScreen();
+            });
+        }
     }
 }
