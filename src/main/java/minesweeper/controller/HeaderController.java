@@ -12,7 +12,8 @@ import javafx.stage.Stage;
 import minesweeper.model.Role;
 import minesweeper.model.User;
 import minesweeper.service.SessionManager;
-import utils.AdminPopupHelper;
+import javafx.stage.StageStyle;
+import javafx.scene.paint.Color;
 import utils.AuthPopupHelper;
 
 import java.io.IOException;
@@ -137,21 +138,45 @@ public class HeaderController {
     }
 
     @FXML
-    public void openAdminUser() {
+    private void openHistoryPage() {
         try {
-            AdminPopupHelper.openAdminUserPopup(headerRoot);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/ranking-history.fxml"));
+            Parent root = loader.load();
+
+            // Lấy controller và chuyển sang tab Lịch sử
+            RankingHistoryController controller = loader.getController();
+            controller.selectHistoryTab();
+
+            Scene scene = new Scene(root, 1100, 720);
+            scene.setFill(Color.TRANSPARENT);
+
+            Stage popupStage = new Stage();
+            popupStage.initStyle(StageStyle.TRANSPARENT);
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+
+            if (headerRoot != null && headerRoot.getScene() != null) {
+                popupStage.initOwner(headerRoot.getScene().getWindow());
+            }
+
+            popupStage.setTitle("Bảng xếp hạng & lịch sử chơi");
+            popupStage.setScene(scene);
+            popupStage.centerOnScreen();
+            popupStage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    public void openAdminUser() {
+        openAdminWindow("/app/adminUser.fxml", "Quản lý Người dùng – Admin");
+    }
+
     @FXML
     public void openAdminResult() {
-        try {
-            AdminPopupHelper.openAdminResultPopup(headerRoot);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        openAdminWindow("/app/adminResult.fxml", "Quản lý Kết quả – Admin");
     }
+
     private void swapScene(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
