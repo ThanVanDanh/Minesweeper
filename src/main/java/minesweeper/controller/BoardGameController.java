@@ -82,7 +82,7 @@ public class BoardGameController implements Initializable {
         gameStartedAt = LocalDateTime.now();
         firstClickAt = null;
         renderBoard();
-        startTimer();
+//        startTimer();
     }
 
     private void renderBoard() {
@@ -109,6 +109,7 @@ public class BoardGameController implements Initializable {
 
                     if (firstClickAt == null) {
                         firstClickAt = LocalDateTime.now();
+                        startTimer();
                     }
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
