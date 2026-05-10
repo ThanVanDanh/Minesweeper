@@ -40,7 +40,7 @@ public class MySqlRankingRepository implements RankingRepository {
             WHERE gs.level_id = ?
             GROUP BY u.id, u.username
             ORDER BY best_score DESC, 
-                     COALESCE(best_time_ms, 999999999) ASC,
+                   COALESCE(MIN(CASE WHEN UPPER(gs.result) = 'WIN' THEN gs.completion_time END), 999999999) ASC,
                      player_name ASC
             """;
 
