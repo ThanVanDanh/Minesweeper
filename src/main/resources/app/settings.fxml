@@ -481,7 +481,9 @@
                                         <Button text="ĐỔI MẬT KHẨU"
                                                 onAction="#changePassword"
                                                 styleClass="save-button"/>
-
+                                        <Label fx:id="accountMessageLabel"
+                                               text=""
+                                               styleClass="message-label"/>
                                     </VBox>
 
                                 </HBox>
@@ -499,9 +501,7 @@
                                     </HBox>
                                 </VBox>
 
-                                <Label fx:id="accountMessageLabel"
-                                       text=""
-                                       styleClass="message-label"/>
+
 
                             </VBox>
 

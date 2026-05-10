@@ -1,4 +1,4 @@
-package minesweeper.model;
+package minesweeper.model.enums;
 
 public enum Difficulty {
     EASY(9, 9, 10, "Dễ"),
