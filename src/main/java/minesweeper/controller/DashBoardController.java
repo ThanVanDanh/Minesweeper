@@ -11,7 +11,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.model.User;
 import minesweeper.service.SessionManager;
 import utils.AuthPopupHelper;
@@ -28,7 +28,6 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 
 import minesweeper.dto.RankingDTO;
-import minesweeper.controller.RankingController;
 
 public class DashBoardController {
     private static DashBoardController instance;

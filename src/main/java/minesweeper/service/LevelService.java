@@ -1,6 +1,6 @@
 package minesweeper.service;
 
-import minesweeper.model.Difficulty;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.repository.exception.DataAccessException;
 
 /**

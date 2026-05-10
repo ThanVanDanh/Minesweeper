@@ -1,6 +1,6 @@
 package minesweeper.service;
 
-import minesweeper.model.Role;
+import minesweeper.model.enums.Role;
 import minesweeper.model.User;
 import minesweeper.repository.exception.DataAccessException;
 import utils.CryptUtils;

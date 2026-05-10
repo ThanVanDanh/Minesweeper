@@ -1,4 +1,4 @@
-package minesweeper.model;
+package minesweeper.model.enums;
 
 public enum Role {
     PLAYER("Người chơi"),
