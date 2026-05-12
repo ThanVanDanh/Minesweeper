@@ -14,6 +14,7 @@ import javafx.stage.StageStyle;
 import minesweeper.model.enums.Difficulty;
 import minesweeper.model.User;
 import minesweeper.service.SessionManager;
+import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
 
 import java.io.IOException;
@@ -166,16 +167,20 @@ public class DashBoardController {
 
     // ── Admin navigation ──────────────────────────────────────────────────────
 
-    @FXML
     public void openAdminUser() {
-        openAdminWindow("/app/adminUser.fxml", "Quản lý Người dùng – Admin");
+        try {
+            AdminPopupHelper.openAdminUserPopup(rootPane != null ? rootPane : selectedModeLabel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
-    @FXML
     public void openAdminResult() {
-        openAdminWindow("/app/adminResult.fxml", "Quản lý Kết quả – Admin");
+        try {
+            AdminPopupHelper.openAdminResultPopup(rootPane != null ? rootPane : selectedModeLabel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
     private void openAdminWindow(String fxmlPath, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
