@@ -704,3 +704,46 @@
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
+
+
+.admin-filter-combo.combo-box-base,
+.admin-filter-combo > .combo-box-base {
+    -fx-background-color: rgba(3,16,25,0.95);
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.admin-filter-combo {
+    -fx-background-color: rgba(3,16,25,0.95);
+    -fx-border-color: #2dd4f0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13;
+}
+
+.admin-filter-combo .list-cell {
+    -fx-background-color: rgba(3,16,25,0.95);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 700;
+    -fx-font-size: 13;
+}
+
+.admin-filter-combo:focused,
+.admin-filter-combo:showing {
+    -fx-border-color: #39ff8f;
+    -fx-background-color: rgba(45, 212, 240, 0.12);
+}
+
+.admin-filter-combo .arrow-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.admin-filter-combo .arrow-button .arrow {
+    -fx-background-color: #2dd4f0;
+}
