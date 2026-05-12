@@ -59,7 +59,6 @@ public class AdminUserController {
     public AdminUserController() {
         userService = new MySqlUserService();
     }
-
     @FXML
     public void initialize() {
         cbRoleFilter.setItems(FXCollections.observableArrayList("Tất cả", "Người chơi", "Quản trị viên"));
@@ -110,7 +109,10 @@ public class AdminUserController {
         colStatus.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().isActive() ? "Hoạt động" : "Đã khoá"));
     }
-
+    /**
+     * UC-22 | Bước 2-6: Tải toàn bộ danh sách user từ DB và hiển thị lên bảng.
+     *
+     */
     private void loadUsers() {
         try {
             List<User> users = userService.getAllUsers();
@@ -156,7 +158,9 @@ public class AdminUserController {
         adminCountLabel.setText(String.valueOf(admin));
     }
 
-
+    // =========================================================================
+    // UC-22 | 22a. Tìm kiếm
+    // =========================================================================
     @FXML
     public void onSearch() {
         String kw           = searchField.getText().toLowerCase().trim();
@@ -210,7 +214,9 @@ public class AdminUserController {
         if (currentPage < totalPages - 1) { currentPage++; showPage(); }
     }
 
-
+    // =========================================================================
+    // UC-22 | 22b. Thêm người dùng
+    // =========================================================================
     @FXML
     public void onAddUser() {
         Dialog<User> dialog = buildUserDialog(null);
@@ -235,7 +241,9 @@ public class AdminUserController {
             }
         });
     }
-
+    // =========================================================================
+    // UC-22 | 22c. Chỉnh sửa thông tin
+    // =========================================================================
     @FXML
     public void onEditUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
@@ -260,7 +268,9 @@ public class AdminUserController {
         });
     }
 
-
+    // =========================================================================
+    // UC-22 | 22d. Khoá / Mở khoá
+    // =========================================================================
     @FXML
     public void onLockUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
@@ -279,6 +289,9 @@ public class AdminUserController {
     }
 
 
+    // =========================================================================
+    // UC-22 | 22e. Xoá tài khoản
+    // =========================================================================
     @FXML
     public void onDeleteUser() {
         User selected = userTable.getSelectionModel().getSelectedItem();
