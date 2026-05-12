@@ -33,15 +33,13 @@ public final class AdminPopupHelper {
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
         if (ownerNode instanceof javafx.scene.Node node && node.getScene() != null) {
-            Stage owner = (Stage) node.getScene().getWindow();
-            popupStage.initOwner(owner);
-            popupStage.setWidth(owner.getWidth());
-            popupStage.setHeight(owner.getHeight());
-            popupStage.setX(owner.getX());
-            popupStage.setY(owner.getY());
+            popupStage.initOwner(node.getScene().getWindow());
         }
 
         popupStage.setScene(scene);
+        popupStage.setResizable(false);
+        popupStage.centerOnScreen();
         popupStage.showAndWait();
     }
+
 }
