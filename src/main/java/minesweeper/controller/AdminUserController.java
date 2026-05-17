@@ -68,14 +68,19 @@ public class AdminUserController {
     public AdminUserController() {
         this.userService = new MySqlUserService();
     }
+
+    // =========================================================================
+    // Basic Flow – UC-22
+    // =========================================================================
+
     /**
-     * UC-22.2 Hệ thống tải và hiển thị danh sách người dùng
+     * 22.1.1 Admin mở màn hình quản lí người dùng
      */
     @FXML
     public void initialize() {
         setupFilterComboBoxes();
         setupTable();
-        loadUsers();
+        loadUsers(); // 22.1.2 Hệ thống tải và hiển thị danh sách người dùng
     }
 
     private void setupFilterComboBoxes() {
@@ -92,6 +97,10 @@ public class AdminUserController {
         setupColumns();
     }
 
+    /**
+     * 22.1.2 Hệ thống tải và hiển thị danh sách người dùng
+     * 22.1-E1 CSDL không thể kết nối
+     */
     private void loadUsers() {
         try {
             List<User> users = userService.getAllUsers();
@@ -104,23 +113,25 @@ public class AdminUserController {
             updateStats(allUsers);
             statusLabel.setText("Đã tải " + allUsers.size() + " users");
         } catch (DataAccessException e) {
-            // UC-22.2-A1 CSDL không thể kết nối
+            // 22.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
             showError("Không thể tải dữ liệu");
         }
     }
 
     // =========================================================================
-    // UC-22.3-A1. Tìm kiếm người dùng
+    // Alternative Flow – UC-22.2 Tìm kiếm người dùng
     // =========================================================================
 
     /**
-     * UC-22.3-A1.2 Hệ thống lọc danh sách và làm mới danh sách
-     * UC-22.3-A1.a Admin xoá hết điều kiện rồi nhấn Tìm kiếm
+     * 22.2.1 Admin nhập từ khóa và chọn bộ lọc (Vai trò/Trạng thái) rồi nhấn Tìm kiếm
+     * 22.2.2 Hệ thống lọc danh sách và làm mới danh sách
+     * 22.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm
      */
     @FXML
     public void onSearch() {
-        String keyword     = searchField.getText().toLowerCase().trim();
-        String roleFilter  = cbRoleFilter.getValue();
+        // 22.2.1 Admin nhập từ khóa và chọn bộ lọc rồi nhấn Tìm kiếm
+        String keyword      = searchField.getText().toLowerCase().trim();
+        String roleFilter   = cbRoleFilter.getValue();
         String statusFilter = cbStatusFilter.getValue();
 
         boolean noFilter = keyword.isEmpty()
@@ -128,10 +139,11 @@ public class AdminUserController {
                 && FILTER_ALL.equals(statusFilter);
 
         if (noFilter) {
-            // UC-22.3-A1.a Admin xoá hết điều kiện rồi nhấn Tìm kiếm
+            // 22.2-A1 Admin xoá hết điều kiện → khôi phục toàn bộ danh sách ban đầu
             isFiltering = false;
             filtered.clear();
         } else {
+            // 22.2.2 Hệ thống lọc danh sách và làm mới danh sách
             filtered.clear();
             for (User u : allUsers) {
                 if (matchesFilter(u, keyword, roleFilter, statusFilter)) {
@@ -149,7 +161,8 @@ public class AdminUserController {
     }
 
     /**
-     * UC-22.3-A1.b Admin nhấn Làm mới
+     * 22.2-A2 Admin nhấn Làm mới
+     * Hệ thống xóa ô tìm kiếm, đưa các bộ lọc về mặc định và tải lại danh sách mới
      */
     @FXML
     public void onRefresh() {
@@ -178,24 +191,24 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // UC-22.3-A2 thêm người dùng
+    // Alternative Flow – UC-22.3 Thêm người dùng
     // =========================================================================
 
     /**
-     * UC-22.3-A2 thêm người dùng
-     * UC-22b Alt Flow 22b-A2: Admin huỷ → dialog đóng, không thay đổi.
-     * UC-22b Alt Flow 22b-A3: CSDL lỗi → hiển thị thông báo lỗi chi tiết.
+     * 22.3.1 Admin nhấn nút thêm người dùng
+     * 22.3-A1 Admin nhấn Huỷ
      */
     @FXML
     public void onAddUser() {
-        // 22.3-A2.2 Hệ thống hiện thị dialog nhập thông tin người dùng
+        // 22.3.1 Admin nhấn nút thêm người dùng
+        // 22.3.2 Hệ thống hiển thị dialog nhập thông tin người dùng
         Dialog<User> dialog = buildUserDialog(null);
-        Optional<User> result = dialog.showAndWait(); // AA2.b Admin nhấn Huỷ: cancel → empty
+        Optional<User> result = dialog.showAndWait(); // 22.3-A1 Admin nhấn Huỷ → đóng, không lưu
 
-        // 22.3-A2.3 Admin nhập thông tin và nhấn nút thêm
+        // 22.3.3 Admin nhập thông tin và nhấn nút thêm
         result.ifPresent(newUser -> {
             try {
-                // 22.3-A2.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
+                // 22.3.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
                 String passwordHash = CryptUtils.md5(newUser.getPasswordHash());
                 long generatedId = userService.createUserFull(
                         newUser.getUsername(),
@@ -204,7 +217,7 @@ public class AdminUserController {
                         passwordHash
                 );
 
-                // 22.3-A2.5 Hệ thống gán Id trả về cho User mới và cập nhập danh sách
+                // 22.3.5 Hệ thống gán Id trả về cho User mới và cập nhật danh sách
                 newUser.setId((int) generatedId);
                 allUsers.add(newUser);
                 if (isFiltering) filtered.add(newUser);
@@ -215,7 +228,7 @@ public class AdminUserController {
                 statusLabel.setText("Đã thêm user: " + newUser.getUsername());
 
             } catch (Exception e) {
-                // 22.3-A3.c Hệ thống báo lỗi (Trùng tên, mất kết nối...)
+                // 22.3-E1 (username trùng, mất kết nối...) → hiển thị hộp thoại lỗi
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
                 showError("Thêm user thất bại!\n"
                         + e.getClass().getSimpleName() + ": " + e.getMessage()
@@ -225,38 +238,40 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // UC-22c – Chỉnh sửa thông tin người dùng
+    // Alternative Flow – UC-22.4 Chỉnh sửa thông tin người dùng
     // =========================================================================
 
     /**
-     * UC-22.3-A3 Chỉnh sửa thông tin người dùng
-     * UC-22.3-A3a Chưa chọn User, nhấn chỉnh sửa
-     * UC-22.3-A3b Admin nhấn hủy: huỷ → không thay đổi.
-     * UC-22.3-A3c lỗi CSDL
+     * 22.4.1 Admin chọn user trong bảng
+     * 22.4.2 Admin nhấn nút chỉnh sửa
+     * 22.4-A1 Admin nhấn hủy
+     * 22.4-E1 Chưa chọn User, nhấn chỉnh sửa
+     * 22.4-E2 Lỗi CSDL
      */
     @FXML
     public void onEditUser() {
+        // 22.4.1 Admin chọn user trong bảng
+        // 22.4.2 Admin nhấn nút chỉnh sửa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // UC-22.3-A3a Chưa chọn User, nhấn chỉnh sửa
+        // 22.4-E1 Chưa chọn User → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user cần sửa");
             return;
         }
 
-        // 22.3-A3.3 Hệ thống hiển thị dialog sửa người dùng
+        // 22.4.3 Hệ thống hiển thị dialog sửa người dùng
         Dialog<User> dialog = buildUserDialog(selected);
-        // 22.3-A3b Admin nhấn hủy
-        Optional<User> result = dialog.showAndWait();
+        Optional<User> result = dialog.showAndWait(); // 22.4-A1 Admin nhấn hủy → đóng, không thay đổi
 
-        // 22.3-A3.4 Admin cập nhập nickname hoặc vai trò và nhấn cập nhập
+        // 22.4.4 Admin cập nhật nickname hoặc vai trò và nhấn cập nhật
         result.ifPresent(updated -> {
             try {
-                // 22.3-A3.5 Hệ thống cập nhập thông tin vào CSDL
+                // 22.4.5 Hệ thống cập nhật thông tin vào CSDL
                 userService.updateDisplayName(selected.getId(), updated.getDisplayName());
                 userService.updateRole(selected.getId(), updated.getRole());
 
-                // 22.3-A3.6 Hệ thống load lại danh sách
+                // 22.4.6 Hệ thống load lại danh sách
                 selected.setDisplayName(updated.getDisplayName());
                 selected.setRole(updated.getRole());
                 userTable.refresh();
@@ -264,38 +279,38 @@ public class AdminUserController {
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
 
             } catch (Exception e) {
-                // 22.3-A3c lỗi CSDL
+                // 22.4-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
                 showError("Sửa thất bại: " + e.getMessage());
             }
         });
     }
 
     // =========================================================================
-    // UC-22.3-A4 Khóa/ mở khóa tài khoản
+    // Alternative Flow – UC-22.5 Khoá / Mở khoá tài khoản
     // =========================================================================
 
     /**
-     * UC-22.3-A4 Khóa/ mở khóa tài khoản
-     * UC-22.3-A4a Chưa chọn User, nhấn chỉnh sửa
-     * UC-22.3-A4b Lỗi CSDL
+     * 22.5.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
+     * 22.5-E1 Chưa chọn User, nhấn khóa/ mở khóa
+     * 22.5-E2 Lỗi CSDL
      */
     @FXML
     public void onLockUser() {
-        // 22.3-A4.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
+        // 22.5.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 22.3-A4a Chưa chọn User, nhấn chỉnh sửa
+        // 22.5-E1 Chưa chọn User → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user");
             return;
         }
 
         try {
-            // 22.3-A4.2 Hệ thống cập nhập vào CSLD
+            // 22.5.2 Hệ thống cập nhật vào CSDL
             boolean newStatus = !selected.isActive();
             userService.setActive(selected.getId(), newStatus);
 
-            // 22.3-A4.3 Hệ thống load lại danh sách
+            // 22.5.3 Hệ thống load lại danh sách
             selected.setActive(newStatus);
             userTable.refresh();
             updateStats(allUsers);
@@ -304,40 +319,41 @@ public class AdminUserController {
                     : "Đã khoá: " + selected.getUsername());
 
         } catch (Exception e) {
-            // 22.3-A4b Lỗi CSDL
+            // 22.5-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
             showError("Khoá/mở khoá thất bại");
         }
     }
 
     // =========================================================================
-    // UC-22e – Xoá tài khoản người dùng
+    // Alternative Flow – UC-22.6 Xoá người dùng
     // =========================================================================
 
     /**
-     * UC-22.3-A5 Xóa người dùng
-     * UC-22.3-A5a Chưa chọn User, nhấn chỉnh xóa
-     * UC-22.3-A3b Admin nhấn hủy
-     * UC-22.3-A5c Lỗi CSDL
+     * 22.6.1 Admin chọn User trong bảng và nhấn nút xóa
+     * 22.6-A1 Admin nhấn hủy
+     * 22.6-E1 Chưa chọn User, nhấn xóa
+     * 22.6-E2 Lỗi CSDL
      */
     @FXML
     public void onDeleteUser() {
-        // 22.3-A5.1 Admin chọn User trong bảng và nhấn nút xóa
+        // 22.6.1 Admin chọn User trong bảng và nhấn nút xóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 22.3-A5a Chưa chọn User, nhấn chỉnh xóa
+        // 22.6-E1 Chưa chọn User → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user cần xoá");
             return;
         }
 
-        // 22.3-A5.2 Hệ thống hiển thị hộp thoại xác nhận
+        // 22.6.2 Hệ thống hiển thị hộp thoại xác nhận
         if (!confirmDelete(selected.getUsername())) {
-            // 22.3-A3b Admin nhấn hủy
+            // 22.6-A1 Admin nhấn hủy → đóng dialog, không thay đổi
             return;
         }
 
         try {
-            // 22.3-A5.3 Hệ thống xóa User khỏi CSDL
+            // 22.6.3 Admin xác nhận OK
+            // 22.6.4 Hệ thống xóa User khỏi CSDL
             userService.deleteUser(selected.getId());
             allUsers.remove(selected);
             if (isFiltering) filtered.remove(selected);
@@ -346,13 +362,13 @@ public class AdminUserController {
                 currentPage = Math.max(0, currentPage - 1);
             }
 
-            // 22.3-A5.4 Hệ thống load lại danh sách
+            // 22.6.5 Hệ thống load lại danh sách
             showPage();
             updateStats(allUsers);
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
 
         } catch (Exception e) {
-            // 22.3-A5c Lỗi CSDL
+            // 22.6-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
             showError("Xoá thất bại");
         }
     }
@@ -360,6 +376,7 @@ public class AdminUserController {
     // =========================================================================
     // Private – Giao diện & Helpers
     // =========================================================================
+
     @FXML
     public void onPrevPage() {
         if (currentPage > 0) {
@@ -375,6 +392,7 @@ public class AdminUserController {
             showPage();
         }
     }
+
     /**
      * Hiển thị một trang dữ liệu lên bảng.
      * Dùng allUsers hoặc filtered tuỳ trạng thái isFiltering.
@@ -409,8 +427,8 @@ public class AdminUserController {
     }
 
     /**
-     * UC-22.3-A5.2 Hệ thống hiển thị hộp thoại xác nhận
-     * @return true nếu Admin nhấn OK.
+     * 22.6.2 Hệ thống hiển thị hộp thoại xác nhận
+     * @return true nếu Admin nhấn OK (22.6.3)
      */
     private boolean confirmDelete(String username) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -421,7 +439,9 @@ public class AdminUserController {
     }
 
     /**
-     * Dialog dùng chung cho Thêm và Sửa
+     * Dialog dùng chung cho Thêm (existing=null) và Sửa (existing≠null)
+     * 22.3-E1 Username bị bỏ trống → nút Thêm bị vô hiệu hoá
+     * 22.3-A2 Biệt danh bị để trống → dùng username làm tên hiển thị
      */
     private Dialog<User> buildUserDialog(User existing) {
         boolean isEdit = existing != null;
@@ -437,7 +457,6 @@ public class AdminUserController {
                 ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
 
-        // ── Form ──
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(10);
@@ -475,7 +494,7 @@ public class AdminUserController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // 22.3-A2.a Username bị bỏ trống
+        // 22.3-E1 Username bị bỏ trống → vô hiệu hoá nút Thêm
         javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
         okNode.setDisable(!isEdit);
         if (!isEdit) {
@@ -485,12 +504,12 @@ public class AdminUserController {
 
         final TextField finalTfPassword = tfPassword;
         dialog.setResultConverter(btnType -> {
-            if (btnType != okBtn) return null; // UC-22b-A2 / UC-22c-A2
+            if (btnType != okBtn) return null; // 22.3-A1 / 22.4-A1
 
             User result = isEdit ? existing : new User();
             if (!isEdit) result.setUsername(tfUsername.getText().trim());
 
-            // 22.3-A4.d Biệt danh bị để trống
+            // 22.3-A2 Biệt danh bị để trống → lấy username làm tên hiển thị
             String nick = tfDisplayName.getText().trim();
             result.setDisplayName(nick.isEmpty() ? tfUsername.getText().trim() : nick);
 
