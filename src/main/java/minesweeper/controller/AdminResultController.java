@@ -61,11 +61,12 @@ public class AdminResultController {
     private final GameResultRepository       repository;
     private final MySqlGameResultRepository  pagedRepository;
     private static final Logger LOG = LoggerFactory.getLogger(AdminResultController.class);
-    private final MySqlAuditLogRepository auditLogRepository = new MySqlAuditLogRepository();
+    private final MySqlAuditLogRepository auditLogRepository;
 
     public AdminResultController() {
         repository       = new MySqlGameResultRepository();
         pagedRepository  = (MySqlGameResultRepository) repository;
+        auditLogRepository  = new MySqlAuditLogRepository();
     }
 
     // =========================================================================
