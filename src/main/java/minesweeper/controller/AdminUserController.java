@@ -17,6 +17,12 @@ import minesweeper.repository.exception.DataAccessException;
 import minesweeper.service.MySqlUserService;
 import minesweeper.service.UserService;
 import utils.CryptUtils;
+import minesweeper.model.AuditLog;
+import minesweeper.repository.log.MySqlAuditLogRepository;
+import minesweeper.service.SessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.Optional;
