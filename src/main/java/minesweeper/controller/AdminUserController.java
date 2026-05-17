@@ -70,9 +70,12 @@ public class AdminUserController {
 
     // ── Dependencies ─────────────────────────────────────────────────────────
     private final UserService userService;
+    private static final Logger LOG = LoggerFactory.getLogger(AdminUserController.class);
+    private final MySqlAuditLogRepository auditLogRepository;
 
     public AdminUserController() {
         this.userService = new MySqlUserService();
+        this.auditLogRepository = new MySqlAuditLogRepository();
     }
 
     // =========================================================================
@@ -232,6 +235,23 @@ public class AdminUserController {
                 showPage();
                 updateStats(allUsers);
                 statusLabel.setText("Đã thêm user: " + newUser.getUsername());
+                // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+                try {
+                    Long adminId = SessionManager.isLoggedIn()
+                            ? SessionManager.getCurrentUser().getId()
+                            : null;
+
+                    String target = "user:" + newUser.getUsername();
+                    String details = "Created new user; Role: " +
+                            (newUser.getRole() != null ? newUser.getRole().getLabel() : "N/A");
+
+                    AuditLog log = new AuditLog(adminId, "CREATE_USER", target, details);
+                    auditLogRepository.insert(log);
+
+                    LOG.info("[AUDIT] Admin {} created user: {}", adminId, newUser.getUsername());
+                } catch (Exception e) {
+                    LOG.warn("Failed to log audit for user creation", e);
+                }
 
             } catch (Exception e) {
                 // 22.3-E1 (username trùng, mất kết nối...) → hiển thị hộp thoại lỗi
@@ -283,7 +303,24 @@ public class AdminUserController {
                 userTable.refresh();
                 updateStats(allUsers);
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
+                // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+                try {
+                    Long adminId = SessionManager.isLoggedIn()
+                            ? SessionManager.getCurrentUser().getId()
+                            : null;
 
+                    String target = "user:" + selected.getUsername();
+                    String changes = "DisplayName: " + selected.getDisplayName() + " → " + updated.getDisplayName() +
+                            "; Role: " + (selected.getRole() != null ? selected.getRole().getLabel() : "N/A") +
+                            " → " + (updated.getRole() != null ? updated.getRole().getLabel() : "N/A");
+
+                    AuditLog log = new AuditLog(adminId, "UPDATE_USER", target, changes);
+                    auditLogRepository.insert(log);
+
+                    LOG.info("[AUDIT] Admin {} updated user: {} | {}", adminId, selected.getUsername(), changes);
+                } catch (Exception e) {
+                    LOG.warn("Failed to log audit for user update", e);
+                }
             } catch (Exception e) {
                 // 22.4-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
                 showError("Sửa thất bại: " + e.getMessage());
@@ -320,10 +357,28 @@ public class AdminUserController {
             selected.setActive(newStatus);
             userTable.refresh();
             updateStats(allUsers);
-            statusLabel.setText(newStatus
+            String msg = newStatus
                     ? "Đã mở khoá: " + selected.getUsername()
-                    : "Đã khoá: " + selected.getUsername());
+                    : "Đã khoá: " + selected.getUsername();
+            statusLabel.setText(msg);
 
+            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            try {
+                Long adminId = SessionManager.isLoggedIn()
+                        ? SessionManager.getCurrentUser().getId()
+                        : null;
+
+                String target = "user:" + selected.getUsername();
+                String action = newStatus ? "UNLOCK_USER" : "LOCK_USER";
+                String details = newStatus ? "Unlocked user account" : "Locked user account";
+
+                AuditLog log = new AuditLog(adminId, action, target, details);
+                auditLogRepository.insert(log);
+
+                LOG.info("[AUDIT] Admin {} {} user: {}", adminId, action, selected.getUsername());
+            } catch (Exception e) {
+                LOG.warn("Failed to log audit for lock/unlock", e);
+            }
         } catch (Exception e) {
             // 22.5-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
             showError("Khoá/mở khoá thất bại");
@@ -372,7 +427,24 @@ public class AdminUserController {
             showPage();
             updateStats(allUsers);
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
+            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            try {
+                Long adminId = SessionManager.isLoggedIn()
+                        ? SessionManager.getCurrentUser().getId()
+                        : null;
 
+                String target = "user:" + selected.getUsername();
+                String details = "Deleted user; Original Role: " +
+                        (selected.getRole() != null ? selected.getRole().getLabel() : "N/A") +
+                        "; Status: " + (selected.isActive() ? "Active" : "Locked");
+
+                AuditLog log = new AuditLog(adminId, "DELETE_USER", target, details);
+                auditLogRepository.insert(log);
+
+                LOG.info("[AUDIT] Admin {} deleted user: {}", adminId, selected.getUsername());
+            } catch (Exception e) {
+                LOG.warn("Failed to log audit for user deletion", e);
+            }
         } catch (Exception e) {
             // 22.6-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
             showError("Xoá thất bại");
