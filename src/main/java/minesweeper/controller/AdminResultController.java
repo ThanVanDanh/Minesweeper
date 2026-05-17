@@ -11,6 +11,12 @@ import minesweeper.model.enums.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
 import minesweeper.repository.MySqlGameResultRepository;
+import minesweeper.model.AuditLog;
+import minesweeper.repository.log.MySqlAuditLogRepository;
+import minesweeper.service.SessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,10 +60,13 @@ public class AdminResultController {
     // ── Dependencies ─────────────────────────────────────────────────────────
     private final GameResultRepository       repository;
     private final MySqlGameResultRepository  pagedRepository;
+    private static final Logger LOG = LoggerFactory.getLogger(AdminResultController.class);
+    private final MySqlAuditLogRepository auditLogRepository;
 
     public AdminResultController() {
         repository       = new MySqlGameResultRepository();
         pagedRepository  = (MySqlGameResultRepository) repository;
+        auditLogRepository  = new MySqlAuditLogRepository();
     }
 
     // =========================================================================
@@ -242,6 +251,27 @@ public class AdminResultController {
             resultTable.setItems(masterList);
             statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
             showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
+
+            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            try {
+                Long adminId = SessionManager.isLoggedIn()
+                        ? SessionManager.getCurrentUser().getId()
+                        : null;
+
+                String target = selectedList.stream()
+                        .map(GameResult::getGameId)
+                        .collect(Collectors.joining(","));
+
+                String details = "Deleted " + selectedList.size() + " fraudulent game results; GameIds: " + target;
+
+                AuditLog log = new AuditLog(adminId, "DELETE_SESSION", target, details);
+                auditLogRepository.insert(log);
+
+                LOG.info("[AUDIT] Admin {} deleted {} fraudulent results: {}", adminId, selectedList.size(), target);
+            } catch (Exception e) {
+                LOG.warn("Failed to log audit for fraud deletion", e);
+            }
+
         } catch (Exception e) {
             // 19.3-E2 CSDL lỗi khi xoá
             showError("Xoá thất bại");
