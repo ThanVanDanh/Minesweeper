@@ -23,7 +23,8 @@ import java.util.Optional;
 
 public class AdminUserController {
 
-    @FXML private TextField searchField;
+    // ── FXML Controls ────────────────────────────────────────────────────────
+    @FXML private TextField       searchField;
     @FXML private ComboBox<String> cbRoleFilter;
     @FXML private ComboBox<String> cbStatusFilter;
 
@@ -35,43 +36,474 @@ public class AdminUserController {
 
     @FXML private Button btnPrevPage;
     @FXML private Button btnNextPage;
-    @FXML private Label pageLabel;
+    @FXML private Label  pageLabel;
 
-    @FXML private TableView<User> userTable;
-    @FXML private TableColumn<User, Boolean> colSelect;
-    @FXML private TableColumn<User, Integer> colId;
-    @FXML private TableColumn<User, String>  colUsername;
-    @FXML private TableColumn<User, String>  colDisplayName;
-    @FXML private TableColumn<User, String>  colRole;
-    @FXML private TableColumn<User, String>  colStatus;
+    @FXML private TableView<User>              userTable;
+    @FXML private TableColumn<User, Boolean>   colSelect;
+    @FXML private TableColumn<User, Integer>   colId;
+    @FXML private TableColumn<User, String>    colUsername;
+    @FXML private TableColumn<User, String>    colDisplayName;
+    @FXML private TableColumn<User, String>    colRole;
+    @FXML private TableColumn<User, String>    colStatus;
 
-    private static final int PAGE_SIZE = 20;
-    private int currentPage = 0;
-    private int totalPages  = 1;
+    // ── Constants ────────────────────────────────────────────────────────────
+    private static final int    PAGE_SIZE        = 20;
+    private static final String FILTER_ALL       = "Tất cả";
+    private static final String STATUS_ACTIVE    = "Hoạt động";
+    private static final String STATUS_LOCKED    = "Đã khoá";
+    private static final String DEFAULT_PASSWORD = "123456";
 
-    private boolean isFiltering = false;
+    // ── State ────────────────────────────────────────────────────────────────
+    private int     currentPage  = 0;
+    private int     totalPages   = 1;
+    private boolean isFiltering  = false;
+
     private final ObservableList<User> allUsers  = FXCollections.observableArrayList();
     private final ObservableList<User> filtered  = FXCollections.observableArrayList();
     private final ObservableList<User> pageItems = FXCollections.observableArrayList();
 
-    private UserService userService;
+    // ── Dependencies ─────────────────────────────────────────────────────────
+    private final UserService userService;
 
     public AdminUserController() {
-        userService = new MySqlUserService();
+        this.userService = new MySqlUserService();
     }
+    /**
+     * UC-22.2 Hệ thống tải và hiển thị danh sách người dùng
+     */
     @FXML
     public void initialize() {
-        cbRoleFilter.setItems(FXCollections.observableArrayList("Tất cả", "Người chơi", "Quản trị viên"));
+        setupFilterComboBoxes();
+        setupTable();
+        loadUsers();
+    }
+
+    private void setupFilterComboBoxes() {
+        cbRoleFilter.setItems(FXCollections.observableArrayList(FILTER_ALL, "Người chơi", "Quản trị viên"));
         cbRoleFilter.getSelectionModel().selectFirst();
 
-        cbStatusFilter.setItems(FXCollections.observableArrayList("Tất cả", "Hoạt động", "Đã khoá"));
+        cbStatusFilter.setItems(FXCollections.observableArrayList(FILTER_ALL, STATUS_ACTIVE, STATUS_LOCKED));
         cbStatusFilter.getSelectionModel().selectFirst();
+    }
 
+    private void setupTable() {
         userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         userTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         setupColumns();
+    }
+
+    private void loadUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            allUsers.setAll(users);
+            isFiltering = false;
+            filtered.clear();
+            currentPage = 0;
+            totalPages = calcTotalPages(allUsers.size());
+            showPage();
+            updateStats(allUsers);
+            statusLabel.setText("Đã tải " + allUsers.size() + " users");
+        } catch (DataAccessException e) {
+            // UC-22.2-A1 CSDL không thể kết nối
+            showError("Không thể tải dữ liệu");
+        }
+    }
+
+    // =========================================================================
+    // UC-22.3-A1. Tìm kiếm người dùng
+    // =========================================================================
+
+    /**
+     * UC-22.3-A1.2 Hệ thống lọc danh sách và làm mới danh sách
+     * UC-22.3-A1.a Admin xoá hết điều kiện rồi nhấn Tìm kiếm
+     */
+    @FXML
+    public void onSearch() {
+        String keyword     = searchField.getText().toLowerCase().trim();
+        String roleFilter  = cbRoleFilter.getValue();
+        String statusFilter = cbStatusFilter.getValue();
+
+        boolean noFilter = keyword.isEmpty()
+                && FILTER_ALL.equals(roleFilter)
+                && FILTER_ALL.equals(statusFilter);
+
+        if (noFilter) {
+            // UC-22.3-A1.a Admin xoá hết điều kiện rồi nhấn Tìm kiếm
+            isFiltering = false;
+            filtered.clear();
+        } else {
+            filtered.clear();
+            for (User u : allUsers) {
+                if (matchesFilter(u, keyword, roleFilter, statusFilter)) {
+                    filtered.add(u);
+                }
+            }
+            isFiltering = true;
+        }
+
+        currentPage = 0;
+        showPage();
+
+        int resultCount = isFiltering ? filtered.size() : allUsers.size();
+        statusLabel.setText("Tìm thấy " + resultCount + " kết quả");
+    }
+
+    /**
+     * UC-22.3-A1.b Admin nhấn Làm mới
+     */
+    @FXML
+    public void onRefresh() {
+        searchField.clear();
+        cbRoleFilter.getSelectionModel().selectFirst();
+        cbStatusFilter.getSelectionModel().selectFirst();
         loadUsers();
     }
+
+    /**
+     * Kiểm tra user có khớp điều kiện lọc không.
+     */
+    private boolean matchesFilter(User u, String keyword, String roleFilter, String statusFilter) {
+        boolean matchKw = keyword.isEmpty()
+                || u.getUsername().toLowerCase().contains(keyword)
+                || (u.getDisplayName() != null && u.getDisplayName().toLowerCase().contains(keyword));
+
+        boolean matchRole = FILTER_ALL.equals(roleFilter)
+                || (u.getRole() != null && u.getRole().getLabel().equals(roleFilter));
+
+        boolean matchStatus = FILTER_ALL.equals(statusFilter)
+                || (STATUS_ACTIVE.equals(statusFilter) && u.isActive())
+                || (STATUS_LOCKED.equals(statusFilter) && !u.isActive());
+
+        return matchKw && matchRole && matchStatus;
+    }
+
+    // =========================================================================
+    // UC-22.3-A2 thêm người dùng
+    // =========================================================================
+
+    /**
+     * UC-22.3-A2 thêm người dùng
+     * UC-22b Alt Flow 22b-A2: Admin huỷ → dialog đóng, không thay đổi.
+     * UC-22b Alt Flow 22b-A3: CSDL lỗi → hiển thị thông báo lỗi chi tiết.
+     */
+    @FXML
+    public void onAddUser() {
+        // 22.3-A2.2 Hệ thống hiện thị dialog nhập thông tin người dùng
+        Dialog<User> dialog = buildUserDialog(null);
+        Optional<User> result = dialog.showAndWait(); // AA2.b Admin nhấn Huỷ: cancel → empty
+
+        // 22.3-A2.3 Admin nhập thông tin và nhấn nút thêm
+        result.ifPresent(newUser -> {
+            try {
+                // 22.3-A2.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
+                String passwordHash = CryptUtils.md5(newUser.getPasswordHash());
+                long generatedId = userService.createUserFull(
+                        newUser.getUsername(),
+                        newUser.getDisplayName(),
+                        newUser.getRole(),
+                        passwordHash
+                );
+
+                // 22.3-A2.5 Hệ thống gán Id trả về cho User mới và cập nhập danh sách
+                newUser.setId((int) generatedId);
+                allUsers.add(newUser);
+                if (isFiltering) filtered.add(newUser);
+
+                currentPage = calcTotalPages(isFiltering ? filtered.size() : allUsers.size()) - 1;
+                showPage();
+                updateStats(allUsers);
+                statusLabel.setText("Đã thêm user: " + newUser.getUsername());
+
+            } catch (Exception e) {
+                // 22.3-A3.c Hệ thống báo lỗi (Trùng tên, mất kết nối...)
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                showError("Thêm user thất bại!\n"
+                        + e.getClass().getSimpleName() + ": " + e.getMessage()
+                        + (cause != e ? "\nCause: " + cause.getMessage() : ""));
+            }
+        });
+    }
+
+    // =========================================================================
+    // UC-22c – Chỉnh sửa thông tin người dùng
+    // =========================================================================
+
+    /**
+     * UC-22.3-A3 Chỉnh sửa thông tin người dùng
+     * UC-22.3-A3a Chưa chọn User, nhấn chỉnh sửa
+     * UC-22.3-A3b Admin nhấn hủy: huỷ → không thay đổi.
+     * UC-22.3-A3c lỗi CSDL
+     */
+    @FXML
+    public void onEditUser() {
+        User selected = userTable.getSelectionModel().getSelectedItem();
+
+        // UC-22.3-A3a Chưa chọn User, nhấn chỉnh sửa
+        if (selected == null) {
+            showInfo("Hãy chọn user cần sửa");
+            return;
+        }
+
+        // 22.3-A3.3 Hệ thống hiển thị dialog sửa người dùng
+        Dialog<User> dialog = buildUserDialog(selected);
+        // 22.3-A3b Admin nhấn hủy
+        Optional<User> result = dialog.showAndWait();
+
+        // 22.3-A3.4 Admin cập nhập nickname hoặc vai trò và nhấn cập nhập
+        result.ifPresent(updated -> {
+            try {
+                // 22.3-A3.5 Hệ thống cập nhập thông tin vào CSDL
+                userService.updateDisplayName(selected.getId(), updated.getDisplayName());
+                userService.updateRole(selected.getId(), updated.getRole());
+
+                // 22.3-A3.6 Hệ thống load lại danh sách
+                selected.setDisplayName(updated.getDisplayName());
+                selected.setRole(updated.getRole());
+                userTable.refresh();
+                updateStats(allUsers);
+                statusLabel.setText("Đã cập nhật: " + selected.getUsername());
+
+            } catch (Exception e) {
+                // 22.3-A3c lỗi CSDL
+                showError("Sửa thất bại: " + e.getMessage());
+            }
+        });
+    }
+
+    // =========================================================================
+    // UC-22.3-A4 Khóa/ mở khóa tài khoản
+    // =========================================================================
+
+    /**
+     * UC-22.3-A4 Khóa/ mở khóa tài khoản
+     * UC-22.3-A4a Chưa chọn User, nhấn chỉnh sửa
+     * UC-22.3-A4b Lỗi CSDL
+     */
+    @FXML
+    public void onLockUser() {
+        // 22.3-A4.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
+        User selected = userTable.getSelectionModel().getSelectedItem();
+
+        // 22.3-A4a Chưa chọn User, nhấn chỉnh sửa
+        if (selected == null) {
+            showInfo("Hãy chọn user");
+            return;
+        }
+
+        try {
+            // 22.3-A4.2 Hệ thống cập nhập vào CSLD
+            boolean newStatus = !selected.isActive();
+            userService.setActive(selected.getId(), newStatus);
+
+            // 22.3-A4.3 Hệ thống load lại danh sách
+            selected.setActive(newStatus);
+            userTable.refresh();
+            updateStats(allUsers);
+            statusLabel.setText(newStatus
+                    ? "Đã mở khoá: " + selected.getUsername()
+                    : "Đã khoá: " + selected.getUsername());
+
+        } catch (Exception e) {
+            // 22.3-A4b Lỗi CSDL
+            showError("Khoá/mở khoá thất bại");
+        }
+    }
+
+    // =========================================================================
+    // UC-22e – Xoá tài khoản người dùng
+    // =========================================================================
+
+    /**
+     * UC-22.3-A5 Xóa người dùng
+     * UC-22.3-A5a Chưa chọn User, nhấn chỉnh xóa
+     * UC-22.3-A3b Admin nhấn hủy
+     * UC-22.3-A5c Lỗi CSDL
+     */
+    @FXML
+    public void onDeleteUser() {
+        // 22.3-A5.1 Admin chọn User trong bảng và nhấn nút xóa
+        User selected = userTable.getSelectionModel().getSelectedItem();
+
+        // 22.3-A5a Chưa chọn User, nhấn chỉnh xóa
+        if (selected == null) {
+            showInfo("Hãy chọn user cần xoá");
+            return;
+        }
+
+        // 22.3-A5.2 Hệ thống hiển thị hộp thoại xác nhận
+        if (!confirmDelete(selected.getUsername())) {
+            // 22.3-A3b Admin nhấn hủy
+            return;
+        }
+
+        try {
+            // 22.3-A5.3 Hệ thống xóa User khỏi CSDL
+            userService.deleteUser(selected.getId());
+            allUsers.remove(selected);
+            if (isFiltering) filtered.remove(selected);
+            int newTotalPages = calcTotalPages(isFiltering ? filtered.size() : allUsers.size());
+            if (currentPage >= newTotalPages) {
+                currentPage = Math.max(0, currentPage - 1);
+            }
+
+            // 22.3-A5.4 Hệ thống load lại danh sách
+            showPage();
+            updateStats(allUsers);
+            statusLabel.setText("Đã xoá user: " + selected.getUsername());
+
+        } catch (Exception e) {
+            // 22.3-A5c Lỗi CSDL
+            showError("Xoá thất bại");
+        }
+    }
+
+    // =========================================================================
+    // Private – Giao diện & Helpers
+    // =========================================================================
+    @FXML
+    public void onPrevPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            showPage();
+        }
+    }
+
+    @FXML
+    public void onNextPage() {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            showPage();
+        }
+    }
+    /**
+     * Hiển thị một trang dữ liệu lên bảng.
+     * Dùng allUsers hoặc filtered tuỳ trạng thái isFiltering.
+     */
+    private void showPage() {
+        ObservableList<User> source = isFiltering ? filtered : allUsers;
+        totalPages = calcTotalPages(source.size());
+        int from = currentPage * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, source.size());
+        pageItems.setAll(source.subList(from, to));
+        userTable.setItems(pageItems);
+        pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
+        btnPrevPage.setDisable(currentPage == 0);
+        btnNextPage.setDisable(currentPage >= totalPages - 1);
+    }
+
+    /** Cập nhật 4 nhãn thống kê phía trên bảng. */
+    private void updateStats(List<User> users) {
+        int total = users.size(), active = 0, locked = 0, admin = 0;
+        for (User u : users) {
+            if (u.isActive()) active++; else locked++;
+            if (u.getRole() == Role.ADMIN) admin++;
+        }
+        totalUsersLabel.setText(String.valueOf(total));
+        activeUsersLabel.setText(String.valueOf(active));
+        lockedUsersLabel.setText(String.valueOf(locked));
+        adminCountLabel.setText(String.valueOf(admin));
+    }
+
+    private int calcTotalPages(int size) {
+        return Math.max(1, (int) Math.ceil((double) size / PAGE_SIZE));
+    }
+
+    /**
+     * UC-22.3-A5.2 Hệ thống hiển thị hộp thoại xác nhận
+     * @return true nếu Admin nhấn OK.
+     */
+    private boolean confirmDelete(String username) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("Xoá user \"" + username + "\"?");
+        alert.setContentText("Hành động này không thể hoàn tác.");
+        Optional<ButtonType> btn = alert.showAndWait();
+        return btn.isPresent() && btn.get() == ButtonType.OK;
+    }
+
+    /**
+     * Dialog dùng chung cho Thêm và Sửa
+     */
+    private Dialog<User> buildUserDialog(User existing) {
+        boolean isEdit = existing != null;
+
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle(isEdit ? "Sửa người dùng" : "Thêm người dùng");
+        dialog.setHeaderText(isEdit
+                ? "Cập nhật thông tin: " + existing.getUsername()
+                : "Nhập thông tin người dùng mới");
+
+        ButtonType okBtn = new ButtonType(
+                isEdit ? "Cập nhật" : "Thêm",
+                ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
+
+        // ── Form ──
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 20, 10, 20));
+
+        TextField      tfUsername    = new TextField(isEdit ? existing.getUsername() : "");
+        TextField      tfDisplayName = new TextField(isEdit && existing.getDisplayName() != null
+                ? existing.getDisplayName() : "");
+        TextField      tfPassword    = new TextField(DEFAULT_PASSWORD);
+        ComboBox<Role> cbRole        = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
+
+        tfUsername.setPromptText("username");
+        tfDisplayName.setPromptText("Tên hiển thị (nickname)");
+        tfPassword.setPromptText("Mật khẩu (mặc định: " + DEFAULT_PASSWORD + ")");
+
+        cbRole.getSelectionModel().select(
+                isEdit && existing.getRole() != null ? existing.getRole() : Role.PLAYER);
+
+        if (isEdit) {
+            tfUsername.setDisable(true);
+            tfPassword.setDisable(true);
+        }
+
+        GridPane.setHgrow(tfUsername,    Priority.ALWAYS);
+        GridPane.setHgrow(tfDisplayName, Priority.ALWAYS);
+        GridPane.setHgrow(cbRole,        Priority.ALWAYS);
+
+        int row = 0;
+        grid.add(new Label("Username:"), 0, row); grid.add(tfUsername,    1, row++);
+        grid.add(new Label("Nickname:"), 0, row); grid.add(tfDisplayName, 1, row++);
+        if (!isEdit) {
+            grid.add(new Label("Mật khẩu:"), 0, row); grid.add(tfPassword, 1, row++);
+        }
+        grid.add(new Label("Vai trò:"),  0, row); grid.add(cbRole,        1, row++);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // 22.3-A2.a Username bị bỏ trống
+        javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
+        okNode.setDisable(!isEdit);
+        if (!isEdit) {
+            tfUsername.textProperty().addListener((obs, oldVal, newVal) ->
+                    okNode.setDisable(newVal.trim().isEmpty()));
+        }
+
+        final TextField finalTfPassword = tfPassword;
+        dialog.setResultConverter(btnType -> {
+            if (btnType != okBtn) return null; // UC-22b-A2 / UC-22c-A2
+
+            User result = isEdit ? existing : new User();
+            if (!isEdit) result.setUsername(tfUsername.getText().trim());
+
+            // 22.3-A4.d Biệt danh bị để trống
+            String nick = tfDisplayName.getText().trim();
+            result.setDisplayName(nick.isEmpty() ? tfUsername.getText().trim() : nick);
+
+            result.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
+            if (!isEdit) result.setPasswordHash(finalTfPassword.getText().trim());
+            result.setActive(true);
+            return result;
+        });
+
+        return dialog;
+    }
+
+    // ── Cột bảng ─────────────────────────────────────────────────────────────
 
     private void setupColumns() {
         colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
@@ -87,7 +519,6 @@ public class AdminUserController {
                     userTable.refresh();
                 });
             }
-
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
@@ -103,308 +534,30 @@ public class AdminUserController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colDisplayName.setCellValueFactory(new PropertyValueFactory<>("displayName"));
-        colRole.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getRole() != null
-                        ? data.getValue().getRole().getLabel() : "—"));
-        colStatus.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().isActive() ? "Hoạt động" : "Đã khoá"));
-    }
-    /**
-     * UC-22 | Bước 2-6: Tải toàn bộ danh sách user từ DB và hiển thị lên bảng.
-     *
-     */
-    private void loadUsers() {
-        try {
-            List<User> users = userService.getAllUsers();
-            allUsers.setAll(users);
-            isFiltering = false;
-            filtered.clear();
-            currentPage = 0;
-            totalPages = calcTotalPages(allUsers.size());
-            showPage();
-            updateStats(allUsers);
-            statusLabel.setText("Đã tải " + allUsers.size() + " users");
-        } catch (DataAccessException e) {
-            showError("Không thể tải dữ liệu");
-        }
+        colRole.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getRole() != null ? data.getValue().getRole().getLabel() : "—"));
+        colStatus.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().isActive() ? STATUS_ACTIVE : STATUS_LOCKED));
     }
 
-    private void showPage() {
-        ObservableList<User> source = isFiltering ? filtered : allUsers;
-        totalPages = calcTotalPages(source.size());
-        int from = currentPage * PAGE_SIZE;
-        int to   = Math.min(from + PAGE_SIZE, source.size());
-        pageItems.setAll(source.subList(from, to));
-        userTable.setItems(pageItems);
-        pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
-        btnPrevPage.setDisable(currentPage == 0);
-        btnNextPage.setDisable(currentPage >= totalPages - 1);
-    }
-
-    private int calcTotalPages(int size) {
-        return Math.max(1, (int) Math.ceil((double) size / PAGE_SIZE));
-    }
-
-
-    private void updateStats(List<User> users) {
-        int total = users.size(), active = 0, locked = 0, admin = 0;
-        for (User u : users) {
-            if (u.isActive()) active++; else locked++;
-            if (u.getRole() == Role.ADMIN) admin++;
-        }
-        totalUsersLabel.setText(String.valueOf(total));
-        activeUsersLabel.setText(String.valueOf(active));
-        lockedUsersLabel.setText(String.valueOf(locked));
-        adminCountLabel.setText(String.valueOf(admin));
-    }
-
-    // =========================================================================
-    // UC-22 | 22a. Tìm kiếm
-    // =========================================================================
-    @FXML
-    public void onSearch() {
-        String kw           = searchField.getText().toLowerCase().trim();
-        String roleFilter   = cbRoleFilter.getValue();
-        String statusFilter = cbStatusFilter.getValue();
-
-        boolean noFilter = kw.isEmpty()
-                && "Tất cả".equals(roleFilter)
-                && "Tất cả".equals(statusFilter);
-
-        if (noFilter) {
-            isFiltering = false;
-            filtered.clear();
-        } else {
-            filtered.clear();
-            for (User u : allUsers) {
-                boolean matchKw = kw.isEmpty()
-                        || u.getUsername().toLowerCase().contains(kw)
-                        || (u.getDisplayName() != null && u.getDisplayName().toLowerCase().contains(kw));
-                boolean matchRole = "Tất cả".equals(roleFilter)
-                        || (u.getRole() != null && u.getRole().getLabel().equals(roleFilter));
-                boolean matchStatus = "Tất cả".equals(statusFilter)
-                        || ("Hoạt động".equals(statusFilter) && u.isActive())
-                        || ("Đã khoá".equals(statusFilter) && !u.isActive());
-                if (matchKw && matchRole && matchStatus) filtered.add(u);
-            }
-            isFiltering = true;
-        }
-        currentPage = 0;
-        showPage();
-        ObservableList<User> source = isFiltering ? filtered : allUsers;
-        statusLabel.setText("Tìm thấy " + source.size() + " kết quả");
-    }
-
-    @FXML
-    public void onRefresh() {
-        searchField.clear();
-        cbRoleFilter.getSelectionModel().selectFirst();
-        cbStatusFilter.getSelectionModel().selectFirst();
-        loadUsers();
-    }
-
-
-    @FXML
-    public void onPrevPage() {
-        if (currentPage > 0) { currentPage--; showPage(); }
-    }
-
-    @FXML
-    public void onNextPage() {
-        if (currentPage < totalPages - 1) { currentPage++; showPage(); }
-    }
-
-    // =========================================================================
-    // UC-22 | 22b. Thêm người dùng
-    // =========================================================================
-    @FXML
-    public void onAddUser() {
-        Dialog<User> dialog = buildUserDialog(null);
-        Optional<User> result = dialog.showAndWait();
-        result.ifPresent(u -> {
-            try {
-                String passwordHash = CryptUtils.md5(u.getPasswordHash());
-                long id = userService.createUserFull(u.getUsername(), u.getDisplayName(), u.getRole(), passwordHash);
-                u.setId((int) id);
-                allUsers.add(u);
-                if (isFiltering) filtered.add(u);
-                updateStats(allUsers);
-                currentPage = calcTotalPages(isFiltering ? filtered.size() : allUsers.size()) - 1;
-                showPage();
-                statusLabel.setText("Đã thêm user: " + u.getUsername());
-            } catch (Exception e) {
-                e.printStackTrace();
-                Throwable cause = e.getCause() != null ? e.getCause() : e;
-                showError("Thêm user thất bại!\n"
-                        + e.getClass().getSimpleName() + ": " + e.getMessage()
-                        + (cause != e ? "\nCause: " + cause.getMessage() : ""));
-            }
-        });
-    }
-    // =========================================================================
-    // UC-22 | 22c. Chỉnh sửa thông tin
-    // =========================================================================
-    @FXML
-    public void onEditUser() {
-        User selected = userTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showInfo("Hãy chọn user cần sửa"); return; }
-        Dialog<User> dialog = buildUserDialog(selected);
-        Optional<User> result = dialog.showAndWait();
-
-        result.ifPresent(u -> {
-            try {
-                userService.updateDisplayName(selected.getId(), u.getDisplayName());
-                userService.updateRole(selected.getId(), u.getRole());
-
-                selected.setDisplayName(u.getDisplayName());
-                selected.setRole(u.getRole());
-
-                userTable.refresh();
-                updateStats(allUsers);
-                statusLabel.setText("Đã cập nhật: " + selected.getUsername());
-            } catch (Exception e) {
-                showError("Sửa thất bại: " + e.getMessage());
-            }
-        });
-    }
-
-    // =========================================================================
-    // UC-22 | 22d. Khoá / Mở khoá
-    // =========================================================================
-    @FXML
-    public void onLockUser() {
-        User selected = userTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showInfo("Hãy chọn user"); return; }
-        try {
-            boolean newStatus = !selected.isActive();
-            userService.setActive(selected.getId(), newStatus);
-            selected.setActive(newStatus);
-            userTable.refresh();
-            updateStats(allUsers);
-            statusLabel.setText(newStatus ? "Đã mở khoá: " + selected.getUsername()
-                    : "Đã khoá: " + selected.getUsername());
-        } catch (Exception e) {
-            showError("Khoá/mở khoá thất bại");
-        }
-    }
-
-
-    // =========================================================================
-    // UC-22 | 22e. Xoá tài khoản
-    // =========================================================================
-    @FXML
-    public void onDeleteUser() {
-        User selected = userTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showInfo("Hãy chọn user cần xoá"); return; }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setHeaderText("Xoá user \"" + selected.getUsername() + "\"?");
-        confirm.setContentText("Hành động này không thể hoàn tác.");
-        Optional<ButtonType> btn = confirm.showAndWait();
-        if (btn.isEmpty() || btn.get() != ButtonType.OK) return;
-
-        try {
-            userService.deleteUser(selected.getId());
-            allUsers.remove(selected);
-            if (isFiltering) filtered.remove(selected);
-            if (currentPage >= calcTotalPages(isFiltering ? filtered.size() : allUsers.size())) {
-                currentPage = Math.max(0, currentPage - 1);
-            }
-            showPage();
-            updateStats(allUsers);
-            statusLabel.setText("Đã xoá user: " + selected.getUsername());
-        } catch (Exception e) {
-            showError("Xoá thất bại");
-        }
-    }
-
-
-    private Dialog<User> buildUserDialog(User existing) {
-        boolean isEdit = existing != null;
-        Dialog<User> dialog = new Dialog<>();
-        dialog.setTitle(isEdit ? "Sửa người dùng" : "Thêm người dùng");
-        dialog.setHeaderText(isEdit ? "Cập nhật thông tin: " + existing.getUsername()
-                : "Nhập thông tin người dùng mới");
-
-        ButtonType okBtn = new ButtonType(isEdit ? "Cập nhật" : "Thêm", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 20, 10, 20));
-
-        TextField      tfUsername    = new TextField(isEdit ? existing.getUsername() : "");
-        TextField      tfDisplayName = new TextField(isEdit && existing.getDisplayName() != null
-                ? existing.getDisplayName() : "");
-        ComboBox<Role> cbRole        = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
-        TextField tfPassword = new TextField(isEdit ? "" : "123456");
-        if (isEdit) tfPassword.setDisable(true);
-
-        tfUsername.setPromptText("username");
-        tfDisplayName.setPromptText("Tên hiển thị (nickname)");
-        if(!isEdit) {
-            tfPassword.setPromptText("Mật khẩu (mặc định: 123456)");
-        }
-        cbRole.getSelectionModel().select(
-                isEdit && existing.getRole() != null ? existing.getRole() : Role.PLAYER);
-
-        GridPane.setHgrow(tfUsername,    Priority.ALWAYS);
-        GridPane.setHgrow(tfDisplayName, Priority.ALWAYS);
-        GridPane.setHgrow(cbRole,        Priority.ALWAYS);
-
-        if (isEdit) tfUsername.setDisable(true);
-
-        int row = 0;
-        grid.add(new Label("Username:"), 0, row); grid.add(tfUsername, 1, row++);
-        grid.add(new Label("Nickname:"), 0, row); grid.add(tfDisplayName, 1, row++);
-        if (!isEdit) {
-            grid.add(new Label("Mật khẩu:"), 0, row); grid.add(tfPassword, 1, row++);
-        }
-        grid.add(new Label("Vai trò:"), 0, row); grid.add(cbRole, 1, row++);
-
-        dialog.getDialogPane().setContent(grid);
-
-        javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
-        okNode.setDisable(!isEdit);
-        if (!isEdit) {
-            tfUsername.textProperty().addListener((obs, o, n) ->
-                    okNode.setDisable(n.trim().isEmpty()));
-        }
-
-        final TextField finalTfPassword = tfPassword;
-        dialog.setResultConverter(bt -> {
-            if (bt == okBtn) {
-                User u = isEdit ? existing : new User();
-                if (!isEdit) u.setUsername(tfUsername.getText().trim());
-                u.setDisplayName(tfDisplayName.getText().trim().isEmpty()
-                        ? tfUsername.getText().trim()
-                        : tfDisplayName.getText().trim());
-                u.setRole(cbRole.getValue() != null ? cbRole.getValue() : Role.PLAYER);
-                if (!isEdit && finalTfPassword != null)
-                    u.setPasswordHash(finalTfPassword.getText().trim());
-                u.setActive(true);
-                return u;
-            }
-            return null;
-        });
-
-        return dialog;
-    }
-    @FXML
-    private void closePopup() {
-        ((Stage) userTable.getScene().getWindow()).close();
-    }
+    // ── Thông báo ─────────────────────────────────────────────────────────────
 
     private void showInfo(String message) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setContentText(message);
-        a.showAndWait();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void showError(String message) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setContentText(message);
-        a.showAndWait();
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // ── Đóng màn hình ─────────────────────────────────────────────────────────
+
+    @FXML
+    private void closePopup() {
+        ((Stage) userTable.getScene().getWindow()).close();
     }
 }
