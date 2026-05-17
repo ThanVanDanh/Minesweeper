@@ -286,6 +286,10 @@ public class AdminUserController {
             return;
         }
 
+        //  BACKUP giá trị cho logging
+        String oldDisplayName = selected.getDisplayName();
+        Role oldRole = selected.getRole();
+
         // 22.4.3 Hệ thống hiển thị dialog sửa người dùng
         Dialog<User> dialog = buildUserDialog(selected);
         Optional<User> result = dialog.showAndWait(); // 22.4-A1 Admin nhấn hủy → đóng, không thay đổi
@@ -303,6 +307,7 @@ public class AdminUserController {
                 userTable.refresh();
                 updateStats(allUsers);
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
+
                 // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
                 try {
                     Long adminId = SessionManager.isLoggedIn()
@@ -310,8 +315,8 @@ public class AdminUserController {
                             : null;
 
                     String target = "user:" + selected.getUsername();
-                    String changes = "DisplayName: " + selected.getDisplayName() + " → " + updated.getDisplayName() +
-                            "; Role: " + (selected.getRole() != null ? selected.getRole().getLabel() : "N/A") +
+                    String changes = "DisplayName: " + oldDisplayName + " → " + updated.getDisplayName() +
+                            "; Role: " + (oldRole != null ? oldRole.getLabel() : "N/A") +
                             " → " + (updated.getRole() != null ? updated.getRole().getLabel() : "N/A");
 
                     AuditLog log = new AuditLog(adminId, "UPDATE_USER", target, changes);
@@ -321,12 +326,14 @@ public class AdminUserController {
                 } catch (Exception e) {
                     LOG.warn("Failed to log audit for user update", e);
                 }
+
             } catch (Exception e) {
                 // 22.4-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
                 showError("Sửa thất bại: " + e.getMessage());
             }
         });
     }
+
 
     // =========================================================================
     // Alternative Flow – UC-22.5 Khoá / Mở khoá tài khoản
