@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import minesweeper.model.enums.Role;
 import minesweeper.model.User;
@@ -22,7 +23,10 @@ import minesweeper.repository.log.MySqlAuditLogRepository;
 import minesweeper.service.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import javafx.scene.image.Image;
 
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +79,11 @@ public class AdminUserController {
 
     public AdminUserController() {
         this.userService = new MySqlUserService();
+        this.auditLogRepository = new MySqlAuditLogRepository();
+    }
+    // AdminUserController cho Test
+    public AdminUserController(UserService userService) {
+        this.userService = userService;
         this.auditLogRepository = new MySqlAuditLogRepository();
     }
 
@@ -133,12 +142,10 @@ public class AdminUserController {
 
     /**
      * 22.2.1 Admin nhập từ khóa và chọn bộ lọc (Vai trò/Trạng thái) rồi nhấn Tìm kiếm
-     * 22.2.2 Hệ thống lọc danh sách và làm mới danh sách
      * 22.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm
      */
     @FXML
     public void onSearch() {
-        // 22.2.1 Admin nhập từ khóa và chọn bộ lọc rồi nhấn Tìm kiếm
         String keyword      = searchField.getText().toLowerCase().trim();
         String roleFilter   = cbRoleFilter.getValue();
         String statusFilter = cbStatusFilter.getValue();
@@ -206,10 +213,11 @@ public class AdminUserController {
     /**
      * 22.3.1 Admin nhấn nút thêm người dùng
      * 22.3-A1 Admin nhấn Huỷ
+     * 22.3-E Ghi log vào CSDL thất bại
+     * 22.3-E1 (username trùng, mất kết nối...) → hiển thị hộp thoại lỗi
      */
     @FXML
     public void onAddUser() {
-        // 22.3.1 Admin nhấn nút thêm người dùng
         // 22.3.2 Hệ thống hiển thị dialog nhập thông tin người dùng
         Dialog<User> dialog = buildUserDialog(null);
         Optional<User> result = dialog.showAndWait(); // 22.3-A1 Admin nhấn Huỷ → đóng, không lưu
@@ -235,7 +243,7 @@ public class AdminUserController {
                 showPage();
                 updateStats(allUsers);
                 statusLabel.setText("Đã thêm user: " + newUser.getUsername());
-                // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+                // 22.3.6 Hệ thống ghi nhận Log vào CSDL
                 try {
                     Long adminId = SessionManager.isLoggedIn()
                             ? SessionManager.getCurrentUser().getId()
@@ -250,6 +258,7 @@ public class AdminUserController {
 
                     LOG.info("[AUDIT] Admin {} created user: {}", adminId, newUser.getUsername());
                 } catch (Exception e) {
+                    //22.3-E Ghi log vào CSDL thất bại
                     LOG.warn("Failed to log audit for user creation", e);
                 }
 
@@ -273,11 +282,10 @@ public class AdminUserController {
      * 22.4-A1 Admin nhấn hủy
      * 22.4-E1 Chưa chọn User, nhấn chỉnh sửa
      * 22.4-E2 Lỗi CSDL
+     * 22.4-E Ghi log vào CSDL thất bại
      */
     @FXML
     public void onEditUser() {
-        // 22.4.1 Admin chọn user trong bảng
-        // 22.4.2 Admin nhấn nút chỉnh sửa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
         // 22.4-E1 Chưa chọn User → hiển thị thông báo chọn User
@@ -308,7 +316,7 @@ public class AdminUserController {
                 updateStats(allUsers);
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
 
-                // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+                // 22.4.7 Hệ thống ghi nhận Log vào CSDL
                 try {
                     Long adminId = SessionManager.isLoggedIn()
                             ? SessionManager.getCurrentUser().getId()
@@ -324,6 +332,7 @@ public class AdminUserController {
 
                     LOG.info("[AUDIT] Admin {} updated user: {} | {}", adminId, selected.getUsername(), changes);
                 } catch (Exception e) {
+                    // 22.4-E Ghi log vào CSDL thất bại
                     LOG.warn("Failed to log audit for user update", e);
                 }
 
@@ -341,12 +350,12 @@ public class AdminUserController {
 
     /**
      * 22.5.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
+     * 22.5-E Ghi log vào CSDL thất bại
      * 22.5-E1 Chưa chọn User, nhấn khóa/ mở khóa
      * 22.5-E2 Lỗi CSDL
      */
     @FXML
     public void onLockUser() {
-        // 22.5.1 Admin chọn User trong bảng và nhấn nút khóa/ mở khóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
         // 22.5-E1 Chưa chọn User → hiển thị thông báo chọn User
@@ -369,7 +378,7 @@ public class AdminUserController {
                     : "Đã khoá: " + selected.getUsername();
             statusLabel.setText(msg);
 
-            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            // 22.5.4 Hệ thống ghi nhận Log vào CSDL
             try {
                 Long adminId = SessionManager.isLoggedIn()
                         ? SessionManager.getCurrentUser().getId()
@@ -384,6 +393,7 @@ public class AdminUserController {
 
                 LOG.info("[AUDIT] Admin {} {} user: {}", adminId, action, selected.getUsername());
             } catch (Exception e) {
+                // 22.5-E Ghi log vào CSDL thất bại
                 LOG.warn("Failed to log audit for lock/unlock", e);
             }
         } catch (Exception e) {
@@ -401,10 +411,10 @@ public class AdminUserController {
      * 22.6-A1 Admin nhấn hủy
      * 22.6-E1 Chưa chọn User, nhấn xóa
      * 22.6-E2 Lỗi CSDL
+     * 22.6-E Ghi log vào CSDL thất bại
      */
     @FXML
     public void onDeleteUser() {
-        // 22.6.1 Admin chọn User trong bảng và nhấn nút xóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
         // 22.6-E1 Chưa chọn User → hiển thị thông báo chọn User
@@ -434,7 +444,7 @@ public class AdminUserController {
             showPage();
             updateStats(allUsers);
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
-            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            // 22.6.6 Hệ thống ghi nhận Log vào CSDL
             try {
                 Long adminId = SessionManager.isLoggedIn()
                         ? SessionManager.getCurrentUser().getId()
@@ -450,6 +460,7 @@ public class AdminUserController {
 
                 LOG.info("[AUDIT] Admin {} deleted user: {}", adminId, selected.getUsername());
             } catch (Exception e) {
+                // 22.6-E Ghi log vào CSDL thất bại
                 LOG.warn("Failed to log audit for user deletion", e);
             }
         } catch (Exception e) {
@@ -663,5 +674,120 @@ public class AdminUserController {
     @FXML
     private void closePopup() {
         ((Stage) userTable.getScene().getWindow()).close();
+    }
+    // ── LOG TẠM THỜIIIIIIIIIIIII ─────────────────────────────────────────────────────────
+    @FXML
+    public void onViewAuditLog() {
+        try {
+            List<AuditLog> logs = auditLogRepository.findRecent(100);
+            showAuditLogDialog(logs);
+        } catch (Exception e) {
+            LOG.error("Failed to load audit logs", e);
+            showError("Không thể tải log: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Hiển thị dialog bảng audit log
+     */
+    private void showAuditLogDialog(List<AuditLog> logs) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Audit Log - Nhật ký hành động");
+        dialog.setHeaderText("Lịch sử hành động của admin (" + logs.size() + " entries)");
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        VBox vbox = new VBox();
+        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(15));
+        vbox.setStyle("-fx-background-color: linear-gradient(to bottom right, rgba(5,20,28,0.95), rgba(5,10,18,0.95));");
+
+        // Tạo TableView
+        TableView<AuditLog> logTable = new TableView<>();
+        logTable.setStyle("-fx-control-inner-background: rgba(10,20,30,0.8); -fx-text-fill: white;");
+        logTable.setPrefHeight(500);
+        logTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+        // ID column
+        TableColumn<AuditLog, Long> colId = new TableColumn<>("ID");
+        colId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
+        colId.setPrefWidth(60);
+
+        // Admin ID column
+        TableColumn<AuditLog, Long> colAdminId = new TableColumn<>("Admin ID");
+        colAdminId.setCellValueFactory(data -> {
+            Long adminId = data.getValue().getAdminId();
+            return new javafx.beans.property.SimpleObjectProperty<>(adminId);
+        });
+        colAdminId.setPrefWidth(80);
+
+        // Action column
+        TableColumn<AuditLog, String> colAction = new TableColumn<>("Action");
+        colAction.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("action"));
+        colAction.setPrefWidth(140);
+        colAction.setCellFactory(col -> new TableCell<AuditLog, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    // Color by action type
+                    if (item.contains("DELETE")) {
+                        setStyle("-fx-text-fill: #ef5350; -fx-font-weight: bold;");
+                    } else if (item.contains("LOCK")) {
+                        setStyle("-fx-text-fill: #ff9d2e; -fx-font-weight: bold;");
+                    } else if (item.contains("CREATE")) {
+                        setStyle("-fx-text-fill: #39ff8f; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #2dd4f0; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
+
+        // Target column
+        TableColumn<AuditLog, String> colTarget = new TableColumn<>("Target");
+        colTarget.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("target"));
+        colTarget.setPrefWidth(150);
+
+        // Details column
+        TableColumn<AuditLog, String> colDetails = new TableColumn<>("Details");
+        colDetails.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("details"));
+        colDetails.setPrefWidth(300);
+        colDetails.setCellFactory(col -> new TableCell<AuditLog, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setWrapText(false);
+                } else {
+                    setText(item);
+                    setWrapText(true);
+                }
+            }
+        });
+
+        // Created At column
+        TableColumn<AuditLog, String> colCreatedAt = new TableColumn<>("Thời gian");
+        colCreatedAt.setCellValueFactory(data -> {
+            LocalDateTime dt = data.getValue().getCreatedAt();
+            String formatted = dt != null
+                    ? dt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                    : "N/A";
+            return new javafx.beans.property.SimpleStringProperty(formatted);
+        });
+        colCreatedAt.setPrefWidth(150);
+
+        logTable.getColumns().addAll(colId, colAdminId, colAction, colTarget, colDetails, colCreatedAt);
+        logTable.setItems(FXCollections.observableArrayList(logs));
+
+        vbox.getChildren().add(logTable);
+        dialog.getDialogPane().setContent(vbox);
+        dialog.setWidth(1200);
+        dialog.setHeight(600);
+        dialog.showAndWait();
     }
 }

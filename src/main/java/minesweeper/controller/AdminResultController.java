@@ -68,7 +68,12 @@ public class AdminResultController {
         pagedRepository  = (MySqlGameResultRepository) repository;
         auditLogRepository  = new MySqlAuditLogRepository();
     }
-
+    // AdminResultController cho test
+    public AdminResultController(GameResultRepository repository) {
+        this.repository = repository;
+        this.pagedRepository = (MySqlGameResultRepository) repository;
+        this.auditLogRepository = new MySqlAuditLogRepository();
+    }
     // =========================================================================
     // Basic Flow – UC-19.1 Xem danh sách kết quả
     // =========================================================================
@@ -105,7 +110,6 @@ public class AdminResultController {
 
     /**
      * 19.1.2 Hệ thống truy vấn CSLD
-     * 19.1.3 Hệ Thống hiển thị danh sách lên bảng
      * 19.1-E1 CSDL không thể kết nối
      */
     private void loadResults() {
@@ -130,14 +134,10 @@ public class AdminResultController {
 
     /**
      * 19.2.1 Admin nhập username và/hoặc chọn bộ lọc (Độ khó / Kết quả) rồi nhấn Lọc
-     * 19.2.2 Hệ thống truy vấn danh sách từ CSLD
-     * 19.2.3 Hệ thống lọc danh sách theo yêu cầu
-     * 19.2.4 Hệ thống tải lại danh sách
      * 19.2-E1 CSDL lỗi khi tải toàn bộ dữ liệu để lọc
      */
     @FXML
     public void onFilter() {
-        // 19.2.1 Admin nhập username và/hoặc chọn bộ lọc (Độ khó / Kết quả) rồi nhấn Lọc
         String usernameFilter   = tfUsername.getText().toLowerCase().trim();
         String difficultyFilter = cbDifficulty.getValue();
         String resultFilter     = cbResult.getValue();
@@ -160,8 +160,6 @@ public class AdminResultController {
 
             // 19.2.4 Hệ thống tải lại danh sách
             showFilteredPage();
-
-            // 23.2.6
             statusLabel.setText("Tìm thấy " + filteredList.size() + " kết quả");
         } catch (Exception e) {
             // 19.2-E1 CSDL lỗi khi tải toàn bộ dữ liệu để lọc
@@ -221,11 +219,9 @@ public class AdminResultController {
     /**
      * 19.3.1 Admin tích checkbox trên từng dòng hoặc nhấn 'Chọn tất cả'
      * 19.3.2 Admin nhấn nút Xoá kết quả gian lận
-     * 19.3.3 Láy danh sách mà Admin chọn
-     * 19.3.4 Hệ thống xóa kết quả khỏi CSDL
-     * 19.3.5 Hệ thống cập nhập lại bảng và thông báo thành công
      * 19.3-E1 Chưa chọn dòng nào, nhấn Xoá
      * 19.3-E2 CSDL lỗi khi xoá
+     * 19.3-E3 Ghi log vào CSDL thất bại
      */
     @FXML
     public void onDeleteFraud() {
@@ -252,7 +248,7 @@ public class AdminResultController {
             statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
             showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
 
-            // Log audit: thêm ghi chép vào bảng audit_log /////////////////////////////
+            // 19.3.6 Hệ thống ghi nhận Log vào CSDL
             try {
                 Long adminId = SessionManager.isLoggedIn()
                         ? SessionManager.getCurrentUser().getId()
@@ -269,6 +265,7 @@ public class AdminResultController {
 
                 LOG.info("[AUDIT] Admin {} deleted {} fraudulent results: {}", adminId, selectedList.size(), target);
             } catch (Exception e) {
+                // 19.3-E3 Ghi log vào CSDL thất bại
                 LOG.warn("Failed to log audit for fraud deletion", e);
             }
 
