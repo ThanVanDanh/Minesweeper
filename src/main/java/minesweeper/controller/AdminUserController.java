@@ -65,7 +65,7 @@ public class AdminUserController {
     // ── State ────────────────────────────────────────────────────────────────
     private int            currentPage = 0;
     private int            totalPages  = 1;
-    private UserFilterSpec activeSpec  = new UserFilterSpec();   // spec hiện tại
+    private UserFilterSpec activeSpec  = new UserFilterSpec();
 
     private final ObservableList<User> pageItems = FXCollections.observableArrayList();
 
@@ -87,17 +87,19 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // Basic Flow – UC-22
+    // Basic Flow – UC-05.1.1 Xem danh sách người chơi
     // =========================================================================
 
-    /**
-     * 22.1.1 Admin mở màn hình quản lí người dùng
-     */
     @FXML
     public void initialize() {
+        // 05.1.1.1 Admin nhấn chọn mục "Quản lý người chơi" từ thanh điều hướng
+        // 05.1.1.2 Hệ thống hiển thị màn hình quản lý người chơi và các nút chức năng
         setupFilterComboBoxes();
         setupTable();
-        loadPage(); // 22.1.2 Hệ thống tải và hiển thị danh sách người dùng
+
+        // 05.1.1.3 Hệ thống tự động tải danh sách người chơi,
+        //          hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang
+        loadPage();
     }
 
     private void setupFilterComboBoxes() {
@@ -115,14 +117,14 @@ public class AdminUserController {
     }
 
     /**
-     * Gọi server để lấy trang hiện tại theo activeSpec.
-     * 22.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+     * Tải trang hiện tại theo activeSpec.
+     * 05.1.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
      */
     private void loadPage() {
         try {
             PagedResult<User> result = managerUserService.findPaged(activeSpec, currentPage, PAGE_SIZE);
 
-            totalPages = result.getTotalPages();
+            totalPages  = result.getTotalPages();
             currentPage = Math.min(currentPage, Math.max(0, totalPages - 1));
 
             pageItems.setAll(result.getContent());
@@ -137,12 +139,12 @@ public class AdminUserController {
             statusLabel.setText("Tìm thấy " + result.getTotalElements() + " kết quả");
 
         } catch (DataAccessException e) {
-            // 22.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+            // 05.1.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi 'Không thể tải dữ liệu', bảng để trống
             showError("Không thể tải dữ liệu");
         }
     }
 
-    /** Cập nhật 4 nhãn thống kê bằng server-side count (không load toàn bộ list). */
+    /** Cập nhật 4 nhãn thống kê bằng server-side count. */
     private void refreshStats() {
         try {
             ManagerUserService.UserStats stats = managerUserService.getStats();
@@ -156,15 +158,13 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // Alternative Flow – UC-22.2 Tìm kiếm người dùng
+    // Alternative Flow – UC-05.1.2 Tìm kiếm người dùng
     // =========================================================================
 
-    /**
-     * 22.2.1 Admin nhập từ khóa và chọn bộ lọc (Vai trò/Trạng thái) rồi nhấn Tìm kiếm
-     * 22.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm → khôi phục danh sách ban đầu
-     */
     @FXML
     public void onSearch() {
+        // 05.1.2.1 Admin nhập từ khoá vào ô tìm kiếm và/hoặc chọn bộ lọc Vai trò,
+        //          Trạng thái rồi nhấn Tìm kiếm
         String keyword      = searchField.getText().trim();
         String roleFilter   = cbRoleFilter.getValue();
         String statusFilter = cbStatusFilter.getValue();
@@ -174,23 +174,25 @@ public class AdminUserController {
                 && FILTER_ALL.equals(statusFilter);
 
         if (noFilter) {
-            // 22.2-A1 Admin xoá hết điều kiện → spec trống, tải lại toàn bộ
+            // 05.1.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm
+            //           → Hệ thống truy vấn lại toàn bộ danh sách không kèm bộ lọc,
+            //             hiển thị từ trang đầu tiên
             activeSpec = new UserFilterSpec();
         } else {
-            // 22.2.2 Hệ thống lọc danh sách server-side
+            // 05.1.2.2 Hệ thống gửi điều kiện tìm kiếm xuống CSDL, lấy về danh sách phù hợp
             activeSpec = buildFilterSpec(keyword, roleFilter, statusFilter);
         }
 
+        // 05.1.2.3 Hệ thống hiển thị từ trang đầu tiên và cập nhật số lượng kết quả tìm được
         currentPage = 0;
         loadPage();
     }
 
-    /**
-     * 22.2-A2 Admin nhấn Làm mới
-     * Hệ thống xóa ô tìm kiếm, đưa các bộ lọc về mặc định và tải lại danh sách mới
-     */
     @FXML
     public void onRefresh() {
+        // 05.1.2-A2 Admin nhấn Làm mới
+        //           → Hệ thống xoá ô tìm kiếm, đưa tất cả bộ lọc về mặc định "Tất cả",
+        //             truy vấn lại CSDL và hiển thị toàn bộ danh sách từ trang đầu tiên
         searchField.clear();
         cbRoleFilter.getSelectionModel().selectFirst();
         cbStatusFilter.getSelectionModel().selectFirst();
@@ -203,37 +205,34 @@ public class AdminUserController {
     private UserFilterSpec buildFilterSpec(String keyword, String roleFilter, String statusFilter) {
         UserFilterSpec spec = new UserFilterSpec();
 
-        if (!keyword.isEmpty())              spec.keyword = keyword;
+        if (!keyword.isEmpty())                      spec.keyword = keyword;
 
-        if ("Người chơi".equals(roleFilter))      spec.role = Role.PLAYER;
+        if ("Người chơi".equals(roleFilter))         spec.role = Role.PLAYER;
         else if ("Quản trị viên".equals(roleFilter)) spec.role = Role.ADMIN;
 
-        if (STATUS_ACTIVE.equals(statusFilter))  spec.active = true;
+        if (STATUS_ACTIVE.equals(statusFilter))      spec.active = true;
         else if (STATUS_LOCKED.equals(statusFilter)) spec.active = false;
 
         return spec;
     }
 
     // =========================================================================
-    // Alternative Flow – UC-22.3 Thêm người dùng
+    // Alternative Flow – UC-05.1.3 Thêm người dùng
     // =========================================================================
 
-    /**
-     * 22.3.1 Admin nhấn nút thêm người dùng
-     * 22.3-A1 Admin nhấn Huỷ
-     * 22.3-E  Ghi log vào CSDL thất bại
-     * 22.3-E1 (username trùng, mất kết nối...) → hiển thị hộp thoại lỗi
-     */
     @FXML
     public void onAddUser() {
-        // 22.3.2 Hệ thống hiển thị dialog nhập thông tin người dùng
+        // 05.1.3.1 Admin nhấn nút Thêm người chơi
+        // 05.1.3.2 Hệ thống hiển thị dialog nhập thông tin người dùng
         Dialog<User> dialog = buildUserDialog(null);
-        Optional<User> result = dialog.showAndWait(); // 22.3-A1 Admin nhấn Huỷ → đóng, không lưu
 
-        // 22.3.3 Admin nhập thông tin và nhấn nút thêm
+        // 05.1.3-A1 Admin nhấn Huỷ → cửa sổ đóng lại, không lưu thay đổi
+        Optional<User> result = dialog.showAndWait();
+
+        // 05.1.3.3 Admin nhập thông tin và nhấn nút thêm
         result.ifPresent(newUser -> {
             try {
-                // 22.3.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
+                // 05.1.3.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
                 String passwordHash = CryptUtils.md5(newUser.getPasswordHash());
                 long generatedId = managerUserService.createUser(
                         newUser.getUsername(),
@@ -242,20 +241,20 @@ public class AdminUserController {
                         passwordHash
                 );
 
-                // 22.3.5 Hệ thống gán Id trả về rồi tải lại trang cuối để hiện user mới
+                // 05.1.3.5 Hệ thống gán Id trả về cho User mới và cập nhật danh sách
                 newUser.setId((int) generatedId);
                 loadPage();
                 currentPage = totalPages - 1;
                 loadPage();
                 statusLabel.setText("Đã thêm user: " + newUser.getUsername());
 
-                // 22.3.6 Hệ thống ghi nhận Log vào CSDL
+                // 05.1.3.6 Hệ thống ghi nhận Log vào CSDL
                 writeAuditLog("CREATE_USER",
                         "user:" + newUser.getUsername(),
                         "Created new user; Role: " + labelOf(newUser.getRole()));
 
             } catch (Exception e) {
-                // 22.3-E1 (username trùng, mất kết nối...) → hiển thị hộp thoại lỗi
+                // 05.1.3-E1 Username trùng hoặc lỗi CSDL → hiển thị hộp thoại lỗi
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
                 showError("Thêm user thất bại!\n"
                         + e.getClass().getSimpleName() + ": " + e.getMessage()
@@ -265,132 +264,118 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // Alternative Flow – UC-22.4 Chỉnh sửa thông tin người dùng
+    // Alternative Flow – UC-05.1.4 Chỉnh sửa thông tin người dùng
     // =========================================================================
 
-    /**
-     * 22.4.1 Admin chọn user trong bảng
-     * 22.4.2 Admin nhấn nút chỉnh sửa
-     * 22.4-A1 Admin nhấn hủy
-     * 22.4-E1 Chưa chọn User, nhấn chỉnh sửa
-     * 22.4-E2 Lỗi CSDL
-     * 22.4-E  Ghi log vào CSDL thất bại
-     */
     @FXML
     public void onEditUser() {
+        // 05.1.4.1 Admin chọn user trong bảng
+        // 05.1.4.2 Admin nhấn nút chỉnh sửa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 22.4-E1 Chưa chọn User → hiển thị thông báo chọn User
+        // 05.1.4-E1 Chưa chọn User, nhấn chỉnh sửa → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user cần sửa");
             return;
         }
 
-        // BACKUP giá trị cho logging
         String oldDisplayName = selected.getDisplayName();
         Role   oldRole        = selected.getRole();
 
-        // 22.4.3 Hệ thống hiển thị dialog sửa người dùng
+        // 05.1.4.3 Hệ thống hiển thị dialog sửa người dùng
         Dialog<User> dialog = buildUserDialog(selected);
-        Optional<User> result = dialog.showAndWait(); // 22.4-A1 Admin nhấn hủy → đóng, không thay đổi
 
-        // 22.4.4 Admin cập nhật nickname hoặc vai trò và nhấn cập nhật
+        // 05.1.4-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
+        Optional<User> result = dialog.showAndWait();
+
+        // 05.1.4.4 Admin cập nhật nickname hoặc vai trò và nhấn cập nhật
         result.ifPresent(updated -> {
             try {
-                // 22.4.5 Hệ thống cập nhật thông tin vào CSDL
+                // 05.1.4.5 Hệ thống cập nhật thông tin vào CSDL
                 managerUserService.updateDisplayName(selected.getId(), updated.getDisplayName());
                 managerUserService.updateRole(selected.getId(), updated.getRole());
 
-                // 22.4.6 Hệ thống load lại trang hiện tại
+                // 05.1.4.6 Hệ thống load lại danh sách
                 loadPage();
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
 
-                // 22.4.7 Hệ thống ghi nhận Log vào CSDL
+                // 05.1.4.7 Hệ thống ghi nhận Log vào CSDL
                 String changes = "DisplayName: " + oldDisplayName + " → " + updated.getDisplayName()
                         + "; Role: " + labelOf(oldRole) + " → " + labelOf(updated.getRole());
                 writeAuditLog("UPDATE_USER", "user:" + selected.getUsername(), changes);
 
             } catch (Exception e) {
-                // 22.4-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
+                // 05.1.4-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, dữ liệu trong bộ nhớ không thay đổi
                 showError("Sửa thất bại: " + e.getMessage());
             }
         });
     }
 
     // =========================================================================
-    // Alternative Flow – UC-22.5 Khoá / Mở khoá tài khoản
+    // Alternative Flow – UC-05.1.5 Khoá / Mở khoá tài khoản
     // =========================================================================
 
-    /**
-     * 22.5.1 Admin chọn User trong bảng và nhấn nút khóa/mở khóa
-     * 22.5-E  Ghi log vào CSDL thất bại
-     * 22.5-E1 Chưa chọn User, nhấn khóa/mở khóa
-     * 22.5-E2 Lỗi CSDL
-     */
     @FXML
     public void onLockUser() {
+        // 05.1.5.1 Admin chọn User trong bảng và nhấn nút khóa / mở khóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 22.5-E1 Chưa chọn User → hiển thị thông báo chọn User
+        // 05.1.5-E1 Chưa chọn User, nhấn khóa → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user");
             return;
         }
 
         try {
-            // 22.5.2 Hệ thống cập nhật vào CSDL
+            // 05.1.5.2 Hệ thống cập nhật trạng thái khoá / mở khoá vào CSDL
             boolean newStatus = !selected.isActive();
             managerUserService.setActive(selected.getId(), newStatus);
 
-            // 22.5.3 Hệ thống load lại trang hiện tại
+            // 05.1.5.3 Hệ thống load lại danh sách
             loadPage();
             statusLabel.setText(newStatus
                     ? "Đã mở khoá: " + selected.getUsername()
                     : "Đã khoá: "    + selected.getUsername());
 
-            // 22.5.4 Hệ thống ghi nhận Log vào CSDL
+            // 05.1.5.4 Hệ thống ghi nhận Log vào CSDL
             String action  = newStatus ? "UNLOCK_USER" : "LOCK_USER";
             String details = newStatus ? "Unlocked user account" : "Locked user account";
             writeAuditLog(action, "user:" + selected.getUsername(), details);
 
         } catch (Exception e) {
-            // 22.5-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
+            // 05.1.5-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, dữ liệu trong bộ nhớ không thay đổi
             showError("Khoá/mở khoá thất bại");
         }
     }
 
     // =========================================================================
-    // Alternative Flow – UC-22.6 Xoá người dùng
+    // Alternative Flow – UC-05.1.6 Xoá người dùng
     // =========================================================================
 
-    /**
-     * 22.6.1 Admin chọn User trong bảng và nhấn nút xóa
-     * 22.6-A1 Admin nhấn hủy
-     * 22.6-E1 Chưa chọn User, nhấn xóa
-     * 22.6-E2 Lỗi CSDL
-     * 22.6-E  Ghi log vào CSDL thất bại
-     */
     @FXML
     public void onDeleteUser() {
+        // 05.1.6.1 Admin chọn User trong bảng và nhấn nút xóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 22.6-E1 Chưa chọn User → hiển thị thông báo chọn User
+        // 05.1.6-E1 Chưa chọn User, nhấn xóa → hiển thị thông báo chọn User
         if (selected == null) {
             showInfo("Hãy chọn user cần xoá");
             return;
         }
 
-        // 22.6.2 Hệ thống hiển thị hộp thoại xác nhận
+        // 05.1.6.2 Hệ thống hiển thị hộp thoại xác nhận
         if (!confirmDelete(selected.getUsername())) {
-            // 22.6-A1 Admin nhấn hủy → đóng dialog, không thay đổi
+            // 05.1.6-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
             return;
         }
 
         try {
-            // 22.6.3 Admin xác nhận OK → 22.6.4 Hệ thống xóa User khỏi CSDL
+            // 05.1.6.3 Admin xác nhận OK
+            // 05.1.6.4 Hệ thống xóa User khỏi CSDL
             managerUserService.deleteUser(selected.getId());
 
-            // 22.6.5 Hệ thống load lại trang (lùi 1 trang nếu trang hiện tại đã trống)
+            // 05.1.6.5 Hệ thống load lại danh sách
+            //          (lùi 1 trang nếu trang hiện tại đã trống sau khi xóa)
             loadPage();
             if (pageItems.isEmpty() && currentPage > 0) {
                 currentPage--;
@@ -398,13 +383,13 @@ public class AdminUserController {
             }
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
 
-            // 22.6.6 Hệ thống ghi nhận Log vào CSDL
+            // 05.1.6.6 Hệ thống ghi nhận Log vào CSDL
             String details = "Deleted user; Original Role: " + labelOf(selected.getRole())
                     + "; Status: " + (selected.isActive() ? "Active" : "Locked");
             writeAuditLog("DELETE_USER", "user:" + selected.getUsername(), details);
 
         } catch (Exception e) {
-            // 22.6-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, bộ nhớ không thay đổi
+            // 05.1.6-E2 Lỗi CSDL → hiển thị hộp thoại lỗi, dữ liệu trong bộ nhớ không thay đổi
             showError("Xoá thất bại");
         }
     }
@@ -430,11 +415,12 @@ public class AdminUserController {
     }
 
     // =========================================================================
-    // Audit Log Dialog
+    // Xem lịch sử thao tác (Audit Log)
     // =========================================================================
 
     @FXML
     public void onViewAuditLog() {
+        // 05.1.1.4 Admin chọn chức năng: Xem lịch sử thao tác
         try {
             List<AuditLog> logs = auditLogRepository.findRecent(100);
             showAuditLogDialog(logs);
@@ -527,9 +513,10 @@ public class AdminUserController {
     // =========================================================================
 
     /**
-     * Dialog dùng chung cho Thêm (existing=null) và Sửa (existing≠null).
-     * 22.3-E1 Username bị bỏ trống → nút Thêm bị vô hiệu hoá
-     * 22.3-A2 Biệt danh bị để trống → dùng username làm tên hiển thị
+     * Dialog dùng chung cho Thêm (existing = null) và Sửa (existing ≠ null).
+     *
+     * 05.1.3-A2 Biệt danh bị để trống → Hệ thống tự động lấy Tên đăng nhập làm tên hiển thị
+     * 05.1.3-E1 Username bị bỏ trống   → nút Thêm bị vô hiệu hoá
      */
     private Dialog<User> buildUserDialog(User existing) {
         boolean isEdit = existing != null;
@@ -581,7 +568,7 @@ public class AdminUserController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // 22.3-E1 Username bị bỏ trống → vô hiệu hoá nút Thêm
+        // 05.1.3-E1 Username bị bỏ trống → vô hiệu hoá nút Thêm
         javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
         okNode.setDisable(!isEdit);
         if (!isEdit) {
@@ -590,12 +577,13 @@ public class AdminUserController {
         }
 
         dialog.setResultConverter(btnType -> {
-            if (btnType != okBtn) return null; // 22.3-A1 / 22.4-A1
+            // 05.1.3-A1 / 05.1.4-A1 Admin nhấn Huỷ → trả về null, đóng dialog
+            if (btnType != okBtn) return null;
 
             User resultUser = isEdit ? existing : new User();
             if (!isEdit) resultUser.setUsername(tfUsername.getText().trim());
 
-            // 22.3-A2 Biệt danh bị để trống → lấy username làm tên hiển thị
+            // 05.1.3-A2 Biệt danh bị để trống → lấy username làm tên hiển thị
             String nick = tfDisplayName.getText().trim();
             resultUser.setDisplayName(nick.isEmpty() ? tfUsername.getText().trim() : nick);
 
@@ -637,8 +625,9 @@ public class AdminUserController {
     }
 
     /**
-     * Ghi một bản ghi audit log. Lỗi chỉ được log warn, không ném lên UI.
-     * 22.x-E Ghi log vào CSDL thất bại
+     * Ghi một bản ghi audit log vào CSDL.
+     * Lỗi chỉ được ghi warn nội bộ, không hiển thị lên UI và không ném ngoại lệ.
+     * 05.1.3/4/5/6-E Ghi log vào CSDL thất bại → ghi warn nội bộ, không ảnh hưởng luồng chính
      */
     private void writeAuditLog(String action, String target, String details) {
         try {
