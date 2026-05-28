@@ -6,4 +6,24 @@ public class GameResultFilterSpec {
     public String     username;
     public Difficulty difficulty;
     public Boolean    win;
+
+    public GameResultFilterSpec() {}
+
+    public static GameResultFilterSpec withUsername(String username) {
+        GameResultFilterSpec s = new GameResultFilterSpec();
+        s.username = username;
+        return s;
+    }
+
+    public static GameResultFilterSpec withDifficulty(Difficulty difficulty) {
+        GameResultFilterSpec s = new GameResultFilterSpec();
+        s.difficulty = difficulty;
+        return s;
+    }
+
+    public static GameResultFilterSpec withWin(boolean win) {
+        GameResultFilterSpec s = new GameResultFilterSpec();
+        s.win = win;
+        return s;
+    }
 }
