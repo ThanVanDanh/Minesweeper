@@ -77,18 +77,18 @@ public class AdminResultController {
     }
 
     // =========================================================================
-    // Basic Flow – UC-05.2.1 Xem danh sách kết quả
+    // Basic Flow – UC-05.7 Xem danh sách kết quả
     // =========================================================================
 
     @FXML
     public void initialize() {
-        // 05.2.1.1 Admin nhấn chọn mục "Quản lý kết quả" từ thanh điều hướng
-        // 05.2.1.2 Hệ thống khởi tạo các bộ lọc mặc định:
+        // 05.7.1 Admin nhấn chọn mục "Quản lý kết quả" từ thanh điều hướng
+        // 05.7.2 Hệ thống khởi tạo các bộ lọc mặc định:
         //          Độ khó và Kết quả đều ở trạng thái "Tất cả"
         setupTable();
         setupFilterComboBoxes();
 
-        // 05.2.1.3 Hệ thống truy vấn cơ sở dữ liệu và lấy danh sách kết quả,
+        // 05.7.3 Hệ thống truy vấn cơ sở dữ liệu và lấy danh sách kết quả,
         //          hiển thị tối đa 20 bản ghi mỗi trang, bắt đầu từ trang đầu tiên
         loadPage();
     }
@@ -114,11 +114,9 @@ public class AdminResultController {
     }
 
     /**
-     * 05.2.1.4 Hệ thống hiển thị danh sách lên bảng kèm thông tin số trang hiện tại,
+     * 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm thông tin số trang hiện tại,
      *          tổng số trang và tổng số kết quả tìm được.
-     * 05.2.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
-     * 05.2.2-E1 CSDL lỗi khi tải dữ liệu để lọc → hiển thị hộp thoại lỗi,
-     *           bảng giữ nguyên dữ liệu trước đó
+     * 05-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
      */
     private void loadPage() {
         try {
@@ -137,18 +135,18 @@ public class AdminResultController {
             statusLabel.setText("Tìm thấy " + result.getTotalElements() + " kết quả");
 
         } catch (DataAccessException e) {
-            // 05.2.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+            // 05-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
             showError("Không thể tải dữ liệu");
         }
     }
 
     // =========================================================================
-    // Alternative Flow – UC-05.2.2 Lọc kết quả
+    // Alternative Flow – UC-05.8 Lọc kết quả
     // =========================================================================
 
     @FXML
     public void onFilter() {
-        // 05.2.2.1 Admin nhập tên người chơi và/hoặc chọn bộ lọc Độ khó, Kết quả
+        // 05.8.1 Admin nhập tên người chơi và/hoặc chọn bộ lọc Độ khó, Kết quả
         //          rồi nhấn nút Lọc
         String usernameFilter   = tfUsername.getText().trim();
         String difficultyFilter = cbDifficulty.getValue();
@@ -159,26 +157,26 @@ public class AdminResultController {
                 && FILTER_ALL.equals(resultFilter);
 
         if (noFilter) {
-            // 05.2.2-A1 Admin xóa hết điều kiện lọc rồi nhấn Lọc
+            // 05.8-A1 Admin xóa hết điều kiện lọc rồi nhấn Lọc
             //           → Hệ thống nhận diện không có bộ lọc nào,
             //             tải lại toàn bộ danh sách ban đầu từ cơ sở dữ liệu
             activeSpec = new GameResultFilterSpec();
         } else {
-            // 05.2.2.2 Hệ thống xác định điều kiện lọc dựa trên thông tin Admin vừa nhập
+            // 05.8.2 Hệ thống xác định điều kiện lọc dựa trên thông tin Admin vừa nhập
             activeSpec = buildFilterSpec(usernameFilter, difficultyFilter, resultFilter);
         }
 
-        // 05.2.2.3 Hệ thống truy vấn cơ sở dữ liệu theo điều kiện lọc,
+        // 05.8.3 Hệ thống truy vấn cơ sở dữ liệu theo điều kiện lọc,
         //          bắt đầu hiển thị lại từ trang đầu tiên
         currentPage = 0;
 
-        // 05.2.2.4 Hệ thống tải lại bảng với danh sách kết quả phù hợp
+        // 05.8.4 Hệ thống tải lại bảng với danh sách kết quả phù hợp
         loadPage();
     }
 
     @FXML
     public void onReset() {
-        // 05.2.2-A2 Admin nhấn Làm mới
+        // 05.8-A2 Admin nhấn Làm mới
         //           → Hệ thống xoá ô Username, reset ComboBox về 'Tất cả',
         //             tải lại toàn bộ danh sách từ CSDL
         tfUsername.clear();
@@ -214,20 +212,20 @@ public class AdminResultController {
     }
 
     // =========================================================================
-    // Alternative Flow – UC-05.2.3 Xóa kết quả gian lận
+    // Alternative Flow – UC-05.9 Xóa kết quả gian lận
     // =========================================================================
 
     @FXML
     public void onDeleteFraud() {
-        // 05.2.3.1 Admin tích checkbox trên từng dòng hoặc nhấn Chọn tất cả
+        // 05.9.1 Admin tích checkbox trên từng dòng hoặc nhấn Chọn tất cả
         //          để chọn các kết quả đang hiển thị trên bảng
-        // 05.2.3.2 Admin nhấn nút Xoá kết quả gian lận
+        // 05.9.2 Admin nhấn nút Xoá kết quả gian lận
 
-        // 05.2.3.3 Hệ thống lấy danh sách kết quả mà Admin đã chọn
+        // 05.9.3 Hệ thống lấy danh sách kết quả mà Admin đã chọn
         List<GameResult> selectedList =
                 new ArrayList<>(resultTable.getSelectionModel().getSelectedItems());
 
-        // 05.2.3-E1 Chưa chọn dòng nào, nhấn Xoá
+        // 05.9-E1 Chưa chọn dòng nào, nhấn Xoá
         //           → Hiển thị thông báo 'Hãy chọn dữ liệu để xoá', không thực hiện xoá
         if (selectedList.isEmpty()) {
             showInfo("Hãy chọn dữ liệu để xoá");
@@ -235,24 +233,24 @@ public class AdminResultController {
         }
 
         try {
-            // 05.2.3.4 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
+            // 05.9.4 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
             List<String> ids = selectedList.stream()
                     .map(GameResult::getGameId)
                     .collect(Collectors.toList());
             gameResultService.deleteByGameIds(ids);
 
-            // 05.2.3.5 Hệ thống tải lại bảng dữ liệu và hiển thị thông báo xóa thành công
+            // 05.9.5 Hệ thống tải lại bảng dữ liệu và hiển thị thông báo xóa thành công
             //          kèm số lượng bản ghi đã xóa
             loadPage();
             statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
             showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
 
-            // 05.2.3.6 Hệ thống ghi nhận hành động xóa vào nhật ký, bao gồm thông tin
+            // 05.9.6 Hệ thống ghi nhận hành động xóa vào nhật ký, bao gồm thông tin
             //          Admin thực hiện, danh sách mã kết quả bị xóa và tổng số lượng bản ghi
             writeAuditLog(selectedList);
 
         } catch (Exception e) {
-            // 05.2.3-E2 CSDL lỗi khi xoá → hiển thị hộp thoại lỗi 'Xoá thất bại'
+            // 05-E1 CSDL lỗi
             showError("Xoá thất bại");
         }
     }
@@ -261,11 +259,8 @@ public class AdminResultController {
     public void onSelectAll() {
         if (resultTable.getSelectionModel().getSelectedItems().size()
                 == resultTable.getItems().size()) {
-            // 05.2.3-A1 Admin nhấn 'Chọn tất cả' khi tất cả dòng đã được chọn
-            //           → Hệ thống bỏ chọn tất cả
             resultTable.getSelectionModel().clearSelection();
         } else {
-            // 05.2.3.1 Chưa chọn hết → Hệ thống chọn tất cả các dòng đang hiển thị
             resultTable.getSelectionModel().selectAll();
         }
         resultTable.refresh();
@@ -298,10 +293,9 @@ public class AdminResultController {
     // =========================================================================
 
     /**
-     * 05.2.3.6 Ghi nhận hành động xóa vào nhật ký, bao gồm thông tin Admin thực hiện,
+     * 05.9.6 Ghi nhận hành động xóa vào nhật ký, bao gồm thông tin Admin thực hiện,
      *          danh sách mã kết quả bị xóa và tổng số lượng bản ghi.
-     * 05.2.3-E3 Ghi log vào CSDL thất bại → ghi warn nội bộ,
-     *           không hiển thị lên UI, không ảnh hưởng luồng chính
+     * 05-E1 Ghi log vào CSDL thất bại
      */
     private void writeAuditLog(List<GameResult> deleted) {
         try {
@@ -321,7 +315,7 @@ public class AdminResultController {
                     adminId, deleted.size(), target);
 
         } catch (Exception e) {
-            // 05.2.3-E3 Ghi log vào CSDL thất bại → ghi warn nội bộ, không ném lên UI
+            // 05-E1 Ghi log vào CSDL thất bại
             LOG.warn("Failed to write audit log for fraud deletion", e);
         }
     }
