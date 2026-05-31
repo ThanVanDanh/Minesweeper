@@ -105,7 +105,6 @@ public class BoardGameController implements Initializable {
                 final int finalR = r;
                 final int finalC = c;
 
-                // Thay thế đoạn btnCell.setOnAction(...) bằng đoạn sau:
                 btnCell.setOnMouseClicked(e -> {
                     if (gameLogic.isPaused()) return;
                     if (gameLogic.getGameState() == GameState.LOST || gameLogic.getGameState() == GameState.WON) return;
@@ -117,31 +116,43 @@ public class BoardGameController implements Initializable {
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
 
-                    // XỬ LÝ CHUỘT PHẢI (UC10_01)
+
+                    // UC10 - CẮM/GỠ CỜ
+                    // UC10.1: Người chơi click chuột phải vào ô vuông
                     if (e.getButton() == MouseButton.SECONDARY) {
+                        // UC10.2: BoardGameController chuyển tiếp tọa độ sang GameController
                         gameLogic.toggleFlag(finalR, finalC);
                     }
-                    // XỬ LÝ CHUỘT TRÁI
+
+                    // UC09 & UC13 - MỞ Ô / MỞ NHANH
                     else if (e.getButton() == MouseButton.PRIMARY) {
+                        // UC13.1: Người chơi click chuột trái vào ô số hiển thị đã mở từ trước
                         if (currentCell.isRevealed()) {
+                            // UC13.2: BoardGameController gọi hàm mở nhanh fastReveal
                             gameLogic.fastReveal(finalR, finalC);
                         } else {
+                            // UC10.1: Hoặc click chuột trái khi nút công tắc btnFlat đang bật chế độ cắm cờ
                             if (isFlagMode) {
-                                gameLogic.toggleFlag(finalR, finalC); // Cắm cờ bằng UI btnFlat
+                                // UC10.2: Chuyển tiếp tọa độ sang GameController để cắm cờ
+                                gameLogic.toggleFlag(finalR, finalC);
                             } else {
-                                gameLogic.reveal(finalR, finalC); // Mở ô bình thường
+                                // UC09.1: Người chơi click chuột trái vào một ô vuông chưa mở thông thường
+                                // UC09.3: BoardGameController truyền yêu cầu điều phối sang GameController
+                                gameLogic.reveal(finalR, finalC);
                             }
                         }
                     }
-
-                    // Kiểm tra thắng / thua
+                    // UC14 - PHÁT HIỆN MÌN
+                    // UC14.4: Nhận diện trạng thái GameState là LOST sau tính toán của Board
                     if (gameLogic.getGameState() == GameState.LOST) {
                         playExplosionSound();
+                        // UC14.5: Khóa luồng xử lý, dừng thời gian, hiện lớp phủ thông báo và lưu kết quả
                         showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
                     } else if (gameLogic.getGameState() == GameState.WON) {
                         showGameOver("BẠN ĐÃ THẮNG!", "#39ff8f");
                     }
 
+                    // UC09.12 / UC10.8 / UC13.10: Đồng bộ hóa toàn bộ trạng thái lên màn hình hiển thị UI
                     updateBoardUI();
                 });
 
@@ -162,7 +173,8 @@ public class BoardGameController implements Initializable {
                 Button btnCell = (Button) minesweeperGrid.getChildren().get(index);
                 minesweeper.model.Cell cell = gameLogic.getBoard().getCell(r, c);
 
-                // 1. Dọn dẹp trạng thái cũ của nút
+                // UC09/UC10/UC12/UC15 - Đồng bộ trạng thái Cell lên UI:
+                // ô mở, số mìn lân cận, cờ, mìn lộ và cờ sai khi thua.
                 btnCell.setText("");
                 btnCell.setGraphic(null);
                 btnCell.setStyle("");
@@ -179,7 +191,9 @@ public class BoardGameController implements Initializable {
                 if (cell.isRevealed()) {
                     btnCell.getStyleClass().add("mine-cell-revealed");
 
+                    // UC15 - LỘ TOÀN BỘ MÌN
                     if (cell.isMine()) {
+                        // UC15.5: Ô chứa mìn đã lật, nạp biểu tượng quả bom (bomb-icon.png) lên nút bấm
                         ImageView bombIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/bomb-icon.png"))));
                         bombIcon.setFitWidth(22);
                         bombIcon.setFitHeight(22);
@@ -192,13 +206,12 @@ public class BoardGameController implements Initializable {
                         btnCell.getStyleClass().add("mine-cell-empty");
                     }
                 }
-                // XỬ LÝ CỜ SAI (UC15_04):
+                // UC15.6: Trạng thái LOST, ô chưa lật bị cắm cờ sai vị trí mìn nhận ký hiệu dấu X (x-icon.png)
                 else if (gameLogic.getGameState() == GameState.LOST && cell.isFlagged() && !cell.isMine()) {
                     ImageView wrongIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/x-icon.png"))));
                     wrongIcon.setFitWidth(22);
                     wrongIcon.setFitHeight(22);
                     btnCell.setGraphic(wrongIcon);
-
                     btnCell.getStyleClass().add("mine-cell-wrong-flag");
                 }
                 else if (cell.isFlagged() || (gameLogic.getGameState() == GameState.WON && cell.isMine())) {
@@ -211,6 +224,7 @@ public class BoardGameController implements Initializable {
         }
         updateStatus();
     }
+
 
     private void updateStatus() {
         int remaining = gameLogic.getBoard() != null ? gameLogic.getBoard().getRemainingMines() : 0;
