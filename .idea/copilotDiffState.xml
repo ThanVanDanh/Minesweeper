@@ -3,6 +3,14 @@
   <component name="CopilotDiffPersistence">
     <option name="pendingDiffs">
       <map>
+        <entry key="$PROJECT_DIR$/src/main/java/minesweeper/service/SessionManager.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/main/java/minesweeper/service/SessionManager.java" />
+              <option name="updatedContent" value="package minesweeper.service;&#10;&#10;import minesweeper.model.User;&#10;&#10;public final class SessionManager {&#10;    private static User currentUser;&#10;&#10;    private SessionManager() {&#10;    }&#10;&#10;    public static void createSession(User user) {&#10;        currentUser = user;&#10;    }&#10;&#10;    public static void clearSession() {&#10;        currentUser = null;&#10;    }&#10;&#10;    public static User getCurrentUser() {&#10;        return currentUser;&#10;    }&#10;&#10;    public static boolean isLoggedIn() {&#10;        return currentUser != null;&#10;    }&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
         <entry key="/settings (snapshot).fxml">
           <value>
             <PendingDiffInfo>

@@ -13,13 +13,9 @@ public class GameController {
     private Difficulty difficulty;
     private boolean isPaused;
 
-    //UC04 - Bắt đầu ván mới.
     public void startNewGame(Difficulty difficulty) {
-        // UC03 - Chọn độ khó
         this.difficulty = difficulty;
-        // UC04 - Bắt đầu ván mới
         this.board = new Board(difficulty);
-        // UC05/UC06 - Tạm dừng / Tiếp tục ván game
         this.isPaused = false;
         LOG.info("New game started with difficulty: {}", difficulty);
     }
@@ -32,7 +28,6 @@ public class GameController {
         return board;
     }
 
-    //UC03 - Chọn độ khó.
     public Difficulty getDifficulty() {
         return difficulty;
     }
@@ -40,44 +35,45 @@ public class GameController {
     public GameState getGameState() {
         return board == null ? GameState.IDLE : board.getGameState();
     }
-    // UC09 - Mở ô: tầng điều phối nhận yêu cầu từ BoardGameController,
-    // đặt mìn sau click đầu tiên nếu ván còn IDLE, rồi chuyển xử lý cho Board.reveal().
+
+    // 3.1 MỞ Ô: tầng điều phối nhận yêu cầu từ BoardGameController
     public void reveal(int row, int col) {
         if (board == null) {
             LOG.warn("Attempted to reveal cell ({}, {}) with no active game", row, col);
             return;
         }
-        // UC09.4: Nếu ván đấu mới khởi động (IDLE), rải mìn ngẫu nhiên tránh ô click đầu tiên
+        // Nếu GameState == IDLE (Chưa rải mìn), tiến hành rải mìn tránh ô click đầu
         if (board.getGameState() == GameState.IDLE) {
             board.placeMines(row, col);
         }
         LOG.debug("Revealing cell: ({}, {})", row, col);
-        // UC09.5: Chuyển tiếp tham số xử lý logic cốt lõi xuống phương thức của đối tượng Board
+
+        // Gọi lệnh reveal() của Board
         board.reveal(row, col);
     }
 
-    // UC10 - Tầng điều phối tiếp nhận yêu cầu cắm cờ
+    // 03.2.1 UC03.1 - CẮM / GỠ CỜ
     public void toggleFlag(int row, int col) {
         if (board == null) {
             LOG.warn("Attempted to toggle flag at ({}, {}) with no active game", row, col);
             return;
         }
         LOG.debug("Toggling flag at cell: ({}, {})", row, col);
-        // UC10.3: Chuyển giao nhiệm vụ đánh dấu ô sang phương thức xử lý logic của Board
+        // 03.2.1.2: Chuyển tiếp lệnh gọi hàm
         board.toggleFlag(row, col);
     }
 
-    // UC13 - Tầng điều phối tiếp nhận yêu cầu mở ô hàng loạt
+    // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal / Chording)
     public void fastReveal(int row, int col) {
-        // UC13.3: Chuyển giao xử lý mở nhanh xung quanh ô số cho phương thức fastReveal() của Board
+        // 03.2.2.2: Chuyển tiếp lệnh gọi hàm
         if (board != null) board.fastReveal(row, col);
     }
+
     public boolean isPaused() {
         return isPaused;
     }
-    // UC05/UC06 - Tạm dừng/ tiếp tục ván game
+
     public void setPaused(boolean paused) {
         isPaused = paused;
     }
 }
-
