@@ -7,56 +7,95 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import minesweeper.model.enums.Difficulty;
+import minesweeper.model.AuditLog;
 import minesweeper.model.GameResult;
-import minesweeper.repository.GameResultRepository;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.repository.MySqlGameResultRepository;
+import minesweeper.repository.exception.DataAccessException;
+import minesweeper.repository.log.MySqlAuditLogRepository;
+import minesweeper.repository.pagination.PagedResult;
+import minesweeper.repository.spec.GameResultFilterSpec;
+import minesweeper.service.GameResultService;
+import minesweeper.service.SessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AdminResultController {
 
+    // ── FXML Controls ────────────────────────────────────────────────────────
     @FXML private ComboBox<String> cbDifficulty;
     @FXML private ComboBox<String> cbResult;
-    @FXML private TextField tfUsername;
-    @FXML private Label statusLabel;
-    @FXML private Label selectedCountLabel;
+    @FXML private TextField        tfUsername;
+    @FXML private Label            statusLabel;
+    @FXML private Label            selectedCountLabel;
 
     @FXML private Button btnPrevPage;
     @FXML private Button btnNextPage;
-    @FXML private Label pageLabel;
-    private static final int PAGE_SIZE = 20;
-    private int currentPage = 0;
-    private int totalPages = 1;
-    private MySqlGameResultRepository pagedRepository;
-    private boolean isFiltering = false;
-    private ObservableList<GameResult> filteredList = FXCollections.observableArrayList();
+    @FXML private Label  pageLabel;
 
-    @FXML private TableView<GameResult> resultTable;
+    @FXML private TableView<GameResult>            resultTable;
     @FXML private TableColumn<GameResult, Boolean> colSelect;
-    @FXML private TableColumn<GameResult, String> colGameId;
-    @FXML private TableColumn<GameResult, String> colUsername;
+    @FXML private TableColumn<GameResult, String>  colGameId;
+    @FXML private TableColumn<GameResult, String>  colUsername;
     @FXML private TableColumn<GameResult, Integer> colScore;
-    @FXML private TableColumn<GameResult, String> colDifficulty;
-    @FXML private TableColumn<GameResult, String> colTime;
-    @FXML private TableColumn<GameResult, String> colResult;
-    @FXML private TableColumn<GameResult, String> colPlayedAt;
+    @FXML private TableColumn<GameResult, String>  colDifficulty;
+    @FXML private TableColumn<GameResult, String>  colTime;
+    @FXML private TableColumn<GameResult, String>  colResult;
+    @FXML private TableColumn<GameResult, String>  colPlayedAt;
     @FXML private TableColumn<GameResult, Integer> colOpenedCells;
 
-    private ObservableList<GameResult> masterList = FXCollections.observableArrayList();
-    private GameResultRepository repository;
+    // ── Constants ────────────────────────────────────────────────────────────
+    private static final int    PAGE_SIZE  = 20;
+    private static final String FILTER_ALL = "Tất cả";
 
+    // ── State ────────────────────────────────────────────────────────────────
+    private int                  currentPage = 0;
+    private int                  totalPages  = 1;
+    private GameResultFilterSpec activeSpec  = new GameResultFilterSpec();
+
+    private final ObservableList<GameResult> pageItems = FXCollections.observableArrayList();
+
+    // ── Dependencies ─────────────────────────────────────────────────────────
+    private final GameResultService       gameResultService;
+    private final MySqlAuditLogRepository auditLogRepository;
+    private static final Logger LOG = LoggerFactory.getLogger(AdminResultController.class);
+
+    /** Production constructor */
     public AdminResultController() {
-        repository = new MySqlGameResultRepository();
-        pagedRepository = (MySqlGameResultRepository) repository;
+        this.gameResultService  = new GameResultService(new MySqlGameResultRepository());
+        this.auditLogRepository = new MySqlAuditLogRepository();
     }
+
+    /** Test constructor (inject mock) */
+    public AdminResultController(GameResultService gameResultService) {
+        this.gameResultService  = gameResultService;
+        this.auditLogRepository = new MySqlAuditLogRepository();
+    }
+
+    // =========================================================================
+    // Basic Flow – UC-05.7 Xem danh sách kết quả
+    // =========================================================================
 
     @FXML
     public void initialize() {
-        resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        // 05.7.1 Admin nhấn chọn mục "Quản lý kết quả" từ thanh điều hướng
+        // 05.7.2 Hệ thống khởi tạo các bộ lọc mặc định:
+        //          Độ khó và Kết quả đều ở trạng thái "Tất cả"
+        setupTable();
+        setupFilterComboBoxes();
+
+        // 05.7.3 Hệ thống truy vấn cơ sở dữ liệu và lấy danh sách kết quả,
+        //          hiển thị tối đa 20 bản ghi mỗi trang, bắt đầu từ trang đầu tiên
+        loadPage();
+    }
+
+    private void setupFilterComboBoxes() {
         cbDifficulty.setItems(FXCollections.observableArrayList(
-                "Tất cả",
+                FILTER_ALL,
                 Difficulty.EASY.getLabel(),
                 Difficulty.MEDIUM.getLabel(),
                 Difficulty.HARD.getLabel(),
@@ -64,23 +103,233 @@ public class AdminResultController {
         ));
         cbDifficulty.getSelectionModel().selectFirst();
 
-        cbResult.setItems(FXCollections.observableArrayList("Tất cả",  "Thắng", "Thua"));
+        cbResult.setItems(FXCollections.observableArrayList(FILTER_ALL, "Thắng", "Thua"));
         cbResult.getSelectionModel().selectFirst();
+    }
 
+    private void setupTable() {
+        resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         resultTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-               setupColumns();
-        loadResults();
+        setupColumns();
+    }
+
+    /**
+     * 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm thông tin số trang hiện tại,
+     *          tổng số trang và tổng số kết quả tìm được.
+     * 05-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+     */
+    private void loadPage() {
+        try {
+            PagedResult<GameResult> result =
+                    gameResultService.findPaged(activeSpec, currentPage, PAGE_SIZE);
+
+            totalPages  = Math.max(1, result.getTotalPages());
+            currentPage = Math.min(currentPage, totalPages - 1);
+
+            pageItems.setAll(result.getContent());
+            resultTable.setItems(pageItems);
+
+            pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
+            btnPrevPage.setDisable(currentPage == 0);
+            btnNextPage.setDisable(currentPage >= totalPages - 1);
+            statusLabel.setText("Tìm thấy " + result.getTotalElements() + " kết quả");
+
+        } catch (DataAccessException e) {
+            // 05-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+            showError("Không thể tải dữ liệu");
+        }
+    }
+
+    // =========================================================================
+    // Alternative Flow – UC-05.8 Lọc kết quả
+    // =========================================================================
+
+    @FXML
+    public void onFilter() {
+        // 05.8.1 Admin nhập tên người chơi và/hoặc chọn bộ lọc Độ khó, Kết quả
+        //          rồi nhấn nút Lọc
+        String usernameFilter   = tfUsername.getText().trim();
+        String difficultyFilter = cbDifficulty.getValue();
+        String resultFilter     = cbResult.getValue();
+
+        boolean noFilter = usernameFilter.isEmpty()
+                && FILTER_ALL.equals(difficultyFilter)
+                && FILTER_ALL.equals(resultFilter);
+
+        if (noFilter) {
+            // 05.8-A1 Admin xóa hết điều kiện lọc rồi nhấn Lọc
+            //           → Hệ thống nhận diện không có bộ lọc nào,
+            //             tải lại toàn bộ danh sách ban đầu từ cơ sở dữ liệu
+            activeSpec = new GameResultFilterSpec();
+        } else {
+            // 05.8.2 Hệ thống xác định điều kiện lọc dựa trên thông tin Admin vừa nhập
+            activeSpec = buildFilterSpec(usernameFilter, difficultyFilter, resultFilter);
+        }
+
+        // 05.8.3 Hệ thống truy vấn cơ sở dữ liệu theo điều kiện lọc,
+        //          bắt đầu hiển thị lại từ trang đầu tiên
+        currentPage = 0;
+
+        // 05.8.4 Hệ thống tải lại bảng với danh sách kết quả phù hợp
+        loadPage();
+    }
+
+    @FXML
+    public void onReset() {
+        // 05.8-A2 Admin nhấn Làm mới
+        //           → Hệ thống xoá ô Username, reset ComboBox về 'Tất cả',
+        //             tải lại toàn bộ danh sách từ CSDL
+        tfUsername.clear();
+        cbDifficulty.getSelectionModel().selectFirst();
+        cbResult.getSelectionModel().selectFirst();
+        activeSpec  = new GameResultFilterSpec();
+        currentPage = 0;
+        loadPage();
+        statusLabel.setText("Đã reset");
+    }
+
+    /** Dựng GameResultFilterSpec từ các giá trị bộ lọc trên UI. */
+    private GameResultFilterSpec buildFilterSpec(String username,
+                                                 String difficultyFilter,
+                                                 String resultFilter) {
+        GameResultFilterSpec spec = new GameResultFilterSpec();
+
+        if (!username.isEmpty()) spec.username = username;
+
+        if (!FILTER_ALL.equals(difficultyFilter)) {
+            for (Difficulty d : Difficulty.values()) {
+                if (d.getLabel().equalsIgnoreCase(difficultyFilter)) {
+                    spec.difficulty = d;
+                    break;
+                }
+            }
+        }
+
+        if ("Thắng".equals(resultFilter))     spec.win = true;
+        else if ("Thua".equals(resultFilter)) spec.win = false;
+
+        return spec;
+    }
+
+    // =========================================================================
+    // Alternative Flow – UC-05.9 Xóa kết quả gian lận
+    // =========================================================================
+
+    @FXML
+    public void onDeleteFraud() {
+        // 05.9.1 Admin tích checkbox trên từng dòng hoặc nhấn Chọn tất cả
+        //          để chọn các kết quả đang hiển thị trên bảng
+        // 05.9.2 Admin nhấn nút Xoá kết quả gian lận
+
+        // 05.9.3 Hệ thống lấy danh sách kết quả mà Admin đã chọn
+        List<GameResult> selectedList =
+                new ArrayList<>(resultTable.getSelectionModel().getSelectedItems());
+
+        // 05.9-E1 Chưa chọn dòng nào, nhấn Xoá
+        //           → Hiển thị thông báo 'Hãy chọn dữ liệu để xoá', không thực hiện xoá
+        if (selectedList.isEmpty()) {
+            showInfo("Hãy chọn dữ liệu để xoá");
+            return;
+        }
+
+        try {
+            // 05.9.4 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
+            List<String> ids = selectedList.stream()
+                    .map(GameResult::getGameId)
+                    .collect(Collectors.toList());
+            gameResultService.deleteByGameIds(ids);
+
+            // 05.9.5 Hệ thống tải lại bảng dữ liệu và hiển thị thông báo xóa thành công
+            //          kèm số lượng bản ghi đã xóa
+            loadPage();
+            statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
+            showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
+
+            // 05.9.6 Hệ thống ghi nhận hành động xóa vào nhật ký, bao gồm thông tin
+            //          Admin thực hiện, danh sách mã kết quả bị xóa và tổng số lượng bản ghi
+            writeAuditLog(selectedList);
+
+        } catch (Exception e) {
+            // 05-E1 CSDL lỗi
+            showError("Xoá thất bại");
+        }
+    }
+
+    @FXML
+    public void onSelectAll() {
+        if (resultTable.getSelectionModel().getSelectedItems().size()
+                == resultTable.getItems().size()) {
+            resultTable.getSelectionModel().clearSelection();
+        } else {
+            resultTable.getSelectionModel().selectAll();
+        }
+        resultTable.refresh();
+        selectedCountLabel.setText(
+                resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
+    }
+
+    // =========================================================================
+    // Phân trang
+    // =========================================================================
+
+    @FXML
+    public void onPrevPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            loadPage();
+        }
+    }
+
+    @FXML
+    public void onNextPage() {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            loadPage();
+        }
+    }
+
+    // =========================================================================
+    // Private helpers
+    // =========================================================================
+
+    /**
+     * 05.9.6 Ghi nhận hành động xóa vào nhật ký, bao gồm thông tin Admin thực hiện,
+     *          danh sách mã kết quả bị xóa và tổng số lượng bản ghi.
+     * 05-E1 Ghi log vào CSDL thất bại
+     */
+    private void writeAuditLog(List<GameResult> deleted) {
+        try {
+            Long adminId = SessionManager.isLoggedIn()
+                    ? SessionManager.getCurrentUser().getId()
+                    : null;
+
+            String target = deleted.stream()
+                    .map(GameResult::getGameId)
+                    .collect(Collectors.joining(","));
+
+            String details = "Deleted " + deleted.size()
+                    + " fraudulent game results; GameIds: " + target;
+
+            auditLogRepository.insert(new AuditLog(adminId, "DELETE_SESSION", target, details));
+            LOG.info("[AUDIT] Admin {} deleted {} fraudulent results: {}",
+                    adminId, deleted.size(), target);
+
+        } catch (Exception e) {
+            // 05-E1 Ghi log vào CSDL thất bại
+            LOG.warn("Failed to write audit log for fraud deletion", e);
+        }
     }
 
     private void setupColumns() {
-        colGameId.setCellValueFactory( new PropertyValueFactory<>("gameId"));
-        colUsername.setCellValueFactory( new PropertyValueFactory<>("playerName"));
-        colScore.setCellValueFactory( new PropertyValueFactory<>("score"));
-        colDifficulty.setCellValueFactory( new PropertyValueFactory<>("difficultyLabel"));
-        colTime.setCellValueFactory( new PropertyValueFactory<>("timeFormatted"));
-        colResult.setCellValueFactory( new PropertyValueFactory<>("result"));
-        colPlayedAt.setCellValueFactory( new PropertyValueFactory<>("playedAtFormatted"));
-        colOpenedCells.setCellValueFactory( new PropertyValueFactory<>("openedCells"));
+        colGameId.setCellValueFactory(new PropertyValueFactory<>("gameId"));
+        colUsername.setCellValueFactory(new PropertyValueFactory<>("playerName"));
+        colScore.setCellValueFactory(new PropertyValueFactory<>("score"));
+        colDifficulty.setCellValueFactory(new PropertyValueFactory<>("difficultyLabel"));
+        colTime.setCellValueFactory(new PropertyValueFactory<>("timeFormatted"));
+        colResult.setCellValueFactory(new PropertyValueFactory<>("result"));
+        colPlayedAt.setCellValueFactory(new PropertyValueFactory<>("playedAtFormatted"));
+        colOpenedCells.setCellValueFactory(new PropertyValueFactory<>("openedCells"));
+
         colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
         colSelect.setCellFactory(col -> new TableCell<>() {
             private final CheckBox checkBox = new CheckBox();
@@ -95,152 +344,19 @@ public class AdminResultController {
                             resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
                 });
             }
+
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
-                } else {
-                    boolean selected = resultTable.getSelectionModel().getSelectedIndices().contains(getIndex());
-                    checkBox.setSelected(selected);
-                    setGraphic(checkBox);
+                    return;
                 }
+                checkBox.setSelected(
+                        resultTable.getSelectionModel().getSelectedIndices().contains(getIndex()));
+                setGraphic(checkBox);
             }
         });
-    }
-
-    private void loadResults() {
-
-        try {
-            var paged = pagedRepository.getAllResults(currentPage, PAGE_SIZE);
-            masterList.setAll(paged.getContent());
-            resultTable.setItems(masterList);
-            totalPages = Math.max(1, paged.getTotalPages());
-            pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
-            btnPrevPage.setDisable(currentPage == 0);
-            btnNextPage.setDisable(currentPage >= totalPages - 1);
-            statusLabel.setText("Trang " + (currentPage+1) + ": " + masterList.size() + " kết quả");
-        } catch (Exception e) {
-            showError("Không thể tải dữ liệu");
-        }
-    }
-
-    @FXML
-    public void onFilter() {
-        try {
-            ObservableList<GameResult> allResults = FXCollections.observableArrayList(repository.getAllResults());
-
-            String usernameFilter = tfUsername.getText().toLowerCase().trim();
-            String difficultyFilter = cbDifficulty.getValue();
-            String resultFilter = cbResult.getValue();
-
-            filteredList.clear();
-            for (GameResult game : allResults) {
-                Difficulty diff = game.getDifficulty();
-                String difficultyLabel = game.getDifficultyLabel();
-                boolean matchUsername = game.getPlayerName().toLowerCase().contains(usernameFilter);
-                boolean matchDifficulty = difficultyFilter.equals("Tất cả") ||
-                        (diff != null && diff.getLabel().equalsIgnoreCase(difficultyFilter));
-                boolean matchResult = resultFilter.equals("Tất cả") ||
-                        game.getResult().equalsIgnoreCase(resultFilter);
-
-                if (matchUsername && matchDifficulty && matchResult) {
-                    filteredList.add(game);
-                }
-            }
-
-            isFiltering = true;
-
-            totalPages = Math.max(1, (int) Math.ceil((double) filteredList.size() / PAGE_SIZE));
-            currentPage = 0;
-            showFilteredPage();
-
-            statusLabel.setText("Tìm thấy " + filteredList.size() + " kết quả");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Lọc thất bại");
-        }
-    }
-
-    private void showFilteredPage() {
-        int from = currentPage * PAGE_SIZE;
-        int to = Math.min(from + PAGE_SIZE, filteredList.size());
-        masterList.setAll(filteredList.subList(from, to));
-        resultTable.setItems(masterList);
-
-        pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
-        btnPrevPage.setDisable(currentPage == 0);
-        btnNextPage.setDisable(currentPage >= totalPages - 1);
-        statusLabel.setText("Trang " + (currentPage + 1) + ": " + masterList.size() + " kết quả");
-    }
-
-    @FXML
-    public void onReset() {
-        tfUsername.clear();
-        cbDifficulty.getSelectionModel().selectFirst();
-        cbResult.getSelectionModel().selectFirst();
-
-        isFiltering = false;
-        filteredList.clear();
-        currentPage = 0;
-        loadResults();
-        statusLabel.setText("Đã reset");
-    }
-
-    @FXML
-    public void onDeleteFraud() {
-        List<GameResult> selectedList = new ArrayList<>(resultTable.getSelectionModel().getSelectedItems());
-
-        if (selectedList.isEmpty()) {
-            showInfo("Hãy chọn dữ liệu để xoá");
-            return;
-        }
-        try {
-            for (GameResult game : selectedList) {
-                repository.deleteByGameIds(java.util.List.of(game.getGameId()));
-                masterList.remove(game);
-                if (isFiltering) filteredList.remove(game);
-            }
-            resultTable.setItems(masterList);
-            statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
-            showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
-        } catch (Exception e) {
-            showError("Xoá thất bại");
-        }
-    }
-
-    @FXML
-    public void onSelectAll() {
-        if (resultTable.getSelectionModel().getSelectedItems().size() == resultTable.getItems().size()) {
-            resultTable.getSelectionModel().clearSelection();
-        } else {
-            resultTable.getSelectionModel().selectAll();
-        }
-        resultTable.refresh();
-        selectedCountLabel.setText(
-                resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
-    }
-
-    @FXML
-    public void onPrevPage() {
-        if (currentPage > 0) {
-            currentPage--;
-            if (isFiltering) showFilteredPage();
-            else loadResults();
-        }
-    }
-
-    @FXML
-    public void onNextPage() {
-        if (currentPage < totalPages - 1) {
-            currentPage++;
-            if (isFiltering) showFilteredPage();
-            else loadResults();
-        }
-    }
-    @FXML
-    private void closePopup() {
-        ((Stage) resultTable.getScene().getWindow()).close();
     }
 
     private void showInfo(String message) {
@@ -248,9 +364,15 @@ public class AdminResultController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
     private void showError(String message) {
-        Alert alert =new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void closePopup() {
+        ((Stage) resultTable.getScene().getWindow()).close();
     }
 }
