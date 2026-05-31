@@ -7,7 +7,7 @@
 <StackPane xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="minesweeper.controller.AdminUserController"
-           style="-fx-background-color:rgba(0,0,0,0.6);"
+           style="-fx-background-color: transparent;"
            stylesheets="@../css/styles.css"
            prefWidth="1100" prefHeight="720">
     <VBox maxWidth="1060" maxHeight="680"
@@ -46,12 +46,12 @@
                     <VBox spacing="5">
                         <Label text="VAI TRÒ" styleClass="input-label" style="-fx-text-fill:white;"/>
                         <ComboBox fx:id="cbRoleFilter" prefWidth="140"
-                                  style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
+                                  styleClass="admin-filter-combo"/>
                     </VBox>
                     <VBox spacing="5">
                         <Label text="TRẠNG THÁI" styleClass="input-label" style="-fx-text-fill:white;"/>
                         <ComboBox fx:id="cbStatusFilter" prefWidth="140"
-                                  style="-fx-background-color:rgba(3,16,25,0.95);-fx-border-color:rgba(33,217,255,0.25);-fx-border-radius:8;-fx-background-radius:8;-fx-text-fill:#d7fbff;"/>
+                                  styleClass="admin-filter-combo"/>
                     </VBox>
                     <Region HBox.hgrow="ALWAYS"/>
                     <VBox spacing="8" alignment="BOTTOM_RIGHT">
@@ -70,6 +70,10 @@
                 <Button text="🗑  Xoá"         onAction="#onDeleteUser"
                         style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-font-size:12;-fx-padding:9 16;-fx-cursor:hand;"
                         prefWidth="100"/>
+                <!-- LOG TẠM THỜIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII -->
+                <Button text="📋  Xem Log"    onAction="#onViewAuditLog"
+                        style="-fx-background-color:rgba(39,100,255,0.18);-fx-border-color:rgba(39,100,255,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#4a9eff;-fx-font-weight:900;-fx-font-size:12;-fx-padding:9 16;-fx-cursor:hand;"
+                        prefWidth="120"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="totalUsersLabel"  text="-" style="-fx-text-fill:#39ff8f;-fx-font-size:13;-fx-font-weight:900;"/>
                 <Label text="tổng" styleClass="selected-mode"/>
@@ -88,7 +92,7 @@
             <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
                 <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
                 <TableView fx:id="userTable" VBox.vgrow="ALWAYS"
-                           style="-fx-background-color:transparent;-fx-control-inner-background:#030f18;-fx-control-inner-background-alt:#050e17;-fx-table-cell-border-color:rgba(45,212,240,0.08);-fx-text-fill:#c8eef7;-fx-font-size:12;-fx-selection-bar:transparent;-fx-selection-bar-text:#2dd4f0;-fx-selection-bar-non-focused:transparent;-fx-focus-color:transparent;-fx-faint-focus-color:transparent;">
+                           styleClass="ranking-table">
                     <columns>
                         <TableColumn fx:id="colSelect"      text=""             minWidth="40" maxWidth="40"/>
                         <TableColumn fx:id="colId"          text="ID"           prefWidth="50"  style="-fx-alignment:CENTER;"/>

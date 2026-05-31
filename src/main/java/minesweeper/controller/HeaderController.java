@@ -14,6 +14,7 @@ import minesweeper.model.User;
 import minesweeper.service.SessionManager;
 import javafx.stage.StageStyle;
 import javafx.scene.paint.Color;
+import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
 
 import java.io.IOException;
@@ -167,15 +168,22 @@ public class HeaderController {
         }
     }
 
-    @FXML
     public void openAdminUser() {
-        openAdminWindow("/app/adminUser.fxml", "Quản lý Người dùng – Admin");
+        try {
+            AdminPopupHelper.openAdminUserPopup(headerRoot);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    @FXML
     public void openAdminResult() {
-        openAdminWindow("/app/adminResult.fxml", "Quản lý Kết quả – Admin");
+        try {
+            AdminPopupHelper.openAdminResultPopup(headerRoot);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 
     private void swapScene(String fxmlPath) {
         try {
