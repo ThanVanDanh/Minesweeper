@@ -116,43 +116,44 @@ public class BoardGameController implements Initializable {
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
 
-
-                    // UC10 - CẮM/GỠ CỜ
-                    // UC10.1: Người chơi click chuột phải vào ô vuông
+                    // 03.2.1 UC03.1 - CẮM / GỠ CỜ
                     if (e.getButton() == MouseButton.SECONDARY) {
-                        // UC10.2: BoardGameController chuyển tiếp tọa độ sang GameController
+                        // 03.2.1.1 & 03.2.1.2: Người chơi nhấp chuột phải -> Chuyển tiếp lệnh
                         gameLogic.toggleFlag(finalR, finalC);
                     }
-
-                    // UC09 & UC13 - MỞ Ô / MỞ NHANH
+                    // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
-                        // UC13.1: Người chơi click chuột trái vào ô số hiển thị đã mở từ trước
+                        // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal)
                         if (currentCell.isRevealed()) {
-                            // UC13.2: BoardGameController gọi hàm mở nhanh fastReveal
+                            // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
                             gameLogic.fastReveal(finalR, finalC);
                         } else {
-                            // UC10.1: Hoặc click chuột trái khi nút công tắc btnFlat đang bật chế độ cắm cờ
+                            // 03.2.1.1: Hoặc click chuột trái khi nút btnFlat đang bật chế độ cắm cờ
                             if (isFlagMode) {
-                                // UC10.2: Chuyển tiếp tọa độ sang GameController để cắm cờ
                                 gameLogic.toggleFlag(finalR, finalC);
                             } else {
-                                // UC09.1: Người chơi click chuột trái vào một ô vuông chưa mở thông thường
-                                // UC09.3: BoardGameController truyền yêu cầu điều phối sang GameController
+                                // 3.1 MỞ Ô (Basic Flow)
                                 gameLogic.reveal(finalR, finalC);
                             }
                         }
                     }
-                    // UC14 - PHÁT HIỆN MÌN
-                    // UC14.4: Nhận diện trạng thái GameState là LOST sau tính toán của Board
+
+                    // Xử lý sau khi tương tác: Kiểm tra điều kiện thắng/thua
+
+                    // 03.2.3 PHÁT HIỆN MÌN (Game Over - Thua cuộc)
                     if (gameLogic.getGameState() == GameState.LOST) {
+                        // 03.2.3.4: Phát âm thanh nổ
                         playExplosionSound();
-                        // UC14.5: Khóa luồng xử lý, dừng thời gian, hiện lớp phủ thông báo và lưu kết quả
+                        // 03.2.3.5 & 03.2.3.6: Hiển thị lớp phủ BẠN ĐÃ THUA, dừng thời gian và lưu KQ
                         showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
-                    } else if (gameLogic.getGameState() == GameState.WON) {
+                    }
+                    // 03.2.4 ĐIỀU KIỆN THẮNG CUỘC
+                    else if (gameLogic.getGameState() == GameState.WON) {
+                        // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver("BẠN ĐÃ THẮNG!", "#39ff8f");
                     }
 
-                    // UC09.12 / UC10.8 / UC13.10: Đồng bộ hóa toàn bộ trạng thái lên màn hình hiển thị UI
+                    // 03.2.1.4, 03.2.2.4, 03.2.4.5: Đồng bộ hóa toàn bộ trạng thái lên UI
                     updateBoardUI();
                 });
 
@@ -173,8 +174,7 @@ public class BoardGameController implements Initializable {
                 Button btnCell = (Button) minesweeperGrid.getChildren().get(index);
                 minesweeper.model.Cell cell = gameLogic.getBoard().getCell(r, c);
 
-                // UC09/UC10/UC12/UC15 - Đồng bộ trạng thái Cell lên UI:
-                // ô mở, số mìn lân cận, cờ, mìn lộ và cờ sai khi thua.
+                // Reset style
                 btnCell.setText("");
                 btnCell.setGraphic(null);
                 btnCell.setStyle("");
@@ -191,9 +191,8 @@ public class BoardGameController implements Initializable {
                 if (cell.isRevealed()) {
                     btnCell.getStyleClass().add("mine-cell-revealed");
 
-                    // UC15 - LỘ TOÀN BỘ MÌN
+                    // 03.2.3.3 LỘ TOÀN BỘ MÌN
                     if (cell.isMine()) {
-                        // UC15.5: Ô chứa mìn đã lật, nạp biểu tượng quả bom (bomb-icon.png) lên nút bấm
                         ImageView bombIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/bomb-icon.png"))));
                         bombIcon.setFitWidth(22);
                         bombIcon.setFitHeight(22);
@@ -206,7 +205,7 @@ public class BoardGameController implements Initializable {
                         btnCell.getStyleClass().add("mine-cell-empty");
                     }
                 }
-                // UC15.6: Trạng thái LOST, ô chưa lật bị cắm cờ sai vị trí mìn nhận ký hiệu dấu X (x-icon.png)
+                // 03.2.3.3: Trạng thái LOST, ô chưa lật bị cắm cờ sai vị trí mìn nhận ký hiệu dấu X
                 else if (gameLogic.getGameState() == GameState.LOST && cell.isFlagged() && !cell.isMine()) {
                     ImageView wrongIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/x-icon.png"))));
                     wrongIcon.setFitWidth(22);
@@ -227,6 +226,7 @@ public class BoardGameController implements Initializable {
 
 
     private void updateStatus() {
+        // 03.2.1.4: Cập nhật số lượng cờ còn lại
         int remaining = gameLogic.getBoard() != null ? gameLogic.getBoard().getRemainingMines() : 0;
         lblFlags.setText(String.format("Cờ %03d", remaining));
 
@@ -325,7 +325,6 @@ public class BoardGameController implements Initializable {
             System.err.println("Lỗi khi phát âm thanh: " + ex.getMessage());
         }
     }
-
     private void showGameOver(String message, String hexColor) {
         stopTimer();
         if (lblGameOver != null) {
@@ -335,6 +334,7 @@ public class BoardGameController implements Initializable {
 
         if (gameOverOverlay != null) gameOverOverlay.setVisible(true);
         if (pauseOverlay != null) pauseOverlay.setVisible(false);
+        // 03.2.3.5 & 03.2.4.4 Gọi luồng lưu dữ liệu ván đấu
         saveGameResult();
     }
 
