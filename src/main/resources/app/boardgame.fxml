@@ -34,8 +34,13 @@
                 <VBox spacing="30" VBox.vgrow="ALWAYS">
                     <BorderPane style="-fx-background-color: rgba(2, 13, 24, 0.6); -fx-background-radius: 8; -fx-border-color: rgba(45, 212, 240, 0.1); -fx-border-radius: 8;">
                         <padding><Insets bottom="15.0" left="20.0" right="20.0" top="15.0" /></padding>
-                        <left><Label fx:id="lblFlags" prefHeight="26.0" prefWidth="77.0" style="-fx-text-fill: #ff4a69; -fx-font-size: 20; -fx-font-weight: bold;" text="🚩 010" BorderPane.alignment="CENTER" /></left>
-                        <right><Label fx:id="lblTime" prefHeight="26.0" prefWidth="145.0" minWidth="145.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="⏱ 00:00" BorderPane.alignment="CENTER" /></right>
+                        <left><Label fx:id="lblFlags" prefHeight="26.0" prefWidth="110.0" style="-fx-text-fill: #ff4a69; -fx-font-size: 20; -fx-font-weight: bold;" text="Cờ 010" BorderPane.alignment="CENTER" /></left>
+                        <right>
+                            <HBox alignment="CENTER_RIGHT" spacing="18" BorderPane.alignment="CENTER">
+                                <Label fx:id="lblPlayers" minWidth="148.0" prefHeight="26.0" prefWidth="148.0" style="-fx-text-fill: #39ff8f; -fx-font-size: 18; -fx-font-weight: bold;" text="Người chơi 01" />
+                                <Label fx:id="lblTime" minWidth="145.0" prefHeight="26.0" prefWidth="145.0" style="-fx-text-fill: #2dd4f0; -fx-font-size: 20; -fx-font-weight: bold;" text="Time 00:00" />
+                            </HBox>
+                        </right>
                         <center>
                             <JFXButton fx:id="btnFlat" ellipsisString="" onAction="#btnFlat" prefHeight="39.0" prefWidth="123.0" style="-fx-border-color: #2dd4f0;" text="Mở ô" textFill="WHITE" BorderPane.alignment="CENTER">
                                 <graphic>
@@ -52,46 +57,75 @@
                         </center>
                     </BorderPane>
 
-                    <StackPane VBox.vgrow="ALWAYS">
-                        <ScrollPane fitToWidth="true" fitToHeight="true" pannable="true"
-                                    style="-fx-background-color: transparent; -fx-background: transparent;"
-                                    hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
-                            <content>
-                                <HBox alignment="CENTER">
-                                    <GridPane fx:id="minesweeperGrid" alignment="CENTER" hgap="2" styleClass="game-grid" vgap="2" />
-                                </HBox>
-                            </content>
-                        </ScrollPane>
+                    <HBox spacing="20" VBox.vgrow="ALWAYS">
 
-                        <VBox fx:id="pauseOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.7);" visible="false">
-                            <Label style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;" text="TẠM DỪNG" />
+                        <VBox minWidth="220.0" prefWidth="220.0" spacing="15" style="-fx-background-color: rgba(2, 13, 24, 0.6); -fx-background-radius: 8; -fx-border-color: rgba(45, 212, 240, 0.1); -fx-border-radius: 8;">
+                            <padding><Insets bottom="20.0" left="15.0" right="15.0" top="20.0" /></padding>
+
+                            <Label alignment="CENTER" maxWidth="Infinity" style="-fx-text-fill: #2dd4f0; -fx-font-size: 18; -fx-font-weight: bold;" text="NGƯỜI CHƠI" />
+
+                            <VBox fx:id="playerCard1" spacing="5" style="-fx-background-color: rgba(57, 255, 143, 0.1); -fx-background-radius: 6; -fx-border-color: rgba(57, 255, 143, 0.5); -fx-border-radius: 6; -fx-padding: 10;">
+                                <Label fx:id="playerName1" style="-fx-text-fill: #39ff8f; -fx-font-size: 15; -fx-font-weight: bold;" text="1. Player 01" />
+                                <Label fx:id="playerScore1" style="-fx-text-fill: #ffffff; -fx-font-size: 13;" text="Điểm: 0" />
+                            </VBox>
+
+                            <VBox fx:id="playerCard2" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
+                                <Label fx:id="playerName2" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="2. Player 02" />
+                                <Label fx:id="playerScore2" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            </VBox>
+
+                            <VBox fx:id="playerCard3" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
+                                <Label fx:id="playerName3" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="3. Player 03" />
+                                <Label fx:id="playerScore3" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            </VBox>
+
+                            <VBox fx:id="playerCard4" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
+                                <Label fx:id="playerName4" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="4. Player 04" />
+                                <Label fx:id="playerScore4" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            </VBox>
                         </VBox>
 
-                        <VBox fx:id="gameOverOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.8);" visible="false">
-                            <Label fx:id="lblGameOver" style="-fx-font-size: 44; -fx-font-weight: bold;" text="KẾT QUẢ" />
-                        </VBox>
-                    </StackPane>
+                        <VBox alignment="CENTER" spacing="20" HBox.hgrow="ALWAYS">
+                            <StackPane VBox.vgrow="ALWAYS">
+                                <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="AS_NEEDED" pannable="true" style="-fx-background-color: transparent; -fx-background: transparent;" vbarPolicy="AS_NEEDED">
+                                    <content>
+                                        <HBox alignment="CENTER">
+                                            <GridPane fx:id="minesweeperGrid" alignment="CENTER" hgap="2" styleClass="game-grid" vgap="2" />
+                                        </HBox>
+                                    </content>
+                                </ScrollPane>
 
-                    <HBox alignment="CENTER" spacing="30">
-                        <JFXButton fx:id="restartGame" onAction="#restartGame" prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Chơi lại" textFill="#2dd4f0">
-                            <graphic>
-                                <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../img/reset.png" />
-                                    </image>
-                                </ImageView>
-                            </graphic>
-                            <font>
-                                <Font name="System Bold" size="15.0" />
-                            </font>
-                        </JFXButton>
-                        <JFXButton fx:id="btnPause" onAction="#togglePause" prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Tạm dừng" textFill="#2dd4f0">
-                            <font>
-                                <Font name="System Bold" size="15.0" />
-                            </font>
-                        </JFXButton>
-                    </HBox>
-                </VBox>
+                                <VBox fx:id="pauseOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.7);" visible="false">
+                                    <Label style="-fx-text-fill: #fff; -fx-font-size: 32; -fx-font-weight: bold;" text="TẠM DỪNG" />
+                                </VBox>
+
+                                <VBox fx:id="gameOverOverlay" alignment="CENTER" style="-fx-background-color: rgba(0, 0, 0, 0.8);" visible="false">
+                                    <Label fx:id="lblGameOver" style="-fx-font-size: 44; -fx-font-weight: bold;" text="KẾT QUẢ" />
+                                </VBox>
+                            </StackPane>
+
+                            <HBox alignment="CENTER" spacing="30">
+                                <JFXButton fx:id="restartGame" onAction="#restartGame" prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Chơi lại" textFill="#2dd4f0">
+                                    <graphic>
+                                        <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../img/reset.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <font>
+                                        <Font name="System Bold" size="15.0" />
+                                    </font>
+                                </JFXButton>
+                                <JFXButton fx:id="btnPause" onAction="#togglePause" prefHeight="51.0" prefWidth="130.0" style="-fx-background-radius: 4 0 0 4; -fx-border-color: #2dd4f0;" text="Tạm dừng" textFill="#2dd4f0">
+                                    <font>
+                                        <Font name="System Bold" size="15.0" />
+                                    </font>
+                                </JFXButton>
+                            </HBox>
+                        </VBox>
+
+                    </HBox> </VBox>
             </VBox>
         </VBox>
     </center>

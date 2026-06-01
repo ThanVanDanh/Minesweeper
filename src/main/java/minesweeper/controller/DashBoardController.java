@@ -3,6 +3,7 @@ package minesweeper.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.fxml.FXMLLoader;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import minesweeper.model.Board;
 import minesweeper.model.enums.Difficulty;
 import minesweeper.model.User;
 import minesweeper.service.SessionManager;
@@ -41,6 +43,16 @@ public class DashBoardController {
     private ToggleButton hardButton;
     @FXML
     private ToggleButton expertButton;
+    @FXML
+    private ToggleButton customButton;
+    @FXML
+    private TextField customRowsField;
+    @FXML
+    private TextField customColsField;
+    @FXML
+    private TextField customMinesField;
+    @FXML
+    private TextField customPlayersField;
 
     @FXML
     private Button openPopupLogin;
@@ -51,6 +63,11 @@ public class DashBoardController {
     @FXML
     private VBox rankingContainer;
 
+    private static final int MIN_BOARD_SIZE = 2;
+    private static final int MAX_ROWS = 30;
+    private static final int MAX_COLS = 40;
+    private static final int MIN_PLAYERS = Board.MIN_PLAYER_COUNT;
+    private static final int MAX_PLAYERS = Board.MAX_PLAYER_COUNT;
     private final ToggleGroup difficultyGroup = new ToggleGroup();
 
     @FXML
@@ -60,9 +77,13 @@ public class DashBoardController {
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
         expertButton.setToggleGroup(difficultyGroup);
+        customButton.setToggleGroup(difficultyGroup);
 
         easyButton.setSelected(true);
-        updateSelectedMode("DỄ", "9×9 | 10 Min");
+        applySelectedDifficultyDefaults();
+        setCustomInputsDisabled(true);
+        setupCustomInputListeners();
+        updateSelectedModeForCurrentSelection();
 //        mediumButton.setSelected(true);
 //        updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
 
@@ -72,10 +93,9 @@ public class DashBoardController {
                 return;
             }
 
-            if (newToggle == easyButton) updateSelectedMode("DỄ", "9×9 | 10 Min");
-            if (newToggle == mediumButton) updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
-            if (newToggle == hardButton) updateSelectedMode("KHÓ", "16×30 | 99 Min");
-            if (newToggle == expertButton) updateSelectedMode("CHUYÊN GIA", "20×30 | 145 Min");
+            applySelectedDifficultyDefaults();
+            setCustomInputsDisabled(newToggle != customButton);
+            updateSelectedModeForCurrentSelection();
         });
         updateUiBasedOnSession();
         loadTopRanking();
@@ -109,8 +129,27 @@ public class DashBoardController {
 
     @FXML
     private void onStartBattle() {
+        CustomBoardSelection customSelection = null;
+        int playerCount;
 
-        selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
+        try {
+            playerCount = getSelectedPlayerCount();
+        } catch (IllegalArgumentException e) {
+            selectedModeLabel.setText("Cấu hình số người chơi chưa hợp lệ: " + e.getMessage());
+            return;
+        }
+
+        if (customButton.isSelected()) {
+            try {
+                customSelection = getCustomBoardSelection();
+                selectedModeLabel.setText("Đang chuẩn bị bàn chơi: TÙY CHỈNH - " + customSelection.meta());
+            } catch (IllegalArgumentException e) {
+                selectedModeLabel.setText("Cấu hình tùy chỉnh chưa hợp lệ: " + e.getMessage());
+                return;
+            }
+        } else {
+            selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
+        }
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
@@ -126,7 +165,16 @@ public class DashBoardController {
                 controller.setCurrentUser(-1, "Khách (Guest)");
             }
 
-            controller.setInitialDifficulty(getSelectedDifficulty());
+            if (customSelection != null) {
+                controller.setInitialCustomBoard(
+                        customSelection.rows(),
+                        customSelection.cols(),
+                        customSelection.mines(),
+                        customSelection.players()
+                );
+            } else {
+                controller.setInitialDifficulty(getSelectedDifficulty(), playerCount);
+            }
 
             Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
             Scene gameScene = new Scene(root);
@@ -231,8 +279,120 @@ public class DashBoardController {
         return Difficulty.MEDIUM;
     }
 
+    private Difficulty getSelectedDifficultyOrNull() {
+        if (easyButton.isSelected()) return Difficulty.EASY;
+        if (mediumButton.isSelected()) return Difficulty.MEDIUM;
+        if (hardButton.isSelected()) return Difficulty.HARD;
+        if (expertButton.isSelected()) return Difficulty.EXPERT;
+        return null;
+    }
+
     private void updateSelectedMode(String title, String meta) {
-        selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta);
+        selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta + " | " + getPlayerMeta());
+    }
+
+    private void setupCustomInputListeners() {
+        List.of(customRowsField, customColsField, customMinesField)
+                .forEach(field -> field.textProperty().addListener((obs, oldValue, newValue) -> {
+                    if (customButton.isSelected()) {
+                        updateCustomModeLabel();
+                    }
+                }));
+        customPlayersField.textProperty().addListener((obs, oldValue, newValue) -> updateSelectedModeForCurrentSelection());
+    }
+
+    private void setCustomInputsDisabled(boolean disabled) {
+        List.of(customRowsField, customColsField, customMinesField)
+                .forEach(field -> field.setDisable(disabled));
+    }
+
+    private void applySelectedDifficultyDefaults() {
+        Difficulty difficulty = getSelectedDifficultyOrNull();
+        if (difficulty == null) {
+            return;
+        }
+        customRowsField.setText(String.valueOf(difficulty.getRows()));
+        customColsField.setText(String.valueOf(difficulty.getCols()));
+        customMinesField.setText(String.valueOf(difficulty.getMines()));
+    }
+
+    private void updateSelectedModeForCurrentSelection() {
+        if (customButton.isSelected()) {
+            updateCustomModeLabel();
+        } else if (easyButton.isSelected()) {
+            updateSelectedMode("DỄ", "9×9 | 10 mìn");
+        } else if (mediumButton.isSelected()) {
+            updateSelectedMode("TRUNG BÌNH", "16×16 | 40 mìn");
+        } else if (hardButton.isSelected()) {
+            updateSelectedMode("KHÓ", "16×30 | 99 mìn");
+        } else if (expertButton.isSelected()) {
+            updateSelectedMode("CHUYÊN GIA", "20×30 | 145 mìn");
+        }
+    }
+
+    private void updateCustomModeLabel() {
+        try {
+            CustomBoardSelection selection = getCustomBoardSelection();
+            selectedModeLabel.setText("Chế độ đã chọn: TÙY CHỈNH - " + selection.meta());
+        } catch (IllegalArgumentException e) {
+            selectedModeLabel.setText("Chế độ đã chọn: TÙY CHỈNH - nhập hàng, cột, mìn và người chơi");
+        }
+    }
+
+    private CustomBoardSelection getCustomBoardSelection() {
+        int rows = parseCustomNumber(customRowsField, "Số hàng");
+        int cols = parseCustomNumber(customColsField, "Số cột");
+        int mines = parseCustomNumber(customMinesField, "Số mìn");
+        int players = getSelectedPlayerCount();
+
+        if (rows < MIN_BOARD_SIZE || rows > MAX_ROWS) {
+            throw new IllegalArgumentException("Số hàng phải từ " + MIN_BOARD_SIZE + " đến " + MAX_ROWS + ".");
+        }
+        if (cols < MIN_BOARD_SIZE || cols > MAX_COLS) {
+            throw new IllegalArgumentException("Số cột phải từ " + MIN_BOARD_SIZE + " đến " + MAX_COLS + ".");
+        }
+        int maxMines = rows * cols - 1;
+        if (mines < 1 || mines > maxMines) {
+            throw new IllegalArgumentException("Số mìn phải từ 1 đến " + maxMines + ".");
+        }
+        if (players < MIN_PLAYERS || players > MAX_PLAYERS) {
+            throw new IllegalArgumentException("Số người chơi phải từ " + MIN_PLAYERS + " đến " + MAX_PLAYERS + ".");
+        }
+        return new CustomBoardSelection(rows, cols, mines, players);
+    }
+
+    private int getSelectedPlayerCount() {
+        int players = parseCustomNumber(customPlayersField, "Số người chơi");
+        if (players < MIN_PLAYERS || players > MAX_PLAYERS) {
+            throw new IllegalArgumentException("Số người chơi phải từ " + MIN_PLAYERS + " đến " + MAX_PLAYERS + ".");
+        }
+        return players;
+    }
+
+    private String getPlayerMeta() {
+        try {
+            return getSelectedPlayerCount() + " người chơi";
+        } catch (IllegalArgumentException e) {
+            return "số người chơi 1-4";
+        }
+    }
+
+    private int parseCustomNumber(TextField field, String label) {
+        String raw = field.getText();
+        if (raw == null || raw.trim().isEmpty()) {
+            throw new IllegalArgumentException(label + " không được để trống.");
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(label + " phải là số nguyên.");
+        }
+    }
+
+    private record CustomBoardSelection(int rows, int cols, int mines, int players) {
+        private String meta() {
+            return rows + "×" + cols + " | " + mines + " mìn | " + players + " người chơi";
+        }
     }
 
     @FXML
