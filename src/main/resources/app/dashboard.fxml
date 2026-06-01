@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -65,25 +66,52 @@
                                         <RowConstraints/>
                                         <RowConstraints/>
                                         <RowConstraints/>
+                                        <RowConstraints/>
                                     </rowConstraints>
 
-                                    <ToggleButton fx:id="easyButton" text="●  DỄ&#10;     9×9 | 10 Min"
+                                    <ToggleButton fx:id="easyButton" text="●  DỄ&#10;     9×9 | 10 mìn"
                                                   GridPane.columnIndex="0" GridPane.rowIndex="0" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="mediumButton" text="●  TRUNG BÌNH&#10;     16×16 | 40 Min"
+                                    <ToggleButton fx:id="mediumButton" text="●  TRUNG BÌNH&#10;     16×16 | 40 mìn"
                                                   GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="hardButton" text="●  KHÓ&#10;     16×30 | 99 Min"
+                                    <ToggleButton fx:id="hardButton" text="●  KHÓ&#10;     16×30 | 99 mìn"
                                                   GridPane.columnIndex="0" GridPane.rowIndex="1" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="expertButton" text="●  CHUYÊN GIA&#10;     20×30 | 145 Min"
+                                    <ToggleButton fx:id="expertButton" text="●  CHUYÊN GIA&#10;     20×30 | 145 mìn"
                                                   GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
+                                    <ToggleButton fx:id="customButton" text="●  TÙY CHỈNH&#10;     Nhập kích thước và số mìn"
+                                                  GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" maxWidth="Infinity"
+                                                  styleClass="difficulty-button"/>
+                                </GridPane>
+
+                                <GridPane hgap="10" vgap="7" styleClass="custom-config-grid">
+                                    <columnConstraints>
+                                        <ColumnConstraints percentWidth="25"/>
+                                        <ColumnConstraints percentWidth="25"/>
+                                        <ColumnConstraints percentWidth="25"/>
+                                        <ColumnConstraints percentWidth="25"/>
+                                    </columnConstraints>
+
+                                    <Label text="Hàng" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="custom-label"/>
+                                    <Label text="Cột" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="custom-label"/>
+                                    <Label text="Số mìn" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="custom-label"/>
+                                    <Label text="Người chơi" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="custom-label"/>
+
+                                    <TextField fx:id="customRowsField" text="12" promptText="2-30"
+                                               GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="custom-input"/>
+                                    <TextField fx:id="customColsField" text="12" promptText="2-40"
+                                               GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="custom-input"/>
+                                    <TextField fx:id="customMinesField" text="25" promptText="Mìn"
+                                               GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="custom-input"/>
+                                    <TextField fx:id="customPlayersField" text="2" promptText="1-4"
+                                               GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="custom-input"/>
                                 </GridPane>
 
                                 <Button text="▷ BẮT ĐẦU CHIẾN ĐẤU" onAction="#onStartBattle" maxWidth="Infinity"
                                         styleClass="start-button"/>
-                                <Label fx:id="selectedModeLabel" text="Chế độ đã chọn: TRUNG BÌNH - 16×16 | 40 Min"
+                                <Label fx:id="selectedModeLabel" text="Chế độ đã chọn: TRUNG BÌNH - 16×16 | 40 mìn"
                                        styleClass="selected-mode"/>
                             </VBox>
 
