@@ -19,19 +19,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-/**
- * MySQL implementation of UserService
- */
 public class MySqlUserService implements UserService {
     private static final Logger LOG = LoggerFactory.getLogger(MySqlUserService.class);
 
     private static final String SELECT_USER_BY_ID_SQL =
-            "SELECT id, username, display_name, role, is_active FROM users WHERE id = ? LIMIT 1";
+            "SELECT id, username, display_name, email, role, is_active FROM users WHERE id = ? LIMIT 1";
     private static final String SELECT_USER_BY_USERNAME_SQL =
-            "SELECT id, username, display_name, role, is_active FROM users WHERE username = ? LIMIT 1";
+            "SELECT id, username, display_name, email, role, is_active FROM users WHERE username = ? LIMIT 1";
     private static final String SELECT_USER_AUTH_BY_USERNAME_SQL =
-            "SELECT id, username, display_name, password_hash, role, is_active FROM users WHERE username = ? LIMIT 1";
+            "SELECT id, username, display_name, email, password_hash, role, is_active FROM users WHERE username = ? LIMIT 1";
     private static final String SELECT_PASSWORD_HASH_BY_ID_SQL =
             "SELECT password_hash FROM users WHERE id = ? LIMIT 1";
     private static final String INSERT_USER_SQL = "INSERT INTO users (username, display_name) VALUES (?, ?)";
@@ -42,16 +38,22 @@ public class MySqlUserService implements UserService {
             "SELECT id, username, display_name, role, is_active FROM users ORDER BY id";
 
     private static final String UPDATE_DISPLAY_NAME_SQL = "UPDATE users SET display_name = ? WHERE id = ?";
-    private static final String UPDATE_ACTIVE_SQL = "UPDATE users SET is_active = ? WHERE id = ?";
     private static final String DELETE_SQL = "DELETE FROM users WHERE id = ?";
     private static final String DELETE_GAME_SESSIONS_BY_USER_SQL = "DELETE FROM game_sessions WHERE user_id = ?";
     private static final String UPDATE_ROLE_SQL = "UPDATE users SET role = ? WHERE id = ?";
     private static final String UPDATE_PASSWORD_SQL = "UPDATE users SET password_hash = ? WHERE id = ?";
     private static final String UPDATE_LAST_LOGIN_SQL = "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?";
-
-    private static final String SELECT_USER_BY_ID_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE id = ? LIMIT 1";
-    private static final String SELECT_USER_BY_USERNAME_SQL_F ="SELECT id, username, display_name, role, is_active FROM users WHERE username = ? LIMIT 1";
-
+    private static final String SELECT_USER_BY_EMAIL_SQL =
+            "SELECT id, username, display_name, email, role, is_active FROM users WHERE email = ? LIMIT 1";
+    private static final String INSERT_USER_WITH_EMAIL_SQL =
+            "INSERT INTO users (username, display_name, email, password_hash, role, is_active) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_ACTIVE_SQL =
+            "UPDATE users SET is_active = ? WHERE id = ?";
+    private static final String UPDATE_REMEMBER_TOKEN_SQL =
+            "UPDATE users SET remember_token = ? WHERE id = ?";
+    private static final String SELECT_REMEMBER_TOKEN_SQL =
+            "SELECT remember_token FROM users WHERE id = ? LIMIT 1";
     private final ConnectionFactory connectionFactory;
 
     public MySqlUserService() {
@@ -78,9 +80,6 @@ public class MySqlUserService implements UserService {
                 LOG.debug("User found: {} (id={})", trimmed, existing.getId());
                 return existing.getId();
             }
-
-            // Create new user — handle race condition: another thread/process may
-            // have inserted the same username between SELECT and INSERT (P6 fix)
             try {
                 return createUser(trimmed, trimmed);
             } catch (DataAccessException e) {
@@ -218,9 +217,6 @@ public class MySqlUserService implements UserService {
             throw new DataAccessException("Failed to fetch all users", e);
         }
     }
-
-    // ── Admin: Update / Lock / Delete ─────────────────────────────────────────
-
     @Override
     public void updateDisplayName(long userId, String newDisplayName) throws DataAccessException {
         if (newDisplayName == null || newDisplayName.isBlank())
@@ -412,6 +408,7 @@ public class MySqlUserService implements UserService {
         user.setId(rs.getLong("id"));
         user.setUsername(rs.getString("username"));
         user.setDisplayName(rs.getString("display_name"));
+        user.setEmail(rs.getString("email"));
         user.setActive(rs.getBoolean("is_active"));
         String role = rs.getString("role");
         if (role != null) {
@@ -435,5 +432,64 @@ public class MySqlUserService implements UserService {
     public void close() {
         connectionFactory.close();
         LOG.info("MySqlUserService closed");
+    }
+    public User getUserByEmail(String email) throws DataAccessException {
+        if (email == null || email.isBlank()) return null;
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_USER_BY_EMAIL_SQL)) {
+            ps.setString(1, email.trim().toLowerCase());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? mapUser(rs) : null;
+            }
+        } catch (SQLException e) {
+            LOG.error("Error fetching user by email: {}", email, e);
+            throw new DataAccessException("Failed to fetch user by email", e);
+        }
+    }
+
+    public long createUserWithEmail(String username, String displayName, String email,
+                                    String passwordHash, Role role, boolean isActive)
+            throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     INSERT_USER_WITH_EMAIL_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString (1, username.trim());
+            ps.setString (2, displayName != null ? displayName.trim() : username.trim());
+            ps.setString (3, email.trim().toLowerCase());
+            ps.setString (4, passwordHash);
+            ps.setString (5, role != null ? role.name() : Role.PLAYER.name());
+            ps.setBoolean(6, isActive);
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) return keys.getLong(1);
+            }
+            throw new DataAccessException("No generated key after insert");
+        } catch (SQLException e) {
+            LOG.error("Error creating user with email: {}", username, e);
+            throw new DataAccessException("Failed to create user", e);
+        }
+    }
+    public void updateRememberToken(long userId, String token) throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_REMEMBER_TOKEN_SQL)) {
+            ps.setString(1, token); // null-safe: setString với null → SQL NULL
+            ps.setLong  (2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOG.error("Error updating remember_token for userId={}", userId, e);
+            throw new DataAccessException("Failed to update remember token", e);
+        }
+    }
+    public String getRememberToken(long userId) throws DataAccessException {
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_REMEMBER_TOKEN_SQL)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getString("remember_token") : null;
+            }
+        } catch (SQLException e) {
+            LOG.error("Error fetching remember_token for userId={}", userId, e);
+            throw new DataAccessException("Failed to fetch remember token", e);
+        }
     }
 }
