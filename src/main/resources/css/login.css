@@ -172,3 +172,128 @@
     -fx-text-fill: #6c98a8;
     -fx-font-size: 12px;
 }
+
+/* ═════════════════════════════════════════════════════════════════ */
+/* DIALOG STYLES (OTP, Forgot Password) */
+/* ═════════════════════════════════════════════════════════════════ */
+
+.dialog-pane {
+    -fx-background-color: linear-gradient(to bottom right, rgba(5, 20, 28, 0.98), rgba(5, 10, 18, 0.98));
+    -fx-padding: 0;
+}
+
+.dialog-content {
+    -fx-background-color:
+            linear-gradient(to bottom right, rgba(5, 20, 28, 0.98), rgba(5, 10, 18, 0.98)),
+            linear-gradient(to bottom right, rgba(50, 255, 166, 0.08), rgba(44, 211, 255, 0.05));
+    -fx-background-radius: 15px;
+    -fx-border-radius: 15px;
+    -fx-border-width: 1.2px;
+    -fx-border-color: rgba(48, 255, 170, 0.45);
+    -fx-padding: 24px;
+    -fx-spacing: 12px;
+}
+
+.dialog-title {
+    -fx-text-fill: #31ff9b;
+    -fx-font-size: 20px;
+    -fx-font-weight: 900;
+    -fx-letter-spacing: 2px;
+}
+
+.dialog-header {
+    -fx-text-fill: #21d9ff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-wrap-text: true;
+}
+
+.dialog-info {
+    -fx-text-fill: #8fcddd;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+    -fx-line-spacing: 2px;
+}
+
+.dialog-input {
+    -fx-background-color: rgba(3, 16, 25, 0.95);
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1.5px;
+    -fx-border-color: rgba(33, 217, 255, 0.35);
+    -fx-text-fill: #d7fbff;
+    -fx-prompt-text-fill: rgba(112, 199, 220, 0.5);
+    -fx-font-size: 13px;
+    -fx-padding: 12px 14px;
+    -fx-font-family: "Courier New", monospace;
+}
+
+.dialog-input:focused {
+    -fx-border-color: #31ff9b;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(49, 255, 155, 0.35), 15, 0.15, 0, 0);
+}
+
+.dialog-button {
+    -fx-background-color: linear-gradient(to right, #31ff9b, #35d5ff);
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-text-fill: #021016;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(53, 213, 255, 0.3), 12, 0.2, 0, 0);
+}
+
+.dialog-button:hover {
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+}
+
+.dialog-secondary-button {
+    -fx-background-color: rgba(255, 76, 122, 0.12);
+    -fx-border-color: rgba(255, 76, 122, 0.55);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-text-fill: #ff4c7a;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.dialog-secondary-button:hover {
+    -fx-background-color: rgba(255, 76, 122, 0.25);
+}
+
+.dialog-link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #23d4ff;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-padding: 6px 0;
+    -fx-underline: true;
+}
+
+.dialog-link-button:hover {
+    -fx-text-fill: #31ff9b;
+}
+
+/* Timer box styling */
+.dialog-timer-box {
+    -fx-background-color: rgba(49, 255, 155, 0.1);
+    -fx-border-color: rgba(49, 255, 155, 0.3);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px;
+    -fx-border-width: 1px;
+}
+
+.dialog-timer-text {
+    -fx-text-fill: #31ff9b;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
