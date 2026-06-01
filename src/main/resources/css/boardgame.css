@@ -10,6 +10,42 @@
     -fx-background-radius: 6;
 }
 
+.player-card-active {
+    -fx-background-color: rgba(57, 255, 143, 0.1);
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(57, 255, 143, 0.5);
+    -fx-border-radius: 6;
+    -fx-padding: 10;
+}
+
+.player-card-inactive {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+}
+
+.player-name-active {
+    -fx-text-fill: #39ff8f;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.player-name-inactive {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.player-score-active {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13;
+}
+
+.player-score-inactive {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 13;
+}
+
 .mine-cell-covered {
     -fx-background-color: rgba(6, 31, 47, 0.95);
     -fx-border-color: rgba(45, 212, 240, 0.15);
@@ -108,4 +144,3 @@
 .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
-

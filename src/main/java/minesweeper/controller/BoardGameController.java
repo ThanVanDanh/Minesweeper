@@ -61,12 +61,6 @@ public class BoardGameController implements Initializable {
     private String currentUsername = "Player";
     private LocalDateTime gameStartedAt;
     private LocalDateTime firstClickAt;
-    private static final String ACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(57, 255, 143, 0.1); -fx-background-radius: 6; -fx-border-color: rgba(57, 255, 143, 0.5); -fx-border-radius: 6; -fx-padding: 10;";
-    private static final String INACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;";
-    private static final String ACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #39ff8f; -fx-font-size: 15; -fx-font-weight: bold;";
-    private static final String INACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;";
-    private static final String ACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 13;";
-    private static final String INACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #aaaaaa; -fx-font-size: 13;";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -275,8 +269,8 @@ public class BoardGameController implements Initializable {
         if (lblPlayers != null) {
             int players = gameLogic.getBoard() != null ? gameLogic.getPlayerCount() : 1;
             if (players > 1) {
-                lblPlayers.setText(String.format("Lượt P%02d / %02d | %02ds",
-                        gameLogic.getCurrentPlayerNumber(), players, turnSecondsRemaining));
+                lblPlayers.setText(String.format("Lượt P%02d | %02ds",
+                        gameLogic.getCurrentPlayerNumber(), turnSecondsRemaining));
             } else {
                 lblPlayers.setText(String.format("Người chơi 01 | %02ds", turnSecondsRemaining));
             }
@@ -499,12 +493,17 @@ public class BoardGameController implements Initializable {
             }
 
             boolean active = i == activePlayerIndex && gameLogic.getGameState() != GameState.WON;
-            cards[i].setStyle(active ? ACTIVE_PLAYER_CARD_STYLE : INACTIVE_PLAYER_CARD_STYLE);
+            setPlayerStateClasses(cards[i], active, "player-card-active", "player-card-inactive");
             names[i].setText((i + 1) + ". Player " + String.format("%02d", i + 1));
-            names[i].setStyle(active ? ACTIVE_PLAYER_NAME_STYLE : INACTIVE_PLAYER_NAME_STYLE);
+            setPlayerStateClasses(names[i], active, "player-name-active", "player-name-inactive");
             scores[i].setText("Điểm: " + playerScores[i]);
-            scores[i].setStyle(active ? ACTIVE_PLAYER_SCORE_STYLE : INACTIVE_PLAYER_SCORE_STYLE);
+            setPlayerStateClasses(scores[i], active, "player-score-active", "player-score-inactive");
         }
+    }
+
+    private void setPlayerStateClasses(javafx.scene.Node node, boolean active, String activeClass, String inactiveClass) {
+        node.getStyleClass().removeAll(activeClass, inactiveClass);
+        node.getStyleClass().add(active ? activeClass : inactiveClass);
     }
 
     /**

@@ -64,24 +64,24 @@
 
                             <Label alignment="CENTER" maxWidth="Infinity" style="-fx-text-fill: #2dd4f0; -fx-font-size: 18; -fx-font-weight: bold;" text="NGƯỜI CHƠI" />
 
-                            <VBox fx:id="playerCard1" spacing="5" style="-fx-background-color: rgba(57, 255, 143, 0.1); -fx-background-radius: 6; -fx-border-color: rgba(57, 255, 143, 0.5); -fx-border-radius: 6; -fx-padding: 10;">
-                                <Label fx:id="playerName1" style="-fx-text-fill: #39ff8f; -fx-font-size: 15; -fx-font-weight: bold;" text="1. Player 01" />
-                                <Label fx:id="playerScore1" style="-fx-text-fill: #ffffff; -fx-font-size: 13;" text="Điểm: 0" />
+                            <VBox fx:id="playerCard1" spacing="5" styleClass="player-card-active">
+                                <Label fx:id="playerName1" styleClass="player-name-active" text="1. Player 01" />
+                                <Label fx:id="playerScore1" styleClass="player-score-active" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard2" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
-                                <Label fx:id="playerName2" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="2. Player 02" />
-                                <Label fx:id="playerScore2" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            <VBox fx:id="playerCard2" spacing="5" styleClass="player-card-inactive">
+                                <Label fx:id="playerName2" styleClass="player-name-inactive" text="2. Player 02" />
+                                <Label fx:id="playerScore2" styleClass="player-score-inactive" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard3" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
-                                <Label fx:id="playerName3" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="3. Player 03" />
-                                <Label fx:id="playerScore3" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            <VBox fx:id="playerCard3" spacing="5" styleClass="player-card-inactive">
+                                <Label fx:id="playerName3" styleClass="player-name-inactive" text="3. Player 03" />
+                                <Label fx:id="playerScore3" styleClass="player-score-inactive" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard4" spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;">
-                                <Label fx:id="playerName4" style="-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;" text="4. Player 04" />
-                                <Label fx:id="playerScore4" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13;" text="Điểm: 0" />
+                            <VBox fx:id="playerCard4" spacing="5" styleClass="player-card-inactive">
+                                <Label fx:id="playerName4" styleClass="player-name-inactive" text="4. Player 04" />
+                                <Label fx:id="playerScore4" styleClass="player-score-inactive" text="Điểm: 0" />
                             </VBox>
                         </VBox>
 
