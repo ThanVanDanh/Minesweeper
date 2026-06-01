@@ -250,6 +250,36 @@
     -fx-effect: dropshadow(gaussian, rgba(45, 212, 240, 0.28), 15, 0.25, 0, 0);
 }
 
+.custom-config-grid {
+    -fx-padding: 10 0 2 0;
+}
+
+.custom-label {
+    -fx-text-fill: rgba(45, 212, 240, 0.72);
+    -fx-font-size: 11;
+    -fx-font-weight: 900;
+}
+
+.custom-input {
+    -fx-background-color: rgba(2, 22, 35, 0.8);
+    -fx-border-color: rgba(45, 212, 240, 0.34);
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-text-fill: #39ff8f;
+    -fx-prompt-text-fill: rgba(45, 212, 240, 0.42);
+    -fx-font-weight: 900;
+    -fx-padding: 9 10;
+}
+
+.custom-input:focused {
+    -fx-border-color: #39ff8f;
+    -fx-background-color: rgba(4, 36, 48, 0.9);
+}
+
+.custom-input:disabled {
+    -fx-opacity: 0.46;
+}
+
 .start-button {
     -fx-padding: 15 18;
     -fx-font-size: 16;

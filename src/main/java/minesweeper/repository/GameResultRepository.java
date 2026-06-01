@@ -2,6 +2,8 @@ package minesweeper.repository;
 
 import minesweeper.model.GameResult;
 import minesweeper.repository.exception.DataAccessException;
+import minesweeper.repository.pagination.PagedResult;
+import minesweeper.repository.spec.GameResultFilterSpec;
 
 import java.util.List;
 
@@ -20,5 +22,10 @@ public interface GameResultRepository {
     void clearAllResults() throws DataAccessException;
 
     void deleteByGameIds(List<String> gameIds) throws DataAccessException;
+
+    PagedResult<GameResult> findPaged(GameResultFilterSpec spec, int pageNumber, int pageSize)
+            throws DataAccessException;
+
+    long count(GameResultFilterSpec spec) throws DataAccessException;
 }
 
