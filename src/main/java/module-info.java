@@ -5,6 +5,7 @@ module vn.edu.nlu.fit.app {
     requires java.sql;
     requires com.zaxxer.hikari;
     requires org.slf4j;
+    requires jakarta.mail;
 
     requires org.controlsfx.controls;
     requires javafx.media;

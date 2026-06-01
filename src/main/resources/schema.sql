@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP NULL,
+    remember_token VARCHAR(100) NULL,
 
     KEY idx_username (username)
     ) ENGINE=InnoDB;
@@ -149,4 +150,38 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
     KEY idx_audit_created (created_at DESC),
     KEY idx_audit_action  (action)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT UNSIGNED NOT NULL,
+    token      VARCHAR(255) NOT NULL UNIQUE,
+    email      VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used       BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_password_reset_tokens_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+
+    KEY idx_token (token),
+    KEY idx_user_id (user_id)
+) ENGINE=InnoDB;
+
+-- Email verification tokens for OTP during registration
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT UNSIGNED NOT NULL,
+    email      VARCHAR(255) NOT NULL,
+    otp_hash   VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP    NOT NULL,
+    is_used    BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_evt_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+
+    KEY idx_evt_user (user_id)
+) ENGINE=InnoDB;
+
