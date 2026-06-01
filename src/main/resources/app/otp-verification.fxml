@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="minesweeper.controller.OtpVerificationController"
+      styleClass="dialog-content"
+      stylesheets="@../css/login.css"
+      spacing="12">
+
+    <!-- Title -->
+    <Label text="✓ KIỂM CHỨNG EMAIL" styleClass="dialog-title"/>
+
+    <!-- Header -->
+    <Label text="Mã OTP đã được gửi!" styleClass="dialog-header"/>
+
+    <!-- Email info -->
+    <Label fx:id="emailLabel" text="Đến: user@example.com" styleClass="dialog-info"/>
+
+    <!-- Timer box -->
+    <VBox styleClass="dialog-timer-box" spacing="4">
+        <Label text="⏱ Mã có hiệu lực trong 10 phút" styleClass="dialog-timer-text"/>
+    </VBox>
+
+    <!-- OTP input section -->
+    <VBox spacing="8">
+        <Label text="Nhập mã OTP (6 chữ số):" styleClass="input-label"/>
+        <TextField fx:id="otpField"
+                   promptText="000000"
+                   styleClass="dialog-input"
+                   maxWidth="200"/>
+    </VBox>
+
+    <!-- Resend button -->
+    <HBox alignment="CENTER">
+        <Button fx:id="resendButton"
+                text="↻ Gửi lại OTP"
+                styleClass="dialog-link-button"
+                onAction="#handleResendOtp"/>
+    </HBox>
+
+    <!-- Buttons container (defined in controller) -->
+    <HBox fx:id="buttonBox" spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="okButton"
+                text="✓ XÁC NHẬN"
+                styleClass="dialog-button"
+                onAction="#handleVerify"/>
+        <Button fx:id="cancelButton"
+                text="✕ HUỶ"
+                styleClass="dialog-secondary-button"
+                onAction="#handleCancel"/>
+    </HBox>
+
+</VBox>
+
