@@ -11,6 +11,7 @@ import java.util.Arrays;
 public class GameController {
     private static final Logger LOG = LoggerFactory.getLogger(GameController.class);
     private static final int SCORE_PER_OPENED_CELL = 10;
+    private static final int TIMEOUT_PENALTY_POINTS = 50;
 
     private Board board;
     private Difficulty difficulty;
@@ -167,6 +168,7 @@ public class GameController {
         if (board == null || board.getGameState() == GameState.LOST || board.getGameState() == GameState.WON) {
             return false;
         }
+        playerScores[currentPlayerIndex] -= TIMEOUT_PENALTY_POINTS;
         advanceTurn();
         return true;
     }
