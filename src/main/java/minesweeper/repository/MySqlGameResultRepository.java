@@ -9,6 +9,7 @@ import minesweeper.repository.connection.HikariConnectionFactory;
 import minesweeper.repository.exception.DataAccessException;
 import minesweeper.repository.pagination.Page;
 import minesweeper.repository.pagination.PagedResult;
+import minesweeper.repository.spec.GameResultFilterSpec;
 import minesweeper.service.LevelService;
 import minesweeper.service.MySqlLevelService;
 import minesweeper.service.MySqlUserService;
@@ -82,6 +83,16 @@ public class MySqlGameResultRepository implements GameResultRepository {
     private static final String DELETE_ALL_SQL = "DELETE FROM game_sessions";
 
     private static final String DELETE_BY_IDS_SQL = "DELETE FROM game_sessions WHERE id = ?";
+
+    private static final String BASE_FILTERED_SELECT = """
+        SELECT gs.id AS session_id, u.username AS player_name,
+               gs.level_id, COALESCE(gl.level_name, '') AS level_name,
+               gs.result, gs.completion_time, gs.flagged_cells, gs.opened_cells,
+               gs.started_at, gs.first_click_at, gs.ended_at, gs.created_at, gs.score
+        FROM game_sessions gs
+        JOIN users u ON gs.user_id = u.id
+        LEFT JOIN game_levels gl ON gs.level_id = gl.id
+        """;
 
     // P1 fix: upsert into player_best_scores whenever a WIN is saved
     private static final String UPSERT_BEST_SCORE_SQL = """
@@ -457,4 +468,78 @@ public class MySqlGameResultRepository implements GameResultRepository {
         } catch (SQLException e) {
             throw new DataAccessException("Lỗi kết nối DB khi xoá gian lận", e);
         }}
+
+    @Override
+    public PagedResult<GameResult> findPaged(GameResultFilterSpec spec, int pageNumber, int pageSize)
+            throws DataAccessException {
+
+        WhereClause where = buildWhere(spec);
+        long total = executeCount(where);
+        Page page  = new Page(pageNumber, pageSize, total);
+
+        String sql = BASE_FILTERED_SELECT + where.sql()
+                + " ORDER BY gs.created_at DESC, gs.id DESC"
+                + page.getLimitClause();
+
+        List<GameResult> results = new ArrayList<>();
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            setParams(ps, where.params());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) results.add(mapSessionResult(rs));
+            }
+            return new PagedResult<>(results, page);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to fetch paged game results", e);
+        }
+    }
+
+    @Override
+    public long count(GameResultFilterSpec spec) throws DataAccessException {
+        return executeCount(buildWhere(spec));
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    private WhereClause buildWhere(GameResultFilterSpec spec) {
+        StringBuilder    sql    = new StringBuilder(" WHERE 1=1");
+        List<Object>     params = new ArrayList<>();
+
+        if (spec.username != null && !spec.username.isBlank()) {
+            sql.append(" AND LOWER(u.username) LIKE LOWER(?)");
+            params.add("%" + spec.username.trim() + "%");
+        }
+        if (spec.difficulty != null) {
+            sql.append(" AND UPPER(gl.level_name) = ?");
+            params.add(spec.difficulty.name());
+        }
+        if (spec.win != null) {
+            sql.append(" AND gs.result = ?");
+            params.add(spec.win ? "WIN" : "LOSE");
+        }
+
+        return new WhereClause(sql.toString(), params);
+    }
+
+    private long executeCount(WhereClause where) throws DataAccessException {
+        String countSql = "SELECT COUNT(*) FROM game_sessions gs"
+                + " JOIN users u ON gs.user_id = u.id"
+                + " LEFT JOIN game_levels gl ON gs.level_id = gl.id"
+                + where.sql();
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(countSql)) {
+            setParams(ps, where.params());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getLong(1) : 0;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to count game results", e);
+        }
+    }
+
+    private void setParams(PreparedStatement ps, List<Object> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+    }
+
+    private record WhereClause(String sql, List<Object> params) {}
 }

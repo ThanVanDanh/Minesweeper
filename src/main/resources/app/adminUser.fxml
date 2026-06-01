@@ -70,6 +70,10 @@
                 <Button text="🗑  Xoá"         onAction="#onDeleteUser"
                         style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-font-size:12;-fx-padding:9 16;-fx-cursor:hand;"
                         prefWidth="100"/>
+                <!-- LOG TẠM THỜIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII -->
+                <Button text="📋  Xem Log"    onAction="#onViewAuditLog"
+                        style="-fx-background-color:rgba(39,100,255,0.18);-fx-border-color:rgba(39,100,255,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#4a9eff;-fx-font-weight:900;-fx-font-size:12;-fx-padding:9 16;-fx-cursor:hand;"
+                        prefWidth="120"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="totalUsersLabel"  text="-" style="-fx-text-fill:#39ff8f;-fx-font-size:13;-fx-font-weight:900;"/>
                 <Label text="tổng" styleClass="selected-mode"/>

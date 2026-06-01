@@ -1,6 +1,7 @@
 package minesweeper.model;
 
 public class Cell {
+    // Trạng thái lõi của từng ô, phục vụ luồng UC03 - Chơi game (3.1, 03.2.1, 03.2.2, 03.2.3, 03.2.4)
     private final int row;
     private final int col;
     private boolean mine;
@@ -25,6 +26,7 @@ public class Cell {
         return col;
     }
 
+
     public void setMine(boolean mine) {
         this.mine = mine;
     }
@@ -32,32 +34,30 @@ public class Cell {
     public boolean isRevealed() {
         return revealed;
     }
-
-
     public void setFlagged(boolean flagged) {
         this.flagged = flagged;
     }
-
-
     public void setNeighborMines(int neighborMines) {
         this.neighborMines = neighborMines;
     }
-    // Các hàm cốt lõi cung cấp Get/Set trạng thái ô được hệ thống gọi điều phối
+
     public boolean isMine() {
-        return mine; // Phục vụ UC09.7 / UC11.7 / UC12.7 / UC13.4 / UC15.3 để thẩm định tính chất mìn ẩn của ô vuông
+        //  03.2.3.2: Thẩm định tính chất mìn ẩn của ô vuông khi lật
+        return mine;
     }
 
     public void reveal() {
-        // Phương thức gán đổi trạng thái dữ liệu ô phục vụ lật mở cho UC09.8 / UC11.8 / UC13.9 / UC15.3
+        //  3.1 và 03.2.4.2: Gán đổi trạng thái dữ liệu ô thành đã lật mở (reveal)
         this.revealed = true;
     }
 
     public boolean isFlagged() {
-        return flagged; // Phục vụ UC09.6 / UC10.5 / UC11.7 / UC13.5 để kiểm tra trạng thái cắm cờ đánh dấu của ô vuông
+        //  03.2.1.3: Kiểm tra trạng thái cắm cờ đánh dấu của ô vuông
+        return flagged;
     }
 
     public int getNeighborMines() {
-        return neighborMines; // Chứa kết quả do UC12.9 tính toán, phục vụ hiển thị nhãn số và thuật toán loang UC11.10/mở nhanh UC13.6
+        // Chứa kết quả tính toán số mìn xung quanh, phục vụ 3.1 (kiểm tra == 0 để loang) và 03.2.2.3 (so sánh để mở nhanh)
+        return neighborMines;
     }
 }
-
