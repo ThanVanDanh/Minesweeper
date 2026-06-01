@@ -8,10 +8,14 @@ import java.util.Queue;
 import java.util.Random;
 
 public class Board {
+    public static final int MIN_PLAYER_COUNT = 1;
+    public static final int MAX_PLAYER_COUNT = 4;
+
     private final Cell[][] grid;
     private final int rows;
     private final int cols;
     private final int totalMines;
+    private final int playerCount;
     private int flagsPlaced;
     private GameState gameState;
     private boolean minesPlaced;
@@ -20,9 +24,19 @@ public class Board {
     private static final int[] DC = {0, 1, 1, 1, 0, -1, -1, -1};
 
     public Board(Difficulty difficulty) {
-        this.rows = difficulty.getRows();
-        this.cols = difficulty.getCols();
-        this.totalMines = difficulty.getMines();
+        this(difficulty, MIN_PLAYER_COUNT);
+    }
+
+    public Board(Difficulty difficulty, int playerCount) {
+        this(difficulty.getRows(), difficulty.getCols(), difficulty.getMines(), playerCount);
+    }
+
+    public Board(int rows, int cols, int totalMines, int playerCount) {
+        validateBoardConfig(rows, cols, totalMines, playerCount);
+        this.rows = rows;
+        this.cols = cols;
+        this.totalMines = totalMines;
+        this.playerCount = playerCount;
         this.flagsPlaced = 0;
         this.gameState = GameState.IDLE;
         this.minesPlaced = false;
@@ -41,6 +55,10 @@ public class Board {
 
     public int getTotalMines() {
         return totalMines;
+    }
+
+    public int getPlayerCount() {
+        return playerCount;
     }
 
     public int getFlagsPlaced() {
@@ -259,5 +277,21 @@ public class Board {
 
     private boolean isInBounds(int row, int col) {
         return row >= 0 && row < rows && col >= 0 && col < cols;
+    }
+
+    private static void validateBoardConfig(int rows, int cols, int totalMines, int playerCount) {
+        if (rows < 2 || cols < 2) {
+            throw new IllegalArgumentException("Board must have at least 2 rows and 2 columns");
+        }
+        if (totalMines <= 0) {
+            throw new IllegalArgumentException("Board must contain at least 1 mine");
+        }
+        if (totalMines >= rows * cols) {
+            throw new IllegalArgumentException("Mine count must be smaller than total cells");
+        }
+        if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
+            throw new IllegalArgumentException("Player count must be between "
+                    + MIN_PLAYER_COUNT + " and " + MAX_PLAYER_COUNT);
+        }
     }
 }

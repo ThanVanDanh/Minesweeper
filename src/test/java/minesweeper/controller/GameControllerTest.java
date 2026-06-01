@@ -89,6 +89,80 @@ public class GameControllerTest {
         assertEquals(GameState.IDLE, gameController.getGameState(), "Trạng thái ban đầu phải là IDLE");
     }
 
+    @Test
+    public void testGame01_InitCustomBoard() {
+        gameController.startCustomGame(12, 14, 25, 3);
+        Board board = gameController.getBoard();
+
+        assertNotNull(board, "Board tùy chỉnh không được null");
+        assertNull(gameController.getDifficulty(), "Bàn tùy chỉnh không gắn với độ khó cố định");
+        assertTrue(gameController.isCustomGame(), "Game phải được đánh dấu là bàn tùy chỉnh");
+        assertEquals(12, board.getRows(), "Số hàng tùy chỉnh phải đúng");
+        assertEquals(14, board.getCols(), "Số cột tùy chỉnh phải đúng");
+        assertEquals(25, board.getTotalMines(), "Số mìn tùy chỉnh phải đúng");
+        assertEquals(3, board.getPlayerCount(), "Số người chơi tùy chỉnh phải đúng");
+        assertEquals(GameState.IDLE, gameController.getGameState(), "Trạng thái ban đầu phải là IDLE");
+    }
+
+    @Test
+    public void testGame01_CustomBoardRejectsTooManyMines() {
+        assertThrows(IllegalArgumentException.class,
+                () -> gameController.startCustomGame(3, 3, 9, 2),
+                "Số mìn phải nhỏ hơn tổng số ô để luôn còn ô an toàn");
+    }
+
+    @Test
+    public void testGame01_CustomBoardRejectsMoreThanFourPlayers() {
+        assertThrows(IllegalArgumentException.class,
+                () -> gameController.startCustomGame(9, 9, 10, 5),
+                "Số người chơi tối đa phải là 4");
+    }
+
+    @Test
+    public void testGame01_DifficultyBoardCanUseMultiplePlayers() {
+        gameController.startNewGame(Difficulty.HARD, 4);
+
+        assertEquals(Difficulty.HARD, gameController.getDifficulty(), "Độ khó phải là HARD");
+        assertEquals(4, gameController.getPlayerCount(), "Bàn theo độ khó cũng phải nhận số người chơi tùy chọn");
+        assertEquals(4, gameController.getPlayerScores().length, "Phải có điểm riêng cho 4 người chơi");
+    }
+
+    @Test
+    public void testGame02_MultiplayerScoreAndTurnAfterReveal() {
+        gameController.startCustomGame(2, 2, 1, 2);
+
+        int openedCells = gameController.reveal(0, 0);
+
+        assertEquals(1, openedCells, "Bàn 2x2 với 1 mìn chỉ mở 1 ô ở lượt đầu");
+        assertEquals(10, gameController.getPlayerScore(1), "Mỗi ô mở được cộng 10 điểm");
+        assertEquals(0, gameController.getPlayerScore(2), "Người chơi chưa tới lượt chưa có điểm");
+        assertEquals(2, gameController.getCurrentPlayerNumber(), "Sau lượt mở ô an toàn phải chuyển sang P2");
+    }
+
+    @Test
+    public void testGame02_MultiplayerFlagUsesTurnWithoutScoring() {
+        gameController.startCustomGame(2, 2, 1, 2);
+        gameController.reveal(0, 0);
+
+        boolean changed = gameController.toggleFlag(0, 1);
+
+        assertTrue(changed, "Cắm cờ hợp lệ phải được tính là một lượt");
+        assertEquals(10, gameController.getPlayerScore(1), "P1 giữ nguyên điểm sau lượt P2 cắm cờ");
+        assertEquals(0, gameController.getPlayerScore(2), "Cắm cờ không cộng điểm");
+        assertEquals(1, gameController.getCurrentPlayerNumber(), "Sau P2 cắm cờ phải quay lại P1");
+    }
+
+    @Test
+    public void testGame02_MultiplayerTimeoutSkipsTurn() {
+        gameController.startCustomGame(9, 9, 10, 3);
+
+        boolean skipped = gameController.skipCurrentTurn();
+
+        assertTrue(skipped, "Hết giờ phải làm người chơi hiện tại mất lượt");
+        assertEquals(2, gameController.getCurrentPlayerNumber(), "Sau khi P1 hết giờ phải chuyển sang P2");
+        assertEquals(0, gameController.getPlayerScore(1), "Mất lượt không làm thay đổi điểm");
+    }
+
     /**
      * Mã TC: GAME_02
      * Tên Test Case: Bắt đầu tính giờ (và bắt đầu game)

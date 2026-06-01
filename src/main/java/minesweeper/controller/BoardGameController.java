@@ -12,7 +12,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -35,6 +34,7 @@ import java.util.ResourceBundle;
 
 public class BoardGameController implements Initializable {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(BoardGameController.class);
+    private static final int TURN_DURATION_SECONDS = 10;
     @FXML private Label lblFlags;
     @FXML private Label lblTime;
     @FXML private GridPane minesweeperGrid;
@@ -43,11 +43,17 @@ public class BoardGameController implements Initializable {
     @FXML private Label lblOverlay;
     @FXML private VBox gameOverOverlay;
     @FXML private Label lblGameOver;
+    @FXML private Label lblPlayers;
+    @FXML private Label lblScores;
+    @FXML private VBox playerCard1, playerCard2, playerCard3, playerCard4;
+    @FXML private Label playerName1, playerName2, playerName3, playerName4;
+    @FXML private Label playerScore1, playerScore2, playerScore3, playerScore4;
 
-    private ToggleGroup difficultyGroup;
     private GameController gameLogic;
     private Timeline timer;
+    private Timeline turnTimer;
     private int secondsElapsed = 0;
+    private int turnSecondsRemaining = TURN_DURATION_SECONDS;
     private final int BUTTON_SIZE = 35;
     private boolean isFlagMode = false;
     private GameSessionRepository gameSessionRepository;
@@ -55,25 +61,55 @@ public class BoardGameController implements Initializable {
     private String currentUsername = "Player";
     private LocalDateTime gameStartedAt;
     private LocalDateTime firstClickAt;
+    private static final String ACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(57, 255, 143, 0.1); -fx-background-radius: 6; -fx-border-color: rgba(57, 255, 143, 0.5); -fx-border-radius: 6; -fx-padding: 10;";
+    private static final String INACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;";
+    private static final String ACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #39ff8f; -fx-font-size: 15; -fx-font-weight: bold;";
+    private static final String INACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;";
+    private static final String ACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 13;";
+    private static final String INACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #aaaaaa; -fx-font-size: 13;";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gameLogic = new GameController();
         gameSessionRepository = new GameSessionRepository();
         setupTimer();
+        setupTurnTimer();
     }
 
     // UC04 - Bắt đầu ván mới
     public void setInitialDifficulty(Difficulty selectedDifficulty) {
+        setInitialDifficulty(selectedDifficulty, Board.MIN_PLAYER_COUNT);
+    }
+
+    public void setInitialDifficulty(Difficulty selectedDifficulty, int playerCount) {
         if (selectedDifficulty == null) return;
-        startGame(selectedDifficulty);
+        startGame(selectedDifficulty, playerCount);
+    }
+
+    public void setInitialCustomBoard(int rows, int cols, int mines, int playerCount) {
+        startCustomGame(rows, cols, mines, playerCount);
     }
 
     // UC04 - Bắt đầu ván mới
-    private void startGame(Difficulty diff) {
-        gameLogic.startNewGame(diff);
+    private void startGame(Difficulty diff, int playerCount) {
+        gameLogic.startNewGame(diff, playerCount);
+        resetGameStartState();
+        renderBoard();
+//        startTimer();
+    }
+
+    private void startCustomGame(int rows, int cols, int mines, int playerCount) {
+        gameLogic.startCustomGame(rows, cols, mines, playerCount);
+        resetGameStartState();
+        renderBoard();
+//        startTimer();
+    }
+
+    private void resetGameStartState() {
         stopTimer();
+        stopTurnTimer();
         secondsElapsed = 0;
+        turnSecondsRemaining = TURN_DURATION_SECONDS;
         updateStatus();
 
         // GIẤU CẢ 2 MÀN HÌNH ĐEN KHI BẮT ĐẦU VÁN MỚI
@@ -83,8 +119,7 @@ public class BoardGameController implements Initializable {
         if (btnPause != null) btnPause.setText("Tạm dừng");
         gameStartedAt = LocalDateTime.now();
         firstClickAt = null;
-        renderBoard();
-//        startTimer();
+        startTurnTimer();
     }
 
     private void renderBoard() {
@@ -115,25 +150,29 @@ public class BoardGameController implements Initializable {
                     }
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
+                    boolean completedMove = false;
 
                     // 03.2.1 UC03.1 - CẮM / GỠ CỜ
                     if (e.getButton() == MouseButton.SECONDARY) {
                         // 03.2.1.1 & 03.2.1.2: Người chơi nhấp chuột phải -> Chuyển tiếp lệnh
-                        gameLogic.toggleFlag(finalR, finalC);
+                        completedMove = gameLogic.toggleFlag(finalR, finalC);
                     }
                     // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
+                        GameState stateBeforeMove = gameLogic.getGameState();
                         // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal)
                         if (currentCell.isRevealed()) {
                             // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
-                            gameLogic.fastReveal(finalR, finalC);
+                            int openedCells = gameLogic.fastReveal(finalR, finalC);
+                            completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                         } else {
                             // 03.2.1.1: Hoặc click chuột trái khi nút btnFlat đang bật chế độ cắm cờ
                             if (isFlagMode) {
-                                gameLogic.toggleFlag(finalR, finalC);
+                                completedMove = gameLogic.toggleFlag(finalR, finalC);
                             } else {
                                 // 3.1 MỞ Ô (Basic Flow)
-                                gameLogic.reveal(finalR, finalC);
+                                int openedCells = gameLogic.reveal(finalR, finalC);
+                                completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                             }
                         }
                     }
@@ -145,12 +184,15 @@ public class BoardGameController implements Initializable {
                         // 03.2.3.4: Phát âm thanh nổ
                         playExplosionSound();
                         // 03.2.3.5 & 03.2.3.6: Hiển thị lớp phủ BẠN ĐÃ THUA, dừng thời gian và lưu KQ
-                        showGameOver("BẠN ĐÃ THUA!", "#ff4a69");
+                        showGameOver(buildLostMessage(), "#ff4a69");
                     }
                     // 03.2.4 ĐIỀU KIỆN THẮNG CUỘC
                     else if (gameLogic.getGameState() == GameState.WON) {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
-                        showGameOver("BẠN ĐÃ THẮNG!", "#39ff8f");
+                        showGameOver(buildWinMessage(), "#39ff8f");
+                    }
+                    else if (completedMove) {
+                        restartTurnTimer();
                     }
 
                     // 03.2.1.4, 03.2.2.4, 03.2.4.5: Đồng bộ hóa toàn bộ trạng thái lên UI
@@ -230,6 +272,21 @@ public class BoardGameController implements Initializable {
         int remaining = gameLogic.getBoard() != null ? gameLogic.getBoard().getRemainingMines() : 0;
         lblFlags.setText(String.format("Cờ %03d", remaining));
 
+        if (lblPlayers != null) {
+            int players = gameLogic.getBoard() != null ? gameLogic.getPlayerCount() : 1;
+            if (players > 1) {
+                lblPlayers.setText(String.format("Lượt P%02d / %02d | %02ds",
+                        gameLogic.getCurrentPlayerNumber(), players, turnSecondsRemaining));
+            } else {
+                lblPlayers.setText(String.format("Người chơi 01 | %02ds", turnSecondsRemaining));
+            }
+        }
+
+        if (lblScores != null) {
+            lblScores.setText(buildScoreText());
+        }
+        updatePlayerScorePanel();
+
         int mins = secondsElapsed / 60;
         int secs = secondsElapsed % 60;
         lblTime.setText(String.format("Time %02d:%02d", mins, secs));
@@ -247,10 +304,12 @@ public class BoardGameController implements Initializable {
         if (isNowPaused) {
             // UC05 - Tạm dừng
             stopTimer();
+            stopTurnTimer();
             if (btnPause != null) btnPause.setText("Tiếp tục");
         } else {
             // UC06 - Tiếp tục ván game
             startTimer();
+            startTurnTimer();
             if (btnPause != null) btnPause.setText("Tạm dừng");
         }
     }
@@ -258,6 +317,8 @@ public class BoardGameController implements Initializable {
     @FXML
     private void backToDashboard() {
         try {
+            stopTimer();
+            stopTurnTimer();
             Parent root = FXMLLoader.load(getClass().getResource("/app/dashboard.fxml"));
             Scene scene = new Scene(root, 1280, 760);
             scene.getStylesheets().add(Objects.requireNonNull(
@@ -291,6 +352,45 @@ public class BoardGameController implements Initializable {
     // UC21 - Đếm thời gian
     private void stopTimer() {
         if (timer != null) timer.pause();
+    }
+
+    private void setupTurnTimer() {
+        if (turnTimer != null) turnTimer.stop();
+        turnTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            if (gameLogic == null || gameLogic.isPaused()
+                    || gameLogic.getGameState() == GameState.LOST
+                    || gameLogic.getGameState() == GameState.WON) {
+                return;
+            }
+
+            turnSecondsRemaining--;
+            if (turnSecondsRemaining <= 0) {
+                handleTurnTimeout();
+            } else {
+                updateStatus();
+            }
+        }));
+        turnTimer.setCycleCount(Animation.INDEFINITE);
+    }
+
+    private void startTurnTimer() {
+        if (turnTimer != null) turnTimer.play();
+    }
+
+    private void stopTurnTimer() {
+        if (turnTimer != null) turnTimer.pause();
+    }
+
+    private void restartTurnTimer() {
+        turnSecondsRemaining = TURN_DURATION_SECONDS;
+        startTurnTimer();
+        updateStatus();
+    }
+
+    private void handleTurnTimeout() {
+        gameLogic.skipCurrentTurn();
+        turnSecondsRemaining = TURN_DURATION_SECONDS;
+        updateStatus();
     }
 
     @FXML
@@ -327,6 +427,7 @@ public class BoardGameController implements Initializable {
     }
     private void showGameOver(String message, String hexColor) {
         stopTimer();
+        stopTurnTimer();
         if (lblGameOver != null) {
             lblGameOver.setText(message);
             lblGameOver.setStyle("-fx-text-fill: " + hexColor + "; -fx-font-size: 40; -fx-font-weight: bold;");
@@ -336,6 +437,74 @@ public class BoardGameController implements Initializable {
         if (pauseOverlay != null) pauseOverlay.setVisible(false);
         // 03.2.3.5 & 03.2.4.4 Gọi luồng lưu dữ liệu ván đấu
         saveGameResult();
+    }
+
+    private String buildScoreText() {
+        int[] scores = gameLogic.getPlayerScores();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < scores.length; i++) {
+            if (i > 0) builder.append("   ");
+            builder.append("P").append(String.format("%02d", i + 1))
+                    .append(": ")
+                    .append(String.format("%04d", scores[i]));
+        }
+        return builder.toString();
+    }
+
+    private String buildLostMessage() {
+        if (gameLogic.getPlayerCount() <= 1) {
+            return "BẠN ĐÃ THUA!";
+        }
+        return String.format("P%02d TRÚNG MÌN!", gameLogic.getCurrentPlayerNumber());
+    }
+
+    private String buildWinMessage() {
+        if (gameLogic.getPlayerCount() <= 1) {
+            return "BẠN ĐÃ THẮNG!";
+        }
+
+        int[] scores = gameLogic.getPlayerScores();
+        int bestScore = Integer.MIN_VALUE;
+        int winnerIndex = -1;
+        boolean tied = false;
+        for (int i = 0; i < scores.length; i++) {
+            if (scores[i] > bestScore) {
+                bestScore = scores[i];
+                winnerIndex = i;
+                tied = false;
+            } else if (scores[i] == bestScore) {
+                tied = true;
+            }
+        }
+        return tied ? "HÒA ĐIỂM!" : String.format("P%02d THẮNG!", winnerIndex + 1);
+    }
+
+    private void updatePlayerScorePanel() {
+        if (playerCard1 == null) {
+            return;
+        }
+
+        VBox[] cards = {playerCard1, playerCard2, playerCard3, playerCard4};
+        Label[] names = {playerName1, playerName2, playerName3, playerName4};
+        Label[] scores = {playerScore1, playerScore2, playerScore3, playerScore4};
+        int[] playerScores = gameLogic.getPlayerScores();
+        int activePlayerIndex = gameLogic.getCurrentPlayerNumber() - 1;
+
+        for (int i = 0; i < cards.length; i++) {
+            boolean visible = i < playerScores.length;
+            cards[i].setVisible(visible);
+            cards[i].setManaged(visible);
+            if (!visible) {
+                continue;
+            }
+
+            boolean active = i == activePlayerIndex && gameLogic.getGameState() != GameState.WON;
+            cards[i].setStyle(active ? ACTIVE_PLAYER_CARD_STYLE : INACTIVE_PLAYER_CARD_STYLE);
+            names[i].setText((i + 1) + ". Player " + String.format("%02d", i + 1));
+            names[i].setStyle(active ? ACTIVE_PLAYER_NAME_STYLE : INACTIVE_PLAYER_NAME_STYLE);
+            scores[i].setText("Điểm: " + playerScores[i]);
+            scores[i].setStyle(active ? ACTIVE_PLAYER_SCORE_STYLE : INACTIVE_PLAYER_SCORE_STYLE);
+        }
     }
 
     /**
@@ -349,6 +518,10 @@ public class BoardGameController implements Initializable {
     private void saveGameResult() {
         if (currentUserId <= 0) {
             LOG.warn("Bỏ qua lưu kết quả: chưa đăng nhập (userId={})", currentUserId);
+            return;
+        }
+        if (gameLogic.isCustomGame()) {
+            LOG.info("Bỏ qua lưu bảng xếp hạng cho bàn tùy chỉnh");
             return;
         }
 
@@ -421,8 +594,10 @@ public class BoardGameController implements Initializable {
             }
         }
 
-        if (gameLogic != null && gameLogic.getDifficulty() != null) {
-            startGame(gameLogic.getDifficulty());
+        if (gameLogic != null && gameLogic.hasGame()) {
+            gameLogic.restartCurrentGame();
+            resetGameStartState();
+            renderBoard();
         }
     }
 }
