@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import minesweeper.dto.RankingDTO;
 
 import java.util.List;
@@ -93,6 +94,16 @@ public class RankingHistoryController {
     private int currentPage = 0;
     private List<RankingDTO> allRankings = List.of();
 
+    // Ranking User Alone
+    @FXML private VBox myRankBox;
+    @FXML private TableView<RankingDTO> myRankTable;
+    @FXML private TableColumn<RankingDTO, Integer> colMyRank;
+    @FXML private TableColumn<RankingDTO, String>  colMyPlayerName;
+    @FXML private TableColumn<RankingDTO, Integer> colMyTotalGames;
+    @FXML private TableColumn<RankingDTO, Integer> colMyWins;
+    @FXML private TableColumn<RankingDTO, Integer> colMyScore;
+    @FXML private TableColumn<RankingDTO, String>  colMyBestTime;
+
     @FXML
     private void initialize() {
         setupRankingTable();
@@ -110,8 +121,40 @@ public class RankingHistoryController {
 
         // GD2
         colBestTime.setCellValueFactory(new PropertyValueFactory<>("bestTimeFormatted"));
+        // Ranking User Alone
+        colMyRank.setCellValueFactory(new PropertyValueFactory<>("rank"));
+        colMyPlayerName.setCellValueFactory(new PropertyValueFactory<>("playerName"));
+        colMyTotalGames.setCellValueFactory(new PropertyValueFactory<>("totalGames"));
+        colMyWins.setCellValueFactory(new PropertyValueFactory<>("wins"));
+        colMyScore.setCellValueFactory(new PropertyValueFactory<>("bestScore"));
+        colMyBestTime.setCellValueFactory(new PropertyValueFactory<>("bestTimeFormatted"));
+        // HighLight
+        rankingTable.setRowFactory(tv -> buildHighlightRow());
+        myRankTable.setRowFactory(tv -> buildHighlightRow());
+        // Ẩn header row
+        myRankTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                javafx.application.Platform.runLater(() -> {
+                    // Ẩn header
+                    var header = myRankTable.lookup("TableHeaderRow");
+                    if (header != null) {
+                        header.setVisible(false);
+                        header.setManaged(false);
+                    }
+                    // Tắt scrollbar dọc
+                    myRankTable.lookupAll(".scroll-bar").forEach(node -> {
+                        if (node instanceof javafx.scene.control.ScrollBar sb) {
+                            sb.setVisible(false);
+                            sb.setManaged(false);
+                        }
+                    });
+                });
+            }
+        });
 
-        rankingTable.setRowFactory(tv -> new TableRow<>() {
+    }
+    private TableRow<RankingDTO> buildHighlightRow() {
+        return new TableRow<>() {
             @Override
             protected void updateItem(RankingDTO item, boolean empty) {
                 super.updateItem(item, empty);
@@ -120,7 +163,7 @@ public class RankingHistoryController {
                     getStyleClass().add("current-user-row");
                 }
             }
-        });
+        };
     }
 
     private boolean isCurrentUser(String playerName) {
@@ -270,6 +313,33 @@ public class RankingHistoryController {
         List<RankingDTO> slice = from < to ? allRankings.subList(from, to) : List.of();
         rankingTable.setItems(FXCollections.observableArrayList(slice));
         updatePaginationControls();
+        renderMyRank();
+    }
+    private void renderMyRank() {
+        if (myRankBox == null) return;
+        myRankBox.setVisible(false);
+        myRankBox.setManaged(false);
+
+        if (!SessionManager.isLoggedIn()) return;
+
+        String me = SessionManager.getCurrentUser().getUsername();
+        RankingDTO myRow = allRankings.stream()
+                .filter(r -> r.getPlayerName().equalsIgnoreCase(me))
+                .findFirst()
+                .orElse(null);
+
+        if (myRow == null) return;
+
+        int from = currentPage * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, allRankings.size());
+        boolean visibleInPage = allRankings.subList(from, to).stream()
+                .anyMatch(r -> r.getPlayerName().equalsIgnoreCase(me));
+
+        if (visibleInPage) return;
+
+        myRankTable.setItems(FXCollections.observableArrayList(myRow));
+        myRankBox.setVisible(true);
+        myRankBox.setManaged(true);
     }
 
     private void updatePaginationControls() {
