@@ -777,3 +777,15 @@
 .admin-filter-combo .arrow-button .arrow {
     -fx-background-color: #2dd4f0;
 }
+
+/* --- GD2 --- */
+.current-user-row {
+      -fx-background-color: rgba(255, 200, 50, 0.18);
+}
+.current-user-row:selected {
+    -fx-background-color: rgba(255, 200, 50, 0.40);
+}
+.current-user-row > .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffe066;
+}
