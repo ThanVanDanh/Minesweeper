@@ -784,3 +784,20 @@
 .ranking-error-label {
     -fx-text-fill: red;
 }
+
+/* --- GD2 --- */
+.current-user-row {
+      -fx-background-color: rgba(255, 200, 50, 0.18);
+}
+.current-user-row:selected {
+    -fx-background-color: rgba(255, 200, 50, 0.40);
+}
+.current-user-row > .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffe066;
+}
+#myRankTable .column-header-background {
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
