@@ -160,7 +160,7 @@ public class GameControllerTest {
 
         assertTrue(skipped, "Hết giờ phải làm người chơi hiện tại mất lượt");
         assertEquals(2, gameController.getCurrentPlayerNumber(), "Sau khi P1 hết giờ phải chuyển sang P2");
-        assertEquals(0, gameController.getPlayerScore(1), "Mất lượt không làm thay đổi điểm");
+        assertEquals(-50, gameController.getPlayerScore(1), "Hết giờ phải trừ 50 điểm người chơi hiện tại");
     }
 
     /**
