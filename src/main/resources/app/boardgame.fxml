@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -64,24 +65,24 @@
 
                             <Label alignment="CENTER" maxWidth="Infinity" style="-fx-text-fill: #2dd4f0; -fx-font-size: 18; -fx-font-weight: bold;" text="NGƯỜI CHƠI" />
 
-                            <VBox fx:id="playerCard1" spacing="5" styleClass="player-card-active">
-                                <Label fx:id="playerName1" styleClass="player-name-active" text="1. Player 01" />
-                                <Label fx:id="playerScore1" styleClass="player-score-active" text="Điểm: 0" />
+                            <VBox fx:id="playerCard1" spacing="5" styleClass="player-card player-1 player-card-active">
+                                <TextField fx:id="playerName1" styleClass="player-name-active player-1" text="1. Player 01" />
+                                <Label fx:id="playerScore1" styleClass="player-score-active player-1" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard2" spacing="5" styleClass="player-card-inactive">
-                                <Label fx:id="playerName2" styleClass="player-name-inactive" text="2. Player 02" />
-                                <Label fx:id="playerScore2" styleClass="player-score-inactive" text="Điểm: 0" />
+                            <VBox fx:id="playerCard2" spacing="5" styleClass="player-card player-2 player-card-inactive">
+                                <TextField fx:id="playerName2" styleClass="player-name-inactive player-2" text="2. Player 02" />
+                                <Label fx:id="playerScore2" styleClass="player-score-inactive player-2" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard3" spacing="5" styleClass="player-card-inactive">
-                                <Label fx:id="playerName3" styleClass="player-name-inactive" text="3. Player 03" />
-                                <Label fx:id="playerScore3" styleClass="player-score-inactive" text="Điểm: 0" />
+                            <VBox fx:id="playerCard3" spacing="5" styleClass="player-card player-3 player-card-inactive">
+                                <TextField fx:id="playerName3" styleClass="player-name-inactive player-3" text="3. Player 03" />
+                                <Label fx:id="playerScore3" styleClass="player-score-inactive player-3" text="Điểm: 0" />
                             </VBox>
 
-                            <VBox fx:id="playerCard4" spacing="5" styleClass="player-card-inactive">
-                                <Label fx:id="playerName4" styleClass="player-name-inactive" text="4. Player 04" />
-                                <Label fx:id="playerScore4" styleClass="player-score-inactive" text="Điểm: 0" />
+                            <VBox fx:id="playerCard4" spacing="5" styleClass="player-card player-4 player-card-inactive">
+                                <TextField fx:id="playerName4" styleClass="player-name-inactive player-4" text="4. Player 04" />
+                                <Label fx:id="playerScore4" styleClass="player-score-inactive player-4" text="Điểm: 0" />
                             </VBox>
                         </VBox>
 

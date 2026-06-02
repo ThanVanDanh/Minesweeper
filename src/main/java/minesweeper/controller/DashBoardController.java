@@ -1,78 +1,122 @@
 package minesweeper.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import minesweeper.dto.RankingDTO;
 import minesweeper.model.Board;
-import minesweeper.model.enums.Difficulty;
 import minesweeper.model.User;
+import minesweeper.model.enums.Difficulty;
 import minesweeper.service.SessionManager;
 import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.List;
-
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.Priority;
-import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-
-import minesweeper.dto.RankingDTO;
+import java.util.Objects;
 
 public class DashBoardController {
     private static DashBoardController instance;
 
     @FXML
     private ToggleButton easyButton;
+
     @FXML
     private ToggleButton mediumButton;
+
     @FXML
     private ToggleButton hardButton;
+
     @FXML
     private ToggleButton expertButton;
+
     @FXML
     private ToggleButton customButton;
+
     @FXML
     private TextField customRowsField;
+
     @FXML
     private TextField customColsField;
+
     @FXML
     private TextField customMinesField;
+
     @FXML
     private TextField customPlayersField;
 
     @FXML
     private Button openPopupLogin;
+
     @FXML
     private Label selectedModeLabel;
+
     @FXML
     private Parent rootPane;
+
     @FXML
     private VBox rankingContainer;
+
+    // Popup nhập tên người chơi trong dashboard.fxml
+    @FXML
+    private StackPane playerNameOverlay;
+
+    @FXML
+    private VBox playerRow1;
+
+    @FXML
+    private VBox playerRow2;
+
+    @FXML
+    private VBox playerRow3;
+
+    @FXML
+    private VBox playerRow4;
+
+    @FXML
+    private TextField playerNameField1;
+
+    @FXML
+    private TextField playerNameField2;
+
+    @FXML
+    private TextField playerNameField3;
+
+    @FXML
+    private TextField playerNameField4;
 
     private static final int MIN_BOARD_SIZE = 2;
     private static final int MAX_ROWS = 30;
     private static final int MAX_COLS = 40;
     private static final int MIN_PLAYERS = Board.MIN_PLAYER_COUNT;
     private static final int MAX_PLAYERS = Board.MAX_PLAYER_COUNT;
+
     private final ToggleGroup difficultyGroup = new ToggleGroup();
+
+    private int pendingPlayerCount;
+    private CustomBoardSelection pendingCustomSelection;
+    private User pendingCurrentUser;
 
     @FXML
     private void initialize() {
         instance = this;
+
         easyButton.setToggleGroup(difficultyGroup);
         mediumButton.setToggleGroup(difficultyGroup);
         hardButton.setToggleGroup(difficultyGroup);
@@ -84,8 +128,6 @@ public class DashBoardController {
         setCustomInputsDisabled(true);
         setupCustomInputListeners();
         updateSelectedModeForCurrentSelection();
-//        mediumButton.setSelected(true);
-//        updateSelectedMode("TRUNG BÌNH", "16×16 | 40 Min");
 
         difficultyGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
             if (newToggle == null) {
@@ -97,6 +139,7 @@ public class DashBoardController {
             setCustomInputsDisabled(newToggle != customButton);
             updateSelectedModeForCurrentSelection();
         });
+
         updateUiBasedOnSession();
         loadTopRanking();
     }
@@ -106,11 +149,9 @@ public class DashBoardController {
         User currentUser = SessionManager.getCurrentUser();
 
         if (!isLoggedIn || currentUser == null) {
-            // Not logged in: show login button, hide player label
             openPopupLogin.setVisible(true);
             openPopupLogin.setManaged(true);
         } else {
-            // Logged in: hide login button, show player label
             openPopupLogin.setVisible(false);
             openPopupLogin.setManaged(false);
         }
@@ -151,19 +192,132 @@ public class DashBoardController {
             selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
         }
 
+        User currentUser = SessionManager.getCurrentUser();
+
+        if (playerCount == 1) {
+            String[] playerNames = new String[playerCount];
+            playerNames[0] = currentUser != null ? currentUser.getUsername() : "Player 01";
+
+            openBoardGame(
+                    customSelection,
+                    playerCount,
+                    currentUser,
+                    playerNames
+            );
+
+            return;
+        }
+
+        showPlayerNamePopup(
+                playerCount,
+                customSelection,
+                currentUser
+        );
+    }
+
+    private void showPlayerNamePopup(
+            int playerCount,
+            CustomBoardSelection customSelection,
+            User currentUser
+    ) {
+        pendingPlayerCount = playerCount;
+        pendingCustomSelection = customSelection;
+        pendingCurrentUser = currentUser;
+
+        VBox[] rows = {
+                playerRow1,
+                playerRow2,
+                playerRow3,
+                playerRow4
+        };
+
+        TextField[] fields = {
+                playerNameField1,
+                playerNameField2,
+                playerNameField3,
+                playerNameField4
+        };
+
+        for (int i = 0; i < fields.length; i++) {
+            boolean active = i < playerCount;
+
+            rows[i].setVisible(active);
+            rows[i].setManaged(active);
+
+            if (active) {
+                if (i == 0 && currentUser != null) {
+                    fields[i].setText(currentUser.getUsername());
+                } else {
+                    fields[i].setText("Player " + String.format("%02d", i + 1));
+                }
+            } else {
+                fields[i].clear();
+            }
+        }
+
+        playerNameOverlay.setVisible(true);
+        playerNameOverlay.setManaged(true);
+    }
+
+    @FXML
+    private void onCancelPlayerNamePopup() {
+        hidePlayerNamePopup();
+
+        pendingPlayerCount = 0;
+        pendingCustomSelection = null;
+        pendingCurrentUser = null;
+    }
+
+    @FXML
+    private void onConfirmPlayerNamePopup() {
+        TextField[] fields = {
+                playerNameField1,
+                playerNameField2,
+                playerNameField3,
+                playerNameField4
+        };
+
+        String[] playerNames = new String[pendingPlayerCount];
+
+        for (int i = 0; i < pendingPlayerCount; i++) {
+            String text = fields[i].getText().trim();
+            playerNames[i] = text.isEmpty() ? "Player " + (i + 1) : text;
+        }
+
+        hidePlayerNamePopup();
+
+        openBoardGame(
+                pendingCustomSelection,
+                pendingPlayerCount,
+                pendingCurrentUser,
+                playerNames
+        );
+    }
+
+    private void hidePlayerNamePopup() {
+        playerNameOverlay.setVisible(false);
+        playerNameOverlay.setManaged(false);
+    }
+
+    private void openBoardGame(
+            CustomBoardSelection customSelection,
+            int playerCount,
+            User currentUser,
+            String[] playerNames
+    ) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
             Parent root = loader.load();
 
             BoardGameController controller = loader.getController();
 
-            // Truyền thông tin user từ session vào controller
-            minesweeper.model.User currentUser = minesweeper.service.SessionManager.getCurrentUser();
             if (currentUser != null) {
                 controller.setCurrentUser(currentUser.getId(), currentUser.getUsername());
             } else {
                 controller.setCurrentUser(-1, "Khách (Guest)");
             }
+
+            controller.setPlayerNames(playerNames);
 
             if (customSelection != null) {
                 controller.setInitialCustomBoard(
@@ -178,6 +332,7 @@ public class DashBoardController {
 
             Stage stage = (Stage) selectedModeLabel.getScene().getWindow();
             Scene gameScene = new Scene(root);
+
             gameScene.getStylesheets().add(Objects.requireNonNull(
                     getClass().getResource("/css/styles.css")
             ).toExternalForm());
@@ -189,8 +344,8 @@ public class DashBoardController {
             e.printStackTrace();
             System.out.println("Lỗi: Không thể tải file boardgame.fxml. Hãy kiểm tra lại đường dẫn!");
         }
-
     }
+
     @FXML
     private void openSettingsPage() {
         try {
@@ -213,8 +368,6 @@ public class DashBoardController {
         }
     }
 
-    // ── Admin navigation ──────────────────────────────────────────────────────
-
     public void openAdminUser() {
         try {
             AdminPopupHelper.openAdminUserPopup(rootPane != null ? rootPane : selectedModeLabel);
@@ -222,6 +375,7 @@ public class DashBoardController {
             e.printStackTrace();
         }
     }
+
     public void openAdminResult() {
         try {
             AdminPopupHelper.openAdminResultPopup(rootPane != null ? rootPane : selectedModeLabel);
@@ -229,12 +383,14 @@ public class DashBoardController {
             e.printStackTrace();
         }
     }
+
     private void openAdminWindow(String fxmlPath, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1100, 700);
+
             if (rootPane != null && rootPane.getScene() != null) {
                 scene.getStylesheets().addAll(rootPane.getScene().getStylesheets());
             }
@@ -257,8 +413,6 @@ public class DashBoardController {
         }
     }
 
-
-
     @FXML
     private void onLogin() {
         openLoginPopup();
@@ -269,13 +423,12 @@ public class DashBoardController {
         openRegisterPopup();
     }
 
-
-
     private Difficulty getSelectedDifficulty() {
         if (easyButton.isSelected()) return Difficulty.EASY;
         if (mediumButton.isSelected()) return Difficulty.MEDIUM;
         if (hardButton.isSelected()) return Difficulty.HARD;
         if (expertButton.isSelected()) return Difficulty.EXPERT;
+
         return Difficulty.MEDIUM;
     }
 
@@ -284,6 +437,7 @@ public class DashBoardController {
         if (mediumButton.isSelected()) return Difficulty.MEDIUM;
         if (hardButton.isSelected()) return Difficulty.HARD;
         if (expertButton.isSelected()) return Difficulty.EXPERT;
+
         return null;
     }
 
@@ -298,7 +452,10 @@ public class DashBoardController {
                         updateCustomModeLabel();
                     }
                 }));
-        customPlayersField.textProperty().addListener((obs, oldValue, newValue) -> updateSelectedModeForCurrentSelection());
+
+        customPlayersField.textProperty().addListener(
+                (obs, oldValue, newValue) -> updateSelectedModeForCurrentSelection()
+        );
     }
 
     private void setCustomInputsDisabled(boolean disabled) {
@@ -308,9 +465,11 @@ public class DashBoardController {
 
     private void applySelectedDifficultyDefaults() {
         Difficulty difficulty = getSelectedDifficultyOrNull();
+
         if (difficulty == null) {
             return;
         }
+
         customRowsField.setText(String.valueOf(difficulty.getRows()));
         customColsField.setText(String.valueOf(difficulty.getCols()));
         customMinesField.setText(String.valueOf(difficulty.getMines()));
@@ -348,24 +507,31 @@ public class DashBoardController {
         if (rows < MIN_BOARD_SIZE || rows > MAX_ROWS) {
             throw new IllegalArgumentException("Số hàng phải từ " + MIN_BOARD_SIZE + " đến " + MAX_ROWS + ".");
         }
+
         if (cols < MIN_BOARD_SIZE || cols > MAX_COLS) {
             throw new IllegalArgumentException("Số cột phải từ " + MIN_BOARD_SIZE + " đến " + MAX_COLS + ".");
         }
+
         int maxMines = rows * cols - 1;
+
         if (mines < 1 || mines > maxMines) {
             throw new IllegalArgumentException("Số mìn phải từ 1 đến " + maxMines + ".");
         }
+
         if (players < MIN_PLAYERS || players > MAX_PLAYERS) {
             throw new IllegalArgumentException("Số người chơi phải từ " + MIN_PLAYERS + " đến " + MAX_PLAYERS + ".");
         }
+
         return new CustomBoardSelection(rows, cols, mines, players);
     }
 
     private int getSelectedPlayerCount() {
         int players = parseCustomNumber(customPlayersField, "Số người chơi");
+
         if (players < MIN_PLAYERS || players > MAX_PLAYERS) {
             throw new IllegalArgumentException("Số người chơi phải từ " + MIN_PLAYERS + " đến " + MAX_PLAYERS + ".");
         }
+
         return players;
     }
 
@@ -379,9 +545,11 @@ public class DashBoardController {
 
     private int parseCustomNumber(TextField field, String label) {
         String raw = field.getText();
+
         if (raw == null || raw.trim().isEmpty()) {
             throw new IllegalArgumentException(label + " không được để trống.");
         }
+
         try {
             return Integer.parseInt(raw.trim());
         } catch (NumberFormatException e) {
@@ -410,9 +578,10 @@ public class DashBoardController {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/app/ranking-history.fxml")
-
             );
+
             System.out.println(getClass().getResource("/app/ranking-history.fxml"));
+
             Parent root = loader.load();
 
             Scene scene = new Scene(root, 1100, 720);
@@ -423,11 +592,13 @@ public class DashBoardController {
             popupStage.initModality(Modality.APPLICATION_MODAL);
 
             Stage owner = null;
+
             if (rootPane != null && rootPane.getScene() != null) {
                 owner = (Stage) rootPane.getScene().getWindow();
             } else if (selectedModeLabel != null && selectedModeLabel.getScene() != null) {
                 owner = (Stage) selectedModeLabel.getScene().getWindow();
             }
+
             if (owner != null) {
                 popupStage.initOwner(owner);
             }
@@ -436,6 +607,7 @@ public class DashBoardController {
             popupStage.setScene(scene);
             popupStage.centerOnScreen();
             popupStage.showAndWait();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -444,7 +616,13 @@ public class DashBoardController {
     private void openAuthPopup(boolean registerMode) {
         try {
             Object ownerNode = rootPane != null ? rootPane : selectedModeLabel;
-            AuthPopupHelper.openAuthPopup(ownerNode, registerMode, this::updateUiBasedOnSession);
+
+            AuthPopupHelper.openAuthPopup(
+                    ownerNode,
+                    registerMode,
+                    this::updateUiBasedOnSession
+            );
+
             updateUiBasedOnSession();
 
         } catch (IOException e) {
@@ -453,16 +631,20 @@ public class DashBoardController {
     }
 
     private void loadTopRanking() {
-        if (rankingContainer == null) return;
+        if (rankingContainer == null) {
+            return;
+        }
+
         rankingContainer.getChildren().clear();
+
         try {
             RankingController rankingController = new RankingController();
-            // Lấy top 5 ranking của level Expert
+
             List<RankingDTO> topRanks = rankingController.getExpertRankingTop(5);
 
             if (topRanks.isEmpty()) {
                 Label emptyLabel = new Label("Chưa có dữ liệu xếp hạng.");
-                emptyLabel.setStyle("-fx-text-fill: gray;");
+                emptyLabel.getStyleClass().add("ranking-empty-label");
                 rankingContainer.getChildren().add(emptyLabel);
                 return;
             }
@@ -474,22 +656,37 @@ public class DashBoardController {
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setSpacing(12);
                 row.getStyleClass().add("rank-row");
-                if (i == 0) row.getStyleClass().add("rank-row-first");
+
+                if (i == 0) {
+                    row.getStyleClass().add("rank-row-first");
+                }
 
                 Label badge = new Label(String.valueOf(rank.getRank()));
-                if (rank.getRank() == 1) badge.getStyleClass().add("rank-badge-gold");
-                else if (rank.getRank() == 2) badge.getStyleClass().add("rank-badge-silver");
-                else if (rank.getRank() == 3) badge.getStyleClass().add("rank-badge-bronze");
-                else badge.getStyleClass().add("rank-badge-blue");
+
+                if (rank.getRank() == 1) {
+                    badge.getStyleClass().add("rank-badge-gold");
+                } else if (rank.getRank() == 2) {
+                    badge.getStyleClass().add("rank-badge-silver");
+                } else if (rank.getRank() == 3) {
+                    badge.getStyleClass().add("rank-badge-bronze");
+                } else {
+                    badge.getStyleClass().add("rank-badge-blue");
+                }
 
                 VBox nameBox = new VBox();
                 nameBox.setSpacing(1);
+
                 Label nameLabel = new Label(rank.getPlayerName());
-                if (rank.getRank() == 1) nameLabel.getStyleClass().add("rank-name-gold");
-                else nameLabel.getStyleClass().add("rank-name");
+
+                if (rank.getRank() == 1) {
+                    nameLabel.getStyleClass().add("rank-name-gold");
+                } else {
+                    nameLabel.getStyleClass().add("rank-name");
+                }
 
                 Label metaLabel = new Label("Trận: " + rank.getTotalGames() + " | Thắng: " + rank.getWins());
                 metaLabel.getStyleClass().add("rank-meta");
+
                 nameBox.getChildren().addAll(nameLabel, metaLabel);
 
                 Region spacer = new Region();
@@ -500,6 +697,7 @@ public class DashBoardController {
                 scoreBox.setSpacing(1);
 
                 long timeSeconds = rank.getBestTimeMs() / 1000;
+
                 Label timeLabel = new Label(timeSeconds + "s");
                 timeLabel.getStyleClass().add("rank-score-green");
 
@@ -511,10 +709,12 @@ public class DashBoardController {
                 row.getChildren().addAll(badge, nameBox, spacer, scoreBox);
                 rankingContainer.getChildren().add(row);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
+
             Label errorLabel = new Label("Lỗi tải xếp hạng.");
-            errorLabel.setStyle("-fx-text-fill: red;");
+            errorLabel.getStyleClass().add("ranking-error-label");
             rankingContainer.getChildren().add(errorLabel);
         }
     }
