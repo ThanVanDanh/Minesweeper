@@ -777,3 +777,10 @@
 .admin-filter-combo .arrow-button .arrow {
     -fx-background-color: #2dd4f0;
 }
+.ranking-empty-label {
+    -fx-text-fill: gray;
+}
+
+.ranking-error-label {
+    -fx-text-fill: red;
+}

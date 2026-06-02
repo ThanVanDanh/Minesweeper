@@ -10,6 +10,106 @@
     -fx-background-radius: 6;
 }
 
+.player-card {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 10;
+    -fx-border-color: #2dd4f0;
+    -fx-border-width: 2;
+}
+
+.player-card-active {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: #2dd4f0;
+    -fx-border-width: 1;
+
+}
+
+.player-card-inactive {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+}
+
+.player-name-active {
+    -fx-text-fill: #39ff8f;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-text-box-border: transparent;
+    -fx-background-insets: 0;
+}
+
+.player-name-inactive {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-text-box-border: transparent;
+    -fx-background-insets: 0;
+}
+
+.player-score-active {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13;
+}
+
+.player-score-inactive {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 13;
+}
+
+.player-1.player-card-active {
+    -fx-background-color: rgba(57, 255, 143, 0.12);
+    -fx-border-color: rgba(57, 255, 143, 0.55);
+}
+.player-1.player-card-inactive {
+    -fx-background-color: rgba(57, 255, 143, 0.05);
+    -fx-border-color: rgba(57, 255, 143, 0.3);
+}
+.player-1.player-name-active, .player-1.player-name-inactive { -fx-text-fill: #39ff8f; }
+.player-1.player-score-active, .player-1.player-score-inactive { -fx-text-fill: #39ff8f; }
+
+.player-2.player-card-active {
+    -fx-background-color: rgba(45, 212, 240, 0.14);
+    -fx-border-color: rgba(45, 212, 240, 0.55);
+}
+.player-2.player-card-inactive {
+    -fx-background-color: rgba(45, 212, 240, 0.06);
+    -fx-border-color: rgba(45, 212, 240, 0.3);
+}
+.player-2.player-name-active, .player-2.player-name-inactive { -fx-text-fill: #2dd4f0; }
+.player-2.player-score-active, .player-2.player-score-inactive { -fx-text-fill: #2dd4f0; }
+
+.player-3.player-card-active {
+    -fx-background-color: rgba(255, 157, 46, 0.16);
+    -fx-border-color: rgba(255, 157, 46, 0.6);
+}
+.player-3.player-card-inactive {
+    -fx-background-color: rgba(255, 157, 46, 0.07);
+    -fx-border-color: rgba(255, 157, 46, 0.32);
+}
+.player-3.player-name-active, .player-3.player-name-inactive { -fx-text-fill: #ff9d2e; }
+.player-3.player-score-active, .player-3.player-score-inactive { -fx-text-fill: #ff9d2e; }
+
+.player-4.player-card-active {
+    -fx-background-color: rgba(240, 32, 255, 0.14);
+    -fx-border-color: rgba(240, 32, 255, 0.55);
+}
+.player-4.player-card-inactive {
+    -fx-background-color: rgba(240, 32, 255, 0.06);
+    -fx-border-color: rgba(240, 32, 255, 0.3);
+}
+.player-4.player-name-active, .player-4.player-name-inactive { -fx-text-fill: #f020ff; }
+.player-4.player-score-active, .player-4.player-score-inactive { -fx-text-fill: #f020ff; }
+
 .mine-cell-covered {
     -fx-background-color: rgba(6, 31, 47, 0.95);
     -fx-border-color: rgba(45, 212, 240, 0.15);
@@ -108,4 +208,3 @@
 .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
-
