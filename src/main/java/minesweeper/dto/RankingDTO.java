@@ -63,5 +63,16 @@ public final class RankingDTO {
     public int hashCode() {
         return 31 * rank + (playerName != null ? playerName.hashCode() : 0);
     }
+
+    // GD 2
+    public String getBestTimeFormatted() {
+        if (bestTimeMs <= 0) return "—";
+        long seconds = bestTimeMs / 1000;
+        long minutes = seconds / 60;
+        long secs    = seconds % 60;
+        return minutes > 0
+                ? String.format("%d:%02d", minutes, secs)
+                : String.format("0:%02d", secs);
+    }
 }
 
