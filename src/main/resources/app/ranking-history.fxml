@@ -69,8 +69,43 @@
                                     <TableColumn fx:id="colTotalGames" text="Tổng ván" prefWidth="100"/>
                                     <TableColumn fx:id="colWins" text="Thắng" prefWidth="80"/>
                                     <TableColumn fx:id="colScore" text="Điểm" prefWidth="100"/>
+                                    <TableColumn fx:id="colBestTime" text="Best Time" prefWidth="100"/>
                                 </columns>
                             </TableView>
+
+                            <!-- GD2 -->
+                            <HBox spacing="12" alignment="CENTER" style="-fx-padding: 8 0 0 0;">
+                                <Button fx:id="btnPrev" text="‹ Trước" onAction="#onPrevPage"
+                                        styleClass="ranking-combo"/>
+                                <Label fx:id="lblPage" text="Trang 1 / 1"
+                                       style="-fx-text-fill: white; -fx-font-size: 13px;" minWidth="90"
+                                       alignment="CENTER"/>
+                                <Button fx:id="btnNext" text="Sau ›" onAction="#onNextPage"
+                                        styleClass="ranking-combo"/>
+                            </HBox>
+                            <VBox fx:id="myRankBox" spacing="0" style="-fx-padding: 6 0 0 0;"
+                                  visible="false" managed="false">
+                                <Label text="Hạng của bạn" styleClass="ranking-label"
+                                       style="-fx-text-fill: #aaaaaa; -fx-font-size: 11px; -fx-padding: 0 0 4 2;"/>
+                                <TableView fx:id="myRankTable"
+                                           prefHeight="50" minHeight="75" maxHeight="80"
+                                           styleClass="ranking-table"
+                                           style="-fx-opacity: 0.85;"
+                                           VBox.vgrow="NEVER">
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                    <columns>
+                                        <TableColumn fx:id="colMyRank"       text="Hạng"       prefWidth="80"/>
+                                        <TableColumn fx:id="colMyPlayerName" text="Người chơi" prefWidth="220"/>
+                                        <TableColumn fx:id="colMyTotalGames" text="Tổng ván"   prefWidth="100"/>
+                                        <TableColumn fx:id="colMyWins"       text="Thắng"      prefWidth="80"/>
+                                        <TableColumn fx:id="colMyScore"      text="Điểm"       prefWidth="100"/>
+                                        <TableColumn fx:id="colMyBestTime"   text="Best Time"  prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+
                         </VBox>
                     </content>
                 </Tab>

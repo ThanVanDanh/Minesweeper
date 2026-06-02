@@ -69,8 +69,9 @@ public class MySqlRankingRepository implements RankingRepository {
 
     @Override
     public List<RankingDTO> getLeaderboardByLevel(int levelId) throws Exception {
-        return getLeaderboardByLevelPaginated(levelId, new Page(0, 1000000, 0)).getContent();
+        return getLeaderboardByLevelPaginated(levelId, new Page(0, Integer.MAX_VALUE, 0)).getContent();
     }
+
 
     public PagedResult<RankingDTO> getLeaderboardByLevelPaginated(int levelId, Page page) throws DataAccessException {
         Objects.requireNonNull(page, "page cannot be null");
