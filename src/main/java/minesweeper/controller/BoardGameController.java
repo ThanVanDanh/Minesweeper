@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -46,7 +47,7 @@ public class BoardGameController implements Initializable {
     @FXML private Label lblPlayers;
     @FXML private Label lblScores;
     @FXML private VBox playerCard1, playerCard2, playerCard3, playerCard4;
-    @FXML private Label playerName1, playerName2, playerName3, playerName4;
+    @FXML private TextField playerName1, playerName2, playerName3, playerName4;
     @FXML private Label playerScore1, playerScore2, playerScore3, playerScore4;
 
     private GameController gameLogic;
@@ -61,12 +62,6 @@ public class BoardGameController implements Initializable {
     private String currentUsername = "Player";
     private LocalDateTime gameStartedAt;
     private LocalDateTime firstClickAt;
-    private static final String ACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(57, 255, 143, 0.1); -fx-background-radius: 6; -fx-border-color: rgba(57, 255, 143, 0.5); -fx-border-radius: 6; -fx-padding: 10;";
-    private static final String INACTIVE_PLAYER_CARD_STYLE = "-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 6; -fx-padding: 10;";
-    private static final String ACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #39ff8f; -fx-font-size: 15; -fx-font-weight: bold;";
-    private static final String INACTIVE_PLAYER_NAME_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 15; -fx-font-weight: bold;";
-    private static final String ACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #ffffff; -fx-font-size: 13;";
-    private static final String INACTIVE_PLAYER_SCORE_STYLE = "-fx-text-fill: #aaaaaa; -fx-font-size: 13;";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -275,10 +270,11 @@ public class BoardGameController implements Initializable {
         if (lblPlayers != null) {
             int players = gameLogic.getBoard() != null ? gameLogic.getPlayerCount() : 1;
             if (players > 1) {
-                lblPlayers.setText(String.format("Lượt P%02d / %02d | %02ds",
-                        gameLogic.getCurrentPlayerNumber(), players, turnSecondsRemaining));
+                lblPlayers.setText(String.format("Lượt %s | %02ds",
+                        getCurrentPlayerDisplayName(), turnSecondsRemaining));
             } else {
-                lblPlayers.setText(String.format("Người chơi 01 | %02ds", turnSecondsRemaining));
+                lblPlayers.setText(String.format("%s | %02ds",
+                        getCurrentPlayerDisplayName(), turnSecondsRemaining));
             }
         }
 
@@ -444,7 +440,7 @@ public class BoardGameController implements Initializable {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < scores.length; i++) {
             if (i > 0) builder.append("   ");
-            builder.append("P").append(String.format("%02d", i + 1))
+            builder.append(getPlayerDisplayName(i))
                     .append(": ")
                     .append(String.format("%04d", scores[i]));
         }
@@ -455,7 +451,7 @@ public class BoardGameController implements Initializable {
         if (gameLogic.getPlayerCount() <= 1) {
             return "BẠN ĐÃ THUA!";
         }
-        return String.format("P%02d TRÚNG MÌN!", gameLogic.getCurrentPlayerNumber());
+        return getCurrentPlayerDisplayName().toUpperCase() + " TRÚNG MÌN!";
     }
 
     private String buildWinMessage() {
@@ -476,7 +472,7 @@ public class BoardGameController implements Initializable {
                 tied = true;
             }
         }
-        return tied ? "HÒA ĐIỂM!" : String.format("P%02d THẮNG!", winnerIndex + 1);
+        return tied ? "HÒA ĐIỂM!" : getPlayerDisplayName(winnerIndex).toUpperCase() + " THẮNG!";
     }
 
     private void updatePlayerScorePanel() {
@@ -485,7 +481,7 @@ public class BoardGameController implements Initializable {
         }
 
         VBox[] cards = {playerCard1, playerCard2, playerCard3, playerCard4};
-        Label[] names = {playerName1, playerName2, playerName3, playerName4};
+        TextField[] names = {playerName1, playerName2, playerName3, playerName4};
         Label[] scores = {playerScore1, playerScore2, playerScore3, playerScore4};
         int[] playerScores = gameLogic.getPlayerScores();
         int activePlayerIndex = gameLogic.getCurrentPlayerNumber() - 1;
@@ -499,12 +495,41 @@ public class BoardGameController implements Initializable {
             }
 
             boolean active = i == activePlayerIndex && gameLogic.getGameState() != GameState.WON;
-            cards[i].setStyle(active ? ACTIVE_PLAYER_CARD_STYLE : INACTIVE_PLAYER_CARD_STYLE);
-            names[i].setText((i + 1) + ". Player " + String.format("%02d", i + 1));
-            names[i].setStyle(active ? ACTIVE_PLAYER_NAME_STYLE : INACTIVE_PLAYER_NAME_STYLE);
+            setPlayerStateClasses(cards[i], active, "player-card-active", "player-card-inactive");
+
+            String currentName = names[i].getText();
+            if (!names[i].isFocused() && (currentName == null || currentName.isBlank())) {
+                names[i].setText("Player " + String.format("%02d", i + 1));
+            }
+
+            setPlayerStateClasses(names[i], active, "player-name-active", "player-name-inactive");
             scores[i].setText("Điểm: " + playerScores[i]);
-            scores[i].setStyle(active ? ACTIVE_PLAYER_SCORE_STYLE : INACTIVE_PLAYER_SCORE_STYLE);
+            setPlayerStateClasses(scores[i], active, "player-score-active", "player-score-inactive");
         }
+    }
+
+    private void setPlayerStateClasses(javafx.scene.Node node, boolean active, String activeClass, String inactiveClass) {
+        node.getStyleClass().removeAll(activeClass, inactiveClass);
+        node.getStyleClass().add(active ? activeClass : inactiveClass);
+    }
+
+    private String getPlayerDisplayName(int playerIndex) {
+        TextField[] fields = {playerName1, playerName2, playerName3, playerName4};
+
+        if (playerIndex >= 0 && playerIndex < fields.length && fields[playerIndex] != null) {
+            String text = fields[playerIndex].getText();
+
+            if (text != null && !text.trim().isEmpty()) {
+                return text.trim();
+            }
+        }
+
+        return "Player " + String.format("%02d", playerIndex + 1);
+    }
+
+    private String getCurrentPlayerDisplayName() {
+        int currentIndex = gameLogic.getCurrentPlayerNumber() - 1;
+        return getPlayerDisplayName(currentIndex);
     }
 
     /**
@@ -513,6 +538,24 @@ public class BoardGameController implements Initializable {
     public void setCurrentUser(long userId, String username) {
         this.currentUserId   = userId;
         this.currentUsername = (username != null && !username.isBlank()) ? username.trim() : "Player";
+    }
+
+    public void setPlayerNames(String[] names) {
+        if (names == null) return;
+
+        TextField[] fields = {playerName1, playerName2, playerName3, playerName4};
+
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i] == null) {
+                continue;
+            }
+
+            if (i < names.length && names[i] != null && !names[i].trim().isEmpty()) {
+                fields[i].setText(names[i].trim());
+            } else {
+                fields[i].setText("Player " + String.format("%02d", i + 1));
+            }
+        }
     }
 
     private void saveGameResult() {
@@ -571,7 +614,7 @@ public class BoardGameController implements Initializable {
 
             GameSessionResult saved = gameSessionRepository.saveGameResult(data);
             LOG.info("Đã lưu kết quả: user={}, sessionId={}, newRecord={}, rank={}",
-                     currentUsername, saved.getSessionId(), saved.isNewRecord(), saved.getNewRank());
+                    currentUsername, saved.getSessionId(), saved.isNewRecord(), saved.getNewRank());
 
 
         } catch (Exception e) {
