@@ -113,12 +113,11 @@ public class AuthService {
             throw new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu.");
         }
         if (!user.isActive()) {
-            boolean hasToken = emailVerifRepo.findActiveByUserId(user.getId()) != null
-                    || !user.isActive();
-            if (hasToken) {
+            boolean hasPendingOtp = emailVerifRepo.findActiveByUserId(user.getId()) != null;
+            if (hasPendingOtp) {
                 throw new IllegalArgumentException("Tài khoản chưa xác nhận email. Vui lòng kiểm tra hộp thư.");
             }
-            throw new IllegalArgumentException("Tài khoản đã bị khóa.");
+            throw new IllegalArgumentException("Tài khoản đã bị khóa. Vui lòng liên hệ admin.");
         }
         if (!CryptUtils.matchesMd5(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu.");
