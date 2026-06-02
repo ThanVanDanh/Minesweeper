@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
@@ -40,9 +39,14 @@
                             <Label text="Thử thách trí tuệ chiến thuật của bạn. Khám phá bãi mìn. Sống sót."
                                    styleClass="hero-subtitle"/>
                         </VBox>
+
                         <Region HBox.hgrow="ALWAYS"/>
+
                         <HBox spacing="10" alignment="CENTER_RIGHT">
-                            <Button text="Bắt đầu Ngay →" fx:id="openPopupLogin" onAction="#openRegisterPopup" styleClass="primary-button-large"/>
+                            <Button text="Bắt đầu Ngay →"
+                                    fx:id="openPopupLogin"
+                                    onAction="#openRegisterPopup"
+                                    styleClass="primary-button-large"/>
                         </HBox>
                     </HBox>
 
@@ -52,6 +56,7 @@
                                 <padding>
                                     <Insets top="18" right="18" bottom="18" left="18"/>
                                 </padding>
+
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label text="◇" styleClass="section-icon-green"/>
                                     <Label text="CHỌN ĐỘ KHÓ" styleClass="section-title-green"/>
@@ -62,6 +67,7 @@
                                         <ColumnConstraints percentWidth="50"/>
                                         <ColumnConstraints percentWidth="50"/>
                                     </columnConstraints>
+
                                     <rowConstraints>
                                         <RowConstraints/>
                                         <RowConstraints/>
@@ -69,20 +75,40 @@
                                         <RowConstraints/>
                                     </rowConstraints>
 
-                                    <ToggleButton fx:id="easyButton" text="●  DỄ&#10;     9×9 | 10 mìn"
-                                                  GridPane.columnIndex="0" GridPane.rowIndex="0" maxWidth="Infinity"
+                                    <ToggleButton fx:id="easyButton"
+                                                  text="●  DỄ&#10;     9×9 | 10 mìn"
+                                                  GridPane.columnIndex="0"
+                                                  GridPane.rowIndex="0"
+                                                  maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="mediumButton" text="●  TRUNG BÌNH&#10;     16×16 | 40 mìn"
-                                                  GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity"
+
+                                    <ToggleButton fx:id="mediumButton"
+                                                  text="●  TRUNG BÌNH&#10;     16×16 | 40 mìn"
+                                                  GridPane.columnIndex="1"
+                                                  GridPane.rowIndex="0"
+                                                  maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="hardButton" text="●  KHÓ&#10;     16×30 | 99 mìn"
-                                                  GridPane.columnIndex="0" GridPane.rowIndex="1" maxWidth="Infinity"
+
+                                    <ToggleButton fx:id="hardButton"
+                                                  text="●  KHÓ&#10;     16×30 | 99 mìn"
+                                                  GridPane.columnIndex="0"
+                                                  GridPane.rowIndex="1"
+                                                  maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="expertButton" text="●  CHUYÊN GIA&#10;     20×30 | 145 mìn"
-                                                  GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"
+
+                                    <ToggleButton fx:id="expertButton"
+                                                  text="●  CHUYÊN GIA&#10;     20×30 | 145 mìn"
+                                                  GridPane.columnIndex="1"
+                                                  GridPane.rowIndex="1"
+                                                  maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
-                                    <ToggleButton fx:id="customButton" text="●  TÙY CHỈNH&#10;     Nhập kích thước và số mìn"
-                                                  GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" maxWidth="Infinity"
+
+                                    <ToggleButton fx:id="customButton"
+                                                  text="●  TÙY CHỈNH&#10;     Nhập kích thước và số mìn"
+                                                  GridPane.columnIndex="0"
+                                                  GridPane.rowIndex="2"
+                                                  GridPane.columnSpan="2"
+                                                  maxWidth="Infinity"
                                                   styleClass="difficulty-button"/>
                                 </GridPane>
 
@@ -94,24 +120,62 @@
                                         <ColumnConstraints percentWidth="25"/>
                                     </columnConstraints>
 
-                                    <Label text="Hàng" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="custom-label"/>
-                                    <Label text="Cột" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="custom-label"/>
-                                    <Label text="Số mìn" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="custom-label"/>
-                                    <Label text="Người chơi" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="custom-label"/>
+                                    <Label text="Hàng"
+                                           GridPane.columnIndex="0"
+                                           GridPane.rowIndex="0"
+                                           styleClass="custom-label"/>
 
-                                    <TextField fx:id="customRowsField" text="12" promptText="2-30"
-                                               GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="custom-input"/>
-                                    <TextField fx:id="customColsField" text="12" promptText="2-40"
-                                               GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="custom-input"/>
-                                    <TextField fx:id="customMinesField" text="25" promptText="Mìn"
-                                               GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="custom-input"/>
-                                    <TextField fx:id="customPlayersField" text="2" promptText="1-4"
-                                               GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="custom-input"/>
+                                    <Label text="Cột"
+                                           GridPane.columnIndex="1"
+                                           GridPane.rowIndex="0"
+                                           styleClass="custom-label"/>
+
+                                    <Label text="Số mìn"
+                                           GridPane.columnIndex="2"
+                                           GridPane.rowIndex="0"
+                                           styleClass="custom-label"/>
+
+                                    <Label text="Người chơi"
+                                           GridPane.columnIndex="3"
+                                           GridPane.rowIndex="0"
+                                           styleClass="custom-label"/>
+
+                                    <TextField fx:id="customRowsField"
+                                               text="12"
+                                               promptText="2-30"
+                                               GridPane.columnIndex="0"
+                                               GridPane.rowIndex="1"
+                                               styleClass="custom-input"/>
+
+                                    <TextField fx:id="customColsField"
+                                               text="12"
+                                               promptText="2-40"
+                                               GridPane.columnIndex="1"
+                                               GridPane.rowIndex="1"
+                                               styleClass="custom-input"/>
+
+                                    <TextField fx:id="customMinesField"
+                                               text="25"
+                                               promptText="Mìn"
+                                               GridPane.columnIndex="2"
+                                               GridPane.rowIndex="1"
+                                               styleClass="custom-input"/>
+
+                                    <TextField fx:id="customPlayersField"
+                                               text="2"
+                                               promptText="1-4"
+                                               GridPane.columnIndex="3"
+                                               GridPane.rowIndex="1"
+                                               styleClass="custom-input"/>
                                 </GridPane>
 
-                                <Button text="▷ BẮT ĐẦU CHIẾN ĐẤU" onAction="#onStartBattle" maxWidth="Infinity"
+                                <Button text="▷ BẮT ĐẦU CHIẾN ĐẤU"
+                                        onAction="#onStartBattle"
+                                        maxWidth="Infinity"
                                         styleClass="start-button"/>
-                                <Label fx:id="selectedModeLabel" text="Chế độ đã chọn: TRUNG BÌNH - 16×16 | 40 mìn"
+
+                                <Label fx:id="selectedModeLabel"
+                                       text="Chế độ đã chọn: TRUNG BÌNH - 16×16 | 40 mìn"
                                        styleClass="selected-mode"/>
                             </VBox>
 
@@ -119,36 +183,44 @@
                                 <padding>
                                     <Insets top="18" right="18" bottom="18" left="18"/>
                                 </padding>
+
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label text="⌁" styleClass="section-icon-cyan"/>
                                     <Label text="HOẠT ĐỘNG 7 NGÀY" styleClass="section-title-cyan"/>
                                 </HBox>
+
                                 <Pane minHeight="74" styleClass="chart-area">
                                     <HBox alignment="BOTTOM_CENTER" spacing="82" layoutX="40" layoutY="12">
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="28" styleClass="chart-bar"/>
                                             <Label text="T2" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="42" styleClass="chart-bar"/>
                                             <Label text="T3" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="25" styleClass="chart-bar"/>
                                             <Label text="T4" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="58" styleClass="chart-bar-hot"/>
                                             <Label text="T5" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="35" styleClass="chart-bar"/>
                                             <Label text="T6" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="48" styleClass="chart-bar"/>
                                             <Label text="T7" styleClass="chart-label"/>
                                         </VBox>
+
                                         <VBox alignment="BOTTOM_CENTER" spacing="8">
                                             <Region prefWidth="15" prefHeight="64" styleClass="chart-bar-hot"/>
                                             <Label text="CN" styleClass="chart-label"/>
@@ -163,24 +235,96 @@
                                 <padding>
                                     <Insets top="18" right="18" bottom="18" left="18"/>
                                 </padding>
+
                                 <HBox alignment="CENTER_LEFT">
                                     <HBox alignment="CENTER_LEFT" spacing="8">
                                         <Label text="🏆" styleClass="section-icon-orange"/>
                                         <Label text="BẢNG XẾP HẠNG" styleClass="section-title-orange"/>
                                     </HBox>
+
                                     <Region HBox.hgrow="ALWAYS"/>
-                                    <Button text="Xem tất cả ›" onAction="#openRankingHistoryPopup" styleClass="side-link"/>
+
+                                    <Button text="Xem tất cả ›"
+                                            onAction="#openRankingHistoryPopup"
+                                            styleClass="side-link"/>
                                 </HBox>
 
                                 <VBox fx:id="rankingContainer" spacing="7">
                                     <!-- Dữ liệu xếp hạng sẽ được load động từ DB -->
                                 </VBox>
                             </VBox>
-
                         </VBox>
                     </HBox>
                 </VBox>
             </ScrollPane>
         </center>
     </BorderPane>
+
+    <StackPane fx:id="playerNameOverlay"
+               visible="false"
+               managed="false"
+               alignment="CENTER"
+               styleClass="popup-overlay">
+
+        <VBox fx:id="playerNamePopup"
+              spacing="10"
+              prefWidth="420"
+              maxWidth="420"
+              maxHeight="-Infinity"
+              style="-fx-background-color: #020b13; -fx-border-color: #2dd4f0; -fx-border-width: 2;">
+
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <Label text="NHẬP TÊN NGƯỜI CHƠI (Tối đa 4)"
+                   style="-fx-text-fill: #39ff8f; -fx-font-size: 16; -fx-font-weight: bold;"/>
+
+            <VBox fx:id="playerRow1" spacing="4">
+                <Label text="Người chơi 1:"
+                       style="-fx-text-fill: #2dd4f0; -fx-font-size: 12;"/>
+
+                <TextField fx:id="playerNameField1"
+                           style="-fx-background-color: #061f2f; -fx-text-fill: white; -fx-border-color: #2dd4f0; -fx-padding: 8;"/>
+            </VBox>
+
+            <VBox fx:id="playerRow2" spacing="4">
+                <Label text="Người chơi 2:"
+                       style="-fx-text-fill: #2dd4f0; -fx-font-size: 12;"/>
+
+                <TextField fx:id="playerNameField2"
+                           style="-fx-background-color: #061f2f; -fx-text-fill: white; -fx-border-color: #2dd4f0; -fx-padding: 8;"/>
+            </VBox>
+
+            <VBox fx:id="playerRow3" spacing="4">
+                <Label text="Người chơi 3:"
+                       style="-fx-text-fill: #2dd4f0; -fx-font-size: 12;"/>
+
+                <TextField fx:id="playerNameField3"
+                           style="-fx-background-color: #061f2f; -fx-text-fill: white; -fx-border-color: #2dd4f0; -fx-padding: 8;"/>
+            </VBox>
+
+            <VBox fx:id="playerRow4" spacing="4">
+                <Label text="Người chơi 4:"
+                       style="-fx-text-fill: #2dd4f0; -fx-font-size: 12;"/>
+
+                <TextField fx:id="playerNameField4"
+                           style="-fx-background-color: #061f2f; -fx-text-fill: white; -fx-border-color: #2dd4f0; -fx-padding: 8;"/>
+            </VBox>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="cancelPlayerNameButton"
+                        text="HỦY"
+                        onAction="#onCancelPlayerNamePopup"
+                        style="-fx-background-color: transparent; -fx-text-fill: #2dd4f0; -fx-border-color: #2dd4f0; -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+                <Button fx:id="confirmPlayerNameButton"
+                        text="BẮT ĐẦU"
+                        onAction="#onConfirmPlayerNamePopup"
+                        style="-fx-background-color: linear-gradient(to right, #39ff8f, #2dd4f0); -fx-text-fill: #04131d; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+    </StackPane>
 </StackPane>
