@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -46,7 +47,7 @@ public class BoardGameController implements Initializable {
     @FXML private Label lblPlayers;
     @FXML private Label lblScores;
     @FXML private VBox playerCard1, playerCard2, playerCard3, playerCard4;
-    @FXML private Label playerName1, playerName2, playerName3, playerName4;
+    @FXML private TextField playerName1, playerName2, playerName3, playerName4;
     @FXML private Label playerScore1, playerScore2, playerScore3, playerScore4;
 
     private GameController gameLogic;
@@ -479,7 +480,7 @@ public class BoardGameController implements Initializable {
         }
 
         VBox[] cards = {playerCard1, playerCard2, playerCard3, playerCard4};
-        Label[] names = {playerName1, playerName2, playerName3, playerName4};
+        TextField[] names = {playerName1, playerName2, playerName3, playerName4};
         Label[] scores = {playerScore1, playerScore2, playerScore3, playerScore4};
         int[] playerScores = gameLogic.getPlayerScores();
         int activePlayerIndex = gameLogic.getCurrentPlayerNumber() - 1;
@@ -494,7 +495,12 @@ public class BoardGameController implements Initializable {
 
             boolean active = i == activePlayerIndex && gameLogic.getGameState() != GameState.WON;
             setPlayerStateClasses(cards[i], active, "player-card-active", "player-card-inactive");
-            names[i].setText((i + 1) + ". Player " + String.format("%02d", i + 1));
+            
+            String currentName = names[i].getText();
+            if (!names[i].isFocused() && (currentName == null || currentName.isBlank())) {
+                names[i].setText((i + 1) + ". Player " + String.format("%02d", i + 1));
+            }
+            
             setPlayerStateClasses(names[i], active, "player-name-active", "player-name-inactive");
             scores[i].setText("Điểm: " + playerScores[i]);
             setPlayerStateClasses(scores[i], active, "player-score-active", "player-score-inactive");
@@ -512,6 +518,16 @@ public class BoardGameController implements Initializable {
     public void setCurrentUser(long userId, String username) {
         this.currentUserId   = userId;
         this.currentUsername = (username != null && !username.isBlank()) ? username.trim() : "Player";
+    }
+
+    public void setPlayerNames(String[] names) {
+        if (names == null) return;
+        TextField[] fields = {playerName1, playerName2, playerName3, playerName4};
+        for (int i = 0; i < names.length && i < fields.length; i++) {
+            if (fields[i] != null) {
+                fields[i].setText(names[i]);
+            }
+        }
     }
 
     private void saveGameResult() {
