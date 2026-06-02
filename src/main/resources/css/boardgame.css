@@ -14,11 +14,15 @@
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-padding: 10;
+    -fx-border-color: #2dd4f0;
+    -fx-border-width: 2;
 }
 
 .player-card-active {
     -fx-background-color: rgba(255, 255, 255, 0.08);
-    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: #2dd4f0;
+    -fx-border-width: 1;
+
 }
 
 .player-card-inactive {
