@@ -307,16 +307,19 @@ public class MySqlUserService implements UserService {
         String trimmed = username.trim();
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement ps = connection.prepareStatement(SELECT_USER_AUTH_BY_USERNAME_SQL)) {
+            // 1.2.5 getAuthUserByUsername(username): gán tham số username vào câu SELECT.
             ps.setString(1, trimmed);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    // 1.2.5 getAuthUserByUsername(username): map ResultSet thành User có passwordHash.
                     User user = mapAuthUser(rs);
                     LOG.debug("Auth user found: {} (id={})", trimmed, user.getId());
                     return user;
                 }
             }
 
+            // 1.2.E2 Không tìm thấy tài khoản theo username.
             LOG.debug("Auth user not found: {}", trimmed);
             return null;
         } catch (SQLException e) {
@@ -354,14 +357,24 @@ public class MySqlUserService implements UserService {
 
         try (Connection connection = connectionFactory.getConnection();
              PreparedStatement ps = connection.prepareStatement(INSERT_USER_WITH_PASSWORD_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            // 1.1.7 createUserWithPassword(...): gán username.
             ps.setString(1, trimmedUsername);
+
+            // 1.1.7 createUserWithPassword(...): gán displayName.
             ps.setString(2, trimmedDisplayName);
+
+            // 1.1.7 createUserWithPassword(...): gán passwordHash đã được mã hóa.
             ps.setString(3, passwordHash);
+
+            // 1.1.7 createUserWithPassword(...): gán role mặc định PLAYER nếu role null.
             ps.setString(4, roleStr);
+
+            // 1.1.7 createUserWithPassword(...): thực thi INSERT.
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
+                    // 1.1.7 createUserWithPassword(...): trả về id user vừa tạo.
                     long userId = keys.getLong(1);
                     LOG.info("User created (auth): {} (id={})", trimmedUsername, userId);
                     return userId;
