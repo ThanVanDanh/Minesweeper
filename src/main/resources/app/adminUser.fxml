@@ -32,14 +32,23 @@
         <VBox spacing="14" VBox.vgrow="ALWAYS">
             <padding><Insets top="20" right="30" bottom="24" left="30"/></padding>
 
-            <VBox styleClass="panel-card" spacing="0">
+            <VBox styleClass="panel-card" spacing="12">
                 <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+
                 <HBox spacing="16" alignment="CENTER_LEFT">
                     <VBox spacing="5">
-                        <Label text="TÌM KIẾM" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <Label text="TỪ KHOÁ" styleClass="input-label" style="-fx-text-fill:white;"/>
                         <TextField fx:id="searchField"
                                    promptText="Tìm theo username hoặc tên hiển thị..."
-                                   prefWidth="320"
+                                   prefWidth="300"
+                                   styleClass="auth-input"
+                                   onKeyReleased="#onSearch"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="EMAIL" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <TextField fx:id="emailField"
+                                   promptText="Lọc theo email..."
+                                   prefWidth="240"
                                    styleClass="auth-input"
                                    onKeyReleased="#onSearch"/>
                     </VBox>
@@ -51,6 +60,38 @@
                     <VBox spacing="5">
                         <Label text="TRẠNG THÁI" styleClass="input-label" style="-fx-text-fill:white;"/>
                         <ComboBox fx:id="cbStatusFilter" prefWidth="140"
+                                  styleClass="admin-filter-combo"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <VBox spacing="5">
+                        <Label text="NGÀY TẠO TỪ" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <DatePicker fx:id="createdFromPicker" prefWidth="140" styleClass="admin-filter-combo"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="ĐẾN" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <DatePicker fx:id="createdToPicker" prefWidth="140" styleClass="admin-filter-combo"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="LOGIN TỪ" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <DatePicker fx:id="lastLoginFromPicker" prefWidth="140" styleClass="admin-filter-combo"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="ĐẾN" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <DatePicker fx:id="lastLoginToPicker" prefWidth="140" styleClass="admin-filter-combo"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="SỐ VÁN (MIN)" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <TextField fx:id="minGamesField" promptText="0" prefWidth="95" styleClass="auth-input"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="(MAX)" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <TextField fx:id="maxGamesField" promptText="99" prefWidth="95" styleClass="auth-input"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="KẾT QUẢ" styleClass="input-label" style="-fx-text-fill:white;"/>
+                        <ComboBox fx:id="cbGameHistoryFilter" prefWidth="170"
                                   styleClass="admin-filter-combo"/>
                     </VBox>
                     <Region HBox.hgrow="ALWAYS"/>
@@ -94,12 +135,16 @@
                 <TableView fx:id="userTable" VBox.vgrow="ALWAYS"
                            styleClass="ranking-table">
                     <columns>
-                        <TableColumn fx:id="colSelect"      text=""             minWidth="40" maxWidth="40"/>
-                        <TableColumn fx:id="colId"          text="ID"           prefWidth="50"  style="-fx-alignment:CENTER;"/>
-                        <TableColumn fx:id="colUsername"    text="Username"     prefWidth="160"/>
-                        <TableColumn fx:id="colDisplayName" text="Tên hiển thị" prefWidth="180"/>
-                        <TableColumn fx:id="colRole"        text="Vai trò"      prefWidth="130" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
-                        <TableColumn fx:id="colStatus"      text="Trạng thái"   prefWidth="120" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
+                        <TableColumn fx:id="colSelect"      text=""              minWidth="40" maxWidth="40"/>
+                        <TableColumn fx:id="colId"          text="ID"            prefWidth="50"  style="-fx-alignment:CENTER;"/>
+                        <TableColumn fx:id="colUsername"    text="Username"      prefWidth="140"/>
+                        <TableColumn fx:id="colDisplayName" text="Tên hiển thị"  prefWidth="160"/>
+                        <TableColumn fx:id="colEmail"       text="Email"         prefWidth="200"/>
+                        <TableColumn fx:id="colCreatedAt"   text="Ngày tạo"      prefWidth="130" style="-fx-alignment:CENTER;"/>
+                        <TableColumn fx:id="colLastLoginAt" text="Login gần nhất" prefWidth="140" style="-fx-alignment:CENTER;"/>
+                        <TableColumn fx:id="colGameCount"   text="Số ván"        prefWidth="80"  style="-fx-alignment:CENTER;"/>
+                        <TableColumn fx:id="colRole"        text="Vai trò"       prefWidth="110" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
+                        <TableColumn fx:id="colStatus"      text="Trạng thái"    prefWidth="110" style="-fx-alignment:CENTER;-fx-text-fill:white;"/>
                     </columns>
                     <placeholder>
                         <Label text="Không tìm thấy người dùng phù hợp."
