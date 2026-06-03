@@ -9,10 +9,12 @@ public final class SessionManager {
     }
 
     public static void createSession(User user) {
+        // 1.2.9 SessionManager.createSession(user): tạo phiên đăng nhập.
         currentUser = user;
     }
 
     public static void clearSession() {
+        // 1.3.2 clearSession(): xóa currentUser khỏi bộ nhớ ứng dụng.
         currentUser = null;
     }
 

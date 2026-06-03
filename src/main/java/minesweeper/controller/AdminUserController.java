@@ -26,7 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.CryptUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,8 +36,16 @@ public class AdminUserController {
 
     // ── FXML Controls ────────────────────────────────────────────────────────
     @FXML private TextField        searchField;
+    @FXML private TextField        emailField;
     @FXML private ComboBox<String> cbRoleFilter;
     @FXML private ComboBox<String> cbStatusFilter;
+    @FXML private DatePicker       createdFromPicker;
+    @FXML private DatePicker       createdToPicker;
+    @FXML private DatePicker       lastLoginFromPicker;
+    @FXML private DatePicker       lastLoginToPicker;
+    @FXML private TextField        minGamesField;
+    @FXML private TextField        maxGamesField;
+    @FXML private ComboBox<String> cbGameHistoryFilter;
 
     @FXML private Label totalUsersLabel;
     @FXML private Label activeUsersLabel;
@@ -52,15 +62,23 @@ public class AdminUserController {
     @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String>  colUsername;
     @FXML private TableColumn<User, String>  colDisplayName;
+    @FXML private TableColumn<User, String>  colEmail;
     @FXML private TableColumn<User, String>  colRole;
     @FXML private TableColumn<User, String>  colStatus;
+    @FXML private TableColumn<User, String>  colCreatedAt;
+    @FXML private TableColumn<User, String>  colLastLoginAt;
+    @FXML private TableColumn<User, Integer> colGameCount;
 
     // ── Constants ────────────────────────────────────────────────────────────
     private static final int    PAGE_SIZE        = 20;
     private static final String FILTER_ALL       = "Tất cả";
     private static final String STATUS_ACTIVE    = "Hoạt động";
     private static final String STATUS_LOCKED    = "Đã khoá";
+    private static final String GAME_FILTER_HAS  = "Có kết quả";
+    private static final String GAME_FILTER_NONE = "Chưa có kết quả";
     private static final String DEFAULT_PASSWORD = "123456";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // ── State ────────────────────────────────────────────────────────────────
     private int            currentPage = 0;
@@ -108,6 +126,10 @@ public class AdminUserController {
 
         cbStatusFilter.setItems(FXCollections.observableArrayList(FILTER_ALL, STATUS_ACTIVE, STATUS_LOCKED));
         cbStatusFilter.getSelectionModel().selectFirst();
+
+        cbGameHistoryFilter.setItems(FXCollections.observableArrayList(
+                FILTER_ALL, GAME_FILTER_HAS, GAME_FILTER_NONE));
+        cbGameHistoryFilter.getSelectionModel().selectFirst();
     }
 
     private void setupTable() {
@@ -166,12 +188,22 @@ public class AdminUserController {
         // 05.2.1 Admin nhập từ khoá vào ô tìm kiếm và/hoặc chọn bộ lọc Vai trò,
         //          Trạng thái rồi nhấn Tìm kiếm
         String keyword      = searchField.getText().trim();
+        String email        = emailField.getText().trim();
         String roleFilter   = cbRoleFilter.getValue();
         String statusFilter = cbStatusFilter.getValue();
+        String gameFilter   = cbGameHistoryFilter.getValue();
 
         boolean noFilter = keyword.isEmpty()
+                && email.isEmpty()
                 && FILTER_ALL.equals(roleFilter)
-                && FILTER_ALL.equals(statusFilter);
+                && FILTER_ALL.equals(statusFilter)
+                && createdFromPicker.getValue() == null
+                && createdToPicker.getValue() == null
+                && lastLoginFromPicker.getValue() == null
+                && lastLoginToPicker.getValue() == null
+                && minGamesField.getText().trim().isEmpty()
+                && maxGamesField.getText().trim().isEmpty()
+                && FILTER_ALL.equals(gameFilter);
 
         if (noFilter) {
             // 05.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm
@@ -180,7 +212,24 @@ public class AdminUserController {
             activeSpec = new UserFilterSpec();
         } else {
             // 05.2.2 Hệ thống gửi điều kiện tìm kiếm xuống CSDL, lấy về danh sách phù hợp
-            activeSpec = buildFilterSpec(keyword, roleFilter, statusFilter);
+            try {
+                activeSpec = buildFilterSpec(
+                        keyword,
+                        email,
+                        roleFilter,
+                        statusFilter,
+                        gameFilter,
+                        createdFromPicker.getValue(),
+                        createdToPicker.getValue(),
+                        lastLoginFromPicker.getValue(),
+                        lastLoginToPicker.getValue(),
+                        minGamesField.getText(),
+                        maxGamesField.getText()
+                );
+            } catch (IllegalArgumentException e) {
+                showError(e.getMessage());
+                return;
+            }
         }
 
         // 05.2.3 Hệ thống hiển thị từ trang đầu tiên và cập nhật số lượng kết quả tìm được
@@ -194,18 +243,45 @@ public class AdminUserController {
         //           → Hệ thống xoá ô tìm kiếm, đưa tất cả bộ lọc về mặc định "Tất cả",
         //             truy vấn lại CSDL và hiển thị toàn bộ danh sách từ trang đầu tiên
         searchField.clear();
+        emailField.clear();
         cbRoleFilter.getSelectionModel().selectFirst();
         cbStatusFilter.getSelectionModel().selectFirst();
+        cbGameHistoryFilter.getSelectionModel().selectFirst();
+        createdFromPicker.setValue(null);
+        createdToPicker.setValue(null);
+        lastLoginFromPicker.setValue(null);
+        lastLoginToPicker.setValue(null);
+        minGamesField.clear();
+        maxGamesField.clear();
         activeSpec  = new UserFilterSpec();
         currentPage = 0;
         loadPage();
     }
 
-    /** Dựng UserFilterSpec từ các giá trị bộ lọc trên UI. */
-    private UserFilterSpec buildFilterSpec(String keyword, String roleFilter, String statusFilter) {
+    /**
+     * Dựng UserFilterSpec từ các giá trị bộ lọc trên UI.
+     * Throw IllegalArgumentException để hiển thị lỗi validate (không gọi xuống DB).
+     */
+    private UserFilterSpec buildFilterSpec(
+            String keyword,
+            String email,
+            String roleFilter,
+            String statusFilter,
+            String gameFilter,
+            LocalDate createdFrom,
+            LocalDate createdTo,
+            LocalDate lastLoginFrom,
+            LocalDate lastLoginTo,
+            String minGamesText,
+            String maxGamesText
+    ) {
         UserFilterSpec spec = new UserFilterSpec();
 
-        if (!keyword.isEmpty())                      spec.keyword = keyword;
+        String kw = keyword != null ? keyword.trim() : "";
+        if (!kw.isEmpty()) spec.keyword = kw;
+
+        String em = email != null ? email.trim() : "";
+        if (!em.isEmpty()) spec.email = em;
 
         if ("Người chơi".equals(roleFilter))         spec.role = Role.PLAYER;
         else if ("Quản trị viên".equals(roleFilter)) spec.role = Role.ADMIN;
@@ -213,7 +289,48 @@ public class AdminUserController {
         if (STATUS_ACTIVE.equals(statusFilter))      spec.active = true;
         else if (STATUS_LOCKED.equals(statusFilter)) spec.active = false;
 
+        if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo)) {
+            throw new IllegalArgumentException("Khoảng ngày tạo không hợp lệ (Từ > Đến). ");
+        }
+        spec.createdFrom = createdFrom;
+        spec.createdTo   = createdTo;
+
+        if (lastLoginFrom != null && lastLoginTo != null && lastLoginFrom.isAfter(lastLoginTo)) {
+            throw new IllegalArgumentException("Khoảng đăng nhập gần nhất không hợp lệ (Từ > Đến). ");
+        }
+        spec.lastLoginFrom = lastLoginFrom;
+        spec.lastLoginTo   = lastLoginTo;
+
+        Integer minGames = parseNonNegativeInt(minGamesText, "Số ván (min)");
+        Integer maxGames = parseNonNegativeInt(maxGamesText, "Số ván (max)");
+        if (minGames != null && maxGames != null && minGames > maxGames) {
+            throw new IllegalArgumentException("Số ván không hợp lệ (min > max). ");
+        }
+        spec.minGames = minGames;
+        spec.maxGames = maxGames;
+
+        if (GAME_FILTER_HAS.equals(gameFilter)) {
+            spec.hasGameResults = true;
+        } else if (GAME_FILTER_NONE.equals(gameFilter)) {
+            spec.hasGameResults = false;
+        } else {
+            spec.hasGameResults = null;
+        }
+
         return spec;
+    }
+
+    private Integer parseNonNegativeInt(String text, String fieldLabel) {
+        if (text == null) return null;
+        String s = text.trim();
+        if (s.isEmpty()) return null;
+        try {
+            int v = Integer.parseInt(s);
+            if (v < 0) throw new IllegalArgumentException();
+            return v;
+        } catch (Exception e) {
+            throw new IllegalArgumentException(fieldLabel + " phải là số nguyên không âm.");
+        }
     }
 
     // =========================================================================
@@ -620,6 +737,14 @@ public class AdminUserController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colDisplayName.setCellValueFactory(new PropertyValueFactory<>("displayName"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+
+        colCreatedAt.setCellValueFactory(data -> new SimpleStringProperty(
+                formatDateTime(data.getValue().getCreatedAt())));
+        colLastLoginAt.setCellValueFactory(data -> new SimpleStringProperty(
+                formatDateTime(data.getValue().getLastLoginAt())));
+        colGameCount.setCellValueFactory(new PropertyValueFactory<>("gameCount"));
+
         colRole.setCellValueFactory(data -> new SimpleStringProperty(labelOf(data.getValue().getRole())));
         colStatus.setCellValueFactory(data -> new SimpleStringProperty(
                 data.getValue().isActive() ? STATUS_ACTIVE : STATUS_LOCKED));
@@ -643,6 +768,10 @@ public class AdminUserController {
 
     private String labelOf(Role role) {
         return role != null ? role.getLabel() : "N/A";
+    }
+
+    private String formatDateTime(LocalDateTime dt) {
+        return dt != null ? dt.format(DATE_TIME_FORMATTER) : "N/A";
     }
 
     private boolean confirmDelete(String username) {
