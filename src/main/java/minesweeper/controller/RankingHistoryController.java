@@ -2,16 +2,21 @@ package minesweeper.controller;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import minesweeper.dto.RankingDTO;
 
 import java.util.List;
+import java.util.Map;
+
 import javafx.stage.Stage;
+import minesweeper.model.Achievement;
 import minesweeper.model.GameResult;
 import minesweeper.model.User;
 import minesweeper.repository.MySqlGameResultRepository;
+import minesweeper.service.AchievementService;
 import minesweeper.service.SessionManager;
 
 public class RankingHistoryController {
@@ -89,6 +94,7 @@ public class RankingHistoryController {
 
     private final RankingController rankingController = new RankingController();
     private final MySqlGameResultRepository gameResultRepository = new MySqlGameResultRepository();
+    private final AchievementService achievementService = new AchievementService();
 
     // GD2 -- Phân trang
     @FXML private Button btnPrev;
@@ -109,6 +115,9 @@ public class RankingHistoryController {
     @FXML private TableColumn<RankingDTO, Integer> colMyWins;
     @FXML private TableColumn<RankingDTO, Integer> colMyScore;
     @FXML private TableColumn<RankingDTO, String>  colMyBestTime;
+    // --- Tab Thành tựu ---
+    @FXML
+    private VBox achievementList;
 
     @FXML
     private void initialize() {
@@ -321,10 +330,65 @@ public class RankingHistoryController {
             statsWinStreak.setText(streakDisplay);
             statsMaxWinStreak.setText(maxStreakDisplay);
 
+            renderAchievements(history);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Render danh sách thành tựu vào tab Thành tựu.
+     * Mỗi thành tựu hiển thị dạng card: icon + tên + mô tả + trạng thái đạt/chưa đạt.
+     */
+    private void renderAchievements(List<GameResult> history) {
+        if (achievementList == null) return;
+        achievementList.getChildren().clear();
+
+        Map<Achievement, Boolean> results = achievementService.evaluate(history);
+
+        for (Achievement achievement : Achievement.values()) {
+            boolean unlocked = Boolean.TRUE.equals(results.get(achievement));
+
+            // Card container
+            javafx.scene.layout.HBox card = new javafx.scene.layout.HBox(16);
+            card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            card.setPadding(new Insets(14, 18, 14, 18));
+            card.setStyle(unlocked
+                    ? "-fx-background-color: rgba(0,255,180,0.10); -fx-background-radius: 10; -fx-border-color: #00ffcc; -fx-border-radius: 10; -fx-border-width: 1.5;"
+                    : "-fx-background-color: rgba(255,255,255,0.04); -fx-background-radius: 10; -fx-border-color: #444; -fx-border-radius: 10; -fx-border-width: 1;"
+            );
+
+            // Icon
+            Label iconLabel = new Label(unlocked ? achievement.getIcon() : "🔒");
+            iconLabel.setStyle("-fx-font-size: 28px;");
+
+            // Text block
+            VBox textBlock = new VBox(4);
+            Label nameLabel = new Label(achievement.getDisplayName());
+            nameLabel.setStyle(unlocked
+                    ? "-fx-text-fill: #00ffcc; -fx-font-size: 14px; -fx-font-weight: bold;"
+                    : "-fx-text-fill: #888888; -fx-font-size: 14px; -fx-font-weight: bold;"
+            );
+            Label descLabel = new Label(achievement.getDescription());
+            descLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
+            textBlock.getChildren().addAll(nameLabel, descLabel);
+
+            // Spacer
+            javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+            javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+            // Badge trạng thái
+            Label badge = new Label(unlocked ? "✔ Đã đạt" : "Chưa đạt");
+            badge.setStyle(unlocked
+                    ? "-fx-text-fill: #00ffcc; -fx-font-size: 12px; -fx-font-weight: bold;"
+                    : "-fx-text-fill: #666666; -fx-font-size: 12px;"
+            );
+
+            card.getChildren().addAll(iconLabel, textBlock, spacer, badge);
+            achievementList.getChildren().add(card);
+        }
+    }
+
 
     @FXML
     private void closePopup() {

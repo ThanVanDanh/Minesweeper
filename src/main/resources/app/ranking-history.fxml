@@ -189,6 +189,25 @@
                             </content>
                         </ScrollPane>
                     </Tab>
+                    <Tab text="Thành tựu">
+                        <content>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                                <content>
+                                    <VBox spacing="16" styleClass="ranking-content">
+                                        <padding>
+                                            <Insets top="20" right="20" bottom="20" left="20"/>
+                                        </padding>
+                                        <Label text="🎖  Thành Tựu Của Bạn"
+                                               style="-fx-text-fill: #00ffcc; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+                                        <VBox fx:id="achievementList" spacing="12"/>
+
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </content>
+                    </Tab>
                 </tabs>
             </TabPane>
         </center>
