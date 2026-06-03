@@ -81,6 +81,12 @@ public class RankingHistoryController {
     @FXML
     private Label statsAvgTime;
 
+    @FXML
+    private Label statsWinStreak;
+
+    @FXML
+    private Label statsMaxWinStreak;
+
     private final RankingController rankingController = new RankingController();
     private final MySqlGameResultRepository gameResultRepository = new MySqlGameResultRepository();
 
@@ -108,7 +114,7 @@ public class RankingHistoryController {
     private void initialize() {
         setupRankingTable();
         setupExpertOnlyLevelFilter();
-        
+
         setupHistoryAndStats();
     }
 
@@ -271,10 +277,10 @@ public class RankingHistoryController {
 
             statsTotalGames.setText(String.valueOf(totalGames));
             statsWins.setText(wins + " / " + (totalGames - wins));
-            
+
             double winRate = totalGames > 0 ? (double) wins / totalGames * 100 : 0;
             statsWinRate.setText(String.format("%.1f%%", winRate));
-            
+
             statsBestScore.setText(String.format("%,d", bestScore));
 
             if (wins > 0) {
@@ -283,6 +289,37 @@ public class RankingHistoryController {
             } else {
                 statsAvgTime.setText("0 giây");
             }
+
+            // GD2  Tính win streak: lịch sử đã được sắp xếp DESC (mới nhất trước)
+            // Đảo ngược để duyệt theo thứ tự thời gian tăng dần
+            int currentStreak = 0;
+            int maxStreak = 0;
+            int tempStreak = 0;
+            for (int i = history.size() - 1; i >= 0; i--) {
+                if (history.get(i).isWon()) {
+                    tempStreak++;
+                    if (tempStreak > maxStreak) maxStreak = tempStreak;
+                } else {
+                    tempStreak = 0;
+                }
+            }
+            // Win streak hiện tại = đếm từ ván gần nhất liên tiếp thắng
+            for (GameResult r : history) {  // history đã DESC
+                if (r.isWon()) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+
+            String streakDisplay = currentStreak > 0
+                    ? currentStreak + " 🔥"
+                    : String.valueOf(currentStreak);
+            String maxStreakDisplay = maxStreak > 0
+                    ? maxStreak + " ⭐"
+                    : String.valueOf(maxStreak);
+            statsWinStreak.setText(streakDisplay);
+            statsMaxWinStreak.setText(maxStreakDisplay);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -356,4 +393,3 @@ public class RankingHistoryController {
         if (currentPage < total - 1) { currentPage++; renderPage(); }
     }
 }
-
