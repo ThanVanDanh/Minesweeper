@@ -643,4 +643,11 @@ public class BoardGameController implements Initializable {
             renderBoard();
         }
     }
+    @FXML
+    private Button btnBlindBomb;
+
+    @FXML
+    private void useBlindBomb(ActionEvent event) {
+        System.out.println("Vật phẩm Bom mù đã được chọn!");
+    }
 }
