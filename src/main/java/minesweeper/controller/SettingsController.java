@@ -300,47 +300,77 @@ public class SettingsController {
         }
     }
 
+    /**
+     * UC01 - AF01.4: Đổi mật khẩu (phía UI).
+     * Đảm nhiệm: 1.4.1..1.4.10 và xử lý lỗi 1.4.E1..1.4.E5.
+     */
     @FXML
     private void changePassword() {
+        // 1.4.1 Người dùng nhập mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới.
+        // 1.4.2 Người dùng nhấn "Đổi mật khẩu".
         String currentPassword = currentPasswordField.getText();
         String newPassword = newPasswordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
+        // 1.4.3 Kiểm tra ba trường mật khẩu không rỗng.
         if (currentPassword == null || currentPassword.isEmpty()
                 || newPassword == null || newPassword.isEmpty()
                 || confirmPassword == null || confirmPassword.isEmpty()) {
+            // 1.4.E1 Thiếu thông tin mật khẩu.
             accountMessageLabel.setText("Vui lòng nhập đầy đủ thông tin mật khẩu.");
             return;
         }
 
+        // 1.4.4 Kiểm tra newPassword khớp confirmPassword.
         if (!newPassword.equals(confirmPassword)) {
+            // 1.4.E2 Mật khẩu xác nhận không khớp.
             accountMessageLabel.setText("Mật khẩu xác nhận không khớp.");
             return;
         }
 
+        // 1.4.5 SessionManager.getCurrentUser(): kiểm tra người dùng đang đăng nhập.
         User currentUser = SessionManager.getCurrentUser();
         if (currentUser == null) {
+            // 1.4.E3 Người dùng chưa đăng nhập.
             accountMessageLabel.setText("Vui lòng đăng nhập để đổi mật khẩu.");
             return;
         }
 
         try {
+            // 1.4.6 AuthService.changePassword(userId, currentPassword, newPassword): xử lý nghiệp vụ đổi mật khẩu.
             authService.changePassword(currentUser.getId(), currentPassword, newPassword);
+            
+            // 1.4.9 clear(): xóa các ô mật khẩu sau khi đổi thành công.
             currentPasswordField.clear();
             newPasswordField.clear();
             confirmPasswordField.clear();
+            
+            // 1.4.10 setText(...): hiển thị thông báo đổi mật khẩu thành công.
             accountMessageLabel.setText("Đổi mật khẩu thành công.");
         } catch (IllegalArgumentException e) {
+            // 1.4.E4 Mật khẩu mới không hợp lệ hoặc mật khẩu hiện tại không đúng.
             accountMessageLabel.setText(e.getMessage());
         } catch (DataAccessException e) {
+            // 1.4.E5 Lỗi truy cập CSDL khi đổi mật khẩu.
             accountMessageLabel.setText("Không thể đổi mật khẩu. Vui lòng thử lại.");
         }
     }
 
+    /**
+     * UC01 - AF01.3: Đăng xuất (phía UI).
+     * Đảm nhiệm: 1.3.1..1.3.4.
+     */
     @FXML
     private void logout() {
+        // 1.3.1 Người dùng nhấn "Đăng xuất".
+        
+        // 1.3.2 AuthService.logout(): xóa phiên đăng nhập hiện tại.
         authService.logout();
+        
+        // 1.3.3 clearAccountFields(): xóa dữ liệu trong tab tài khoản.
         clearAccountFields();
+        
+        // 1.3.4 navigateToDashboard(): điều hướng về Dashboard.
         navigateToDashboard();
     }
 
