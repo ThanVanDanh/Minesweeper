@@ -114,6 +114,12 @@ public class BoardGameController implements Initializable {
         if (btnPause != null) btnPause.setText("Tạm dừng");
         gameStartedAt = LocalDateTime.now();
         firstClickAt = null;
+
+        isBlindBombActive = false;
+        if (btnBlindBomb != null) {
+            btnBlindBomb.getStyleClass().remove("item-button-active");
+            btnBlindBomb.setDisable(false);
+        }
         startTurnTimer();
     }
 
@@ -236,7 +242,12 @@ public class BoardGameController implements Initializable {
                         btnCell.setGraphic(bombIcon);
                         btnCell.getStyleClass().add("mine-cell-bomb");
                     } else if (cell.getNeighborMines() > 0) {
-                        btnCell.setText(String.valueOf(cell.getNeighborMines()));
+                        if (isBlindBombActive) {
+                            btnCell.setText("?");
+                            btnCell.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.3);");
+                        } else {
+                            btnCell.setText(String.valueOf(cell.getNeighborMines()));
+                        }
                         btnCell.getStyleClass().add("mine-cell-number");
                     } else {
                         btnCell.getStyleClass().add("mine-cell-empty");
@@ -378,6 +389,8 @@ public class BoardGameController implements Initializable {
     }
 
     private void restartTurnTimer() {
+        deactivateBlindBomb();
+
         turnSecondsRemaining = TURN_DURATION_SECONDS;
         startTurnTimer();
         updateStatus();
@@ -641,6 +654,35 @@ public class BoardGameController implements Initializable {
             gameLogic.restartCurrentGame();
             resetGameStartState();
             renderBoard();
+        }
+    }
+    @FXML
+    private Button btnBlindBomb;
+    private boolean isBlindBombActive = false;
+
+    @FXML
+    private void useBlindBomb(ActionEvent event) {
+        if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) return;
+
+        if (!isBlindBombActive) {
+            isBlindBombActive = true;
+            btnBlindBomb.getStyleClass().add("item-button-active");
+
+            updateBoardUI();
+            System.out.println("Bom mù ĐÃ KÍCH HOẠT cho lượt này!");
+        }
+    }
+    private void deactivateBlindBomb() {
+        if (isBlindBombActive) {
+            isBlindBombActive = false;
+
+            if (btnBlindBomb != null) {
+                btnBlindBomb.getStyleClass().remove("item-button-active");
+//                 btnBlindBomb.setDisable(true);
+            }
+
+            System.out.println("Lượt đã kết thúc. Bom mù HẾT TÁC DỤNG!");
+            updateBoardUI();
         }
     }
 }
