@@ -14,6 +14,7 @@ public class User {
     private boolean isActive;    // Admin có thể khóa tài khoản
     private LocalDateTime createdAt;
     private LocalDateTime lastLoginAt;
+    private int gameCount;
 
     // ── Constructor ───────────────────────────────────────
     public User() {}
@@ -39,6 +40,7 @@ public class User {
     public boolean isActive() { return isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public int getGameCount() { return gameCount; }
 
     // ── Setters ────────────────────────────────────────
     public void setId(long id) { this.id = id; }
@@ -50,4 +52,5 @@ public class User {
     public void setActive(boolean active) { isActive = active; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public void setGameCount(int gameCount) { this.gameCount = gameCount; }
 }
