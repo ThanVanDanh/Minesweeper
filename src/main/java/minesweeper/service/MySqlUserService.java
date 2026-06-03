@@ -184,7 +184,9 @@ public class MySqlUserService implements UserService {
             ps.setString(1, trimmedUsername);
             ps.setString(2, trimmedDisplayName);
             ps.setString(3, roleStr);
-            ps.setString(4, password != null ? password : "123456");
+            if (password == null || password.isBlank())
+                throw new DataAccessException("Password is required for createUserFull");
+            ps.setString(4, password);
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {

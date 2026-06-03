@@ -2,10 +2,9 @@ package minesweeper.controller;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import minesweeper.dto.RankingDTO;
 
 import java.util.List;
@@ -14,7 +13,6 @@ import minesweeper.model.GameResult;
 import minesweeper.model.User;
 import minesweeper.repository.MySqlGameResultRepository;
 import minesweeper.service.SessionManager;
-import javafx.scene.control.Label;
 
 public class RankingHistoryController {
 
@@ -86,6 +84,26 @@ public class RankingHistoryController {
     private final RankingController rankingController = new RankingController();
     private final MySqlGameResultRepository gameResultRepository = new MySqlGameResultRepository();
 
+    // GD2 -- Phân trang
+    @FXML private Button btnPrev;
+    @FXML private Button btnNext;
+    @FXML private Label  lblPage;
+    @FXML private TableColumn<RankingDTO, String> colBestTime;
+
+    private static final int PAGE_SIZE = 10;
+    private int currentPage = 0;
+    private List<RankingDTO> allRankings = List.of();
+
+    // Ranking User Alone
+    @FXML private VBox myRankBox;
+    @FXML private TableView<RankingDTO> myRankTable;
+    @FXML private TableColumn<RankingDTO, Integer> colMyRank;
+    @FXML private TableColumn<RankingDTO, String>  colMyPlayerName;
+    @FXML private TableColumn<RankingDTO, Integer> colMyTotalGames;
+    @FXML private TableColumn<RankingDTO, Integer> colMyWins;
+    @FXML private TableColumn<RankingDTO, Integer> colMyScore;
+    @FXML private TableColumn<RankingDTO, String>  colMyBestTime;
+
     @FXML
     private void initialize() {
         setupRankingTable();
@@ -100,6 +118,58 @@ public class RankingHistoryController {
         colTotalGames.setCellValueFactory(new PropertyValueFactory<>("totalGames"));
         colWins.setCellValueFactory(new PropertyValueFactory<>("wins"));
         colScore.setCellValueFactory(new PropertyValueFactory<>("bestScore"));
+
+        // GD2
+        colBestTime.setCellValueFactory(new PropertyValueFactory<>("bestTimeFormatted"));
+        // Ranking User Alone
+        colMyRank.setCellValueFactory(new PropertyValueFactory<>("rank"));
+        colMyPlayerName.setCellValueFactory(new PropertyValueFactory<>("playerName"));
+        colMyTotalGames.setCellValueFactory(new PropertyValueFactory<>("totalGames"));
+        colMyWins.setCellValueFactory(new PropertyValueFactory<>("wins"));
+        colMyScore.setCellValueFactory(new PropertyValueFactory<>("bestScore"));
+        colMyBestTime.setCellValueFactory(new PropertyValueFactory<>("bestTimeFormatted"));
+        // HighLight
+        rankingTable.setRowFactory(tv -> buildHighlightRow());
+        myRankTable.setRowFactory(tv -> buildHighlightRow());
+        // Ẩn header row
+        myRankTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                javafx.application.Platform.runLater(() -> {
+                    // Ẩn header
+                    var header = myRankTable.lookup("TableHeaderRow");
+                    if (header != null) {
+                        header.setVisible(false);
+                        header.setManaged(false);
+                    }
+                    // Tắt scrollbar dọc
+                    myRankTable.lookupAll(".scroll-bar").forEach(node -> {
+                        if (node instanceof javafx.scene.control.ScrollBar sb) {
+                            sb.setVisible(false);
+                            sb.setManaged(false);
+                        }
+                    });
+                });
+            }
+        });
+
+    }
+    private TableRow<RankingDTO> buildHighlightRow() {
+        return new TableRow<>() {
+            @Override
+            protected void updateItem(RankingDTO item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().remove("current-user-row");
+                if (!empty && item != null && isCurrentUser(item.getPlayerName())) {
+                    getStyleClass().add("current-user-row");
+                }
+            }
+        };
+    }
+
+    private boolean isCurrentUser(String playerName) {
+        if (!SessionManager.isLoggedIn()) return false;
+        String username = SessionManager.getCurrentUser().getUsername();
+        return username != null && username.equalsIgnoreCase(playerName);
     }
 
     private void setupExpertOnlyLevelFilter() {
@@ -126,11 +196,24 @@ public class RankingHistoryController {
             return;
         }
 
+        //GD2
         try {
-            List<RankingDTO> rankings = rankingController.getRankingTop(selected.getId(), 50);
-            rankingTable.setItems(FXCollections.observableArrayList(rankings));
+            allRankings = rankingController.getRankingTop(selected.getId(), 50);
+            System.out.println("Ranking size = " + allRankings.size());
+            currentPage = 0;
+            if (SessionManager.isLoggedIn()) {
+                String me = SessionManager.getCurrentUser().getUsername();
+                for (int i = 0; i < allRankings.size(); i++) {
+                    if (allRankings.get(i).getPlayerName().equalsIgnoreCase(me)) {
+                        currentPage = i / PAGE_SIZE;
+                        break;
+                    }
+                }
+            }
+            renderPage();
         } catch (Exception e) {
-            rankingTable.setItems(FXCollections.observableArrayList());
+            allRankings = List.of();
+            renderPage();
             e.printStackTrace();
         }
     }
@@ -221,6 +304,56 @@ public class RankingHistoryController {
         if (tabPane != null) {
             tabPane.getSelectionModel().select(1);
         }
+    }
+
+    // GD2
+    private void renderPage() {
+        int from  = currentPage * PAGE_SIZE;
+        int to    = Math.min(from + PAGE_SIZE, allRankings.size());
+        List<RankingDTO> slice = from < to ? allRankings.subList(from, to) : List.of();
+        rankingTable.setItems(FXCollections.observableArrayList(slice));
+        updatePaginationControls();
+        renderMyRank();
+    }
+    private void renderMyRank() {
+        if (myRankBox == null) return;
+        myRankBox.setVisible(false);
+        myRankBox.setManaged(false);
+
+        if (!SessionManager.isLoggedIn()) return;
+
+        String me = SessionManager.getCurrentUser().getUsername();
+        RankingDTO myRow = allRankings.stream()
+                .filter(r -> r.getPlayerName().equalsIgnoreCase(me))
+                .findFirst()
+                .orElse(null);
+
+        if (myRow == null) return;
+
+        int from = currentPage * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, allRankings.size());
+        boolean visibleInPage = allRankings.subList(from, to).stream()
+                .anyMatch(r -> r.getPlayerName().equalsIgnoreCase(me));
+
+        if (visibleInPage) return;
+
+        myRankTable.setItems(FXCollections.observableArrayList(myRow));
+        myRankBox.setVisible(true);
+        myRankBox.setManaged(true);
+    }
+
+    private void updatePaginationControls() {
+        int total = (int) Math.ceil((double) allRankings.size() / PAGE_SIZE);
+        int display = allRankings.isEmpty() ? 0 : total;
+        lblPage.setText("Trang " + (currentPage + 1) + " / " + Math.max(1, display));
+        btnPrev.setDisable(currentPage == 0);
+        btnNext.setDisable(currentPage >= display - 1);
+    }
+
+    @FXML private void onPrevPage() { if (currentPage > 0) { currentPage--; renderPage(); } }
+    @FXML private void onNextPage() {
+        int total = (int) Math.ceil((double) allRankings.size() / PAGE_SIZE);
+        if (currentPage < total - 1) { currentPage++; renderPage(); }
     }
 }
 
