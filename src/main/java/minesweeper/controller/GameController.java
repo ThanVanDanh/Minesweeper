@@ -137,9 +137,9 @@ public class GameController {
         int flagsBefore = board.getFlagsPlaced();
         board.toggleFlag(row, col);
         boolean changed = wasFlagged != cell.isFlagged() || flagsBefore != board.getFlagsPlaced();
-        if (changed) {
-            advanceTurn();
-        }
+//        if (changed) {
+//            advanceTurn();
+//        }
         return changed;
     }
 
@@ -152,7 +152,9 @@ public class GameController {
         int openedBefore = countRevealedSafeCells();
         board.fastReveal(row, col);
         int newlyOpened = countRevealedSafeCells() - openedBefore;
-        applyScoreAndAdvanceTurn(newlyOpened);
+        if (newlyOpened > 0) {
+            playerScores[currentPlayerIndex] += newlyOpened * SCORE_PER_OPENED_CELL;
+        }
         return newlyOpened;
     }
 
