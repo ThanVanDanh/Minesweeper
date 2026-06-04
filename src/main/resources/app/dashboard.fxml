@@ -327,4 +327,41 @@
             </HBox>
         </VBox>
     </StackPane>
+    <StackPane fx:id="mineDensityWarningOverlay"
+               visible="false"
+               managed="false"
+               styleClass="popup-overlay">
+
+        <VBox alignment="CENTER_LEFT"
+              spacing="16"
+              prefWidth="620"
+              maxWidth="620"
+              prefHeight="360"
+              maxHeight="360"
+              styleClass="mine-warning-popup">
+
+            <Label text="CẢNH BÁO MẬT ĐỘ MÌN"
+                   styleClass="mine-warning-title"/>
+
+            <Label fx:id="mineDensityWarningMessage"
+                   wrapText="true"
+                   maxWidth="530"
+                   styleClass="mine-warning-message"/>
+
+            <HBox alignment="CENTER_RIGHT" spacing="18">
+                <Button text="THAY ĐỔI"
+                        prefWidth="150"
+                        prefHeight="48"
+                        onAction="#onChangeMineDensityWarning"
+                        styleClass="mine-warning-button-cancel"/>
+
+                <Button text="TIẾP TỤC"
+                        prefWidth="150"
+                        prefHeight="48"
+                        onAction="#onContinueMineDensityWarning"
+                        styleClass="mine-warning-button-start"/>
+            </HBox>
+
+        </VBox>
+    </StackPane>
 </StackPane>
