@@ -15,6 +15,7 @@ import minesweeper.repository.exception.DataAccessException;
 import minesweeper.repository.log.MySqlAuditLogRepository;
 import minesweeper.repository.pagination.PagedResult;
 import minesweeper.repository.spec.GameResultFilterSpec;
+import minesweeper.service.FraudDetectionService;
 import minesweeper.service.GameResultService;
 import minesweeper.service.SessionManager;
 import org.slf4j.Logger;
@@ -63,18 +64,29 @@ public class AdminResultController {
     // ── Dependencies ─────────────────────────────────────────────────────────
     private final GameResultService       gameResultService;
     private final MySqlAuditLogRepository auditLogRepository;
+    private final FraudDetectionService   fraudDetectionService;
     private static final Logger LOG = LoggerFactory.getLogger(AdminResultController.class);
 
     /** Production constructor */
     public AdminResultController() {
-        this.gameResultService  = new GameResultService(new MySqlGameResultRepository());
-        this.auditLogRepository = new MySqlAuditLogRepository();
+        this.gameResultService    = new GameResultService(new MySqlGameResultRepository());
+        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.fraudDetectionService = new FraudDetectionService();
     }
 
     /** Test constructor (inject mock) */
     public AdminResultController(GameResultService gameResultService) {
-        this.gameResultService  = gameResultService;
-        this.auditLogRepository = new MySqlAuditLogRepository();
+        this.gameResultService    = gameResultService;
+        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.fraudDetectionService = new FraudDetectionService();
+    }
+
+    /** Test constructor with full injection */
+    public AdminResultController(GameResultService gameResultService,
+                                 FraudDetectionService fraudDetectionService) {
+        this.gameResultService    = gameResultService;
+        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.fraudDetectionService = fraudDetectionService;
     }
 
     // =========================================================================
@@ -276,6 +288,55 @@ public class AdminResultController {
         resultTable.refresh();
         selectedCountLabel.setText(
                 resultTable.getSelectionModel().getSelectedItems().size() + " đã chọn");
+    }
+
+    // =========================================================================
+    // Alternative Flow – UC-05.10 Phát hiện gian lận tự động [MỚI v1.2 – B5]
+    // =========================================================================
+
+    @FXML
+    public void onDetectFraud() {
+        // 05.10.1 Admin nhấn nút "Phát hiện gian lận" trên màn hình Quản lý kết quả
+
+        // 05.10.2 Hệ thống đọc ngưỡng thời gian hợp lý từ cấu hình FraudDetectionService
+        //          (EASY < 5s | MEDIUM < 20s | HARD < 60s | EXPERT < 120s)
+
+        // 05.10.3 Hệ thống quét tất cả kết quả WIN đang hiển thị trong bảng,
+        //          so sánh completion_time với ngưỡng tương ứng của từng level
+        List<GameResult> currentItems = new ArrayList<>(pageItems);
+        List<GameResult> suspicious   = fraudDetectionService.detectSuspicious(currentItems);
+
+        // 05.10-A1 Không tìm thấy kết quả ngị vấn
+        //           → Hệ thống hiển thị thông báo "Không phát hiện kết quả bất thường nào."
+        if (suspicious.isEmpty()) {
+            statusLabel.setText("Không phát hiện kết quả ngị vấn");
+            showInfo("Không phát hiện kết quả bất thường nào.");
+            return;
+        }
+
+        // 05.10.4 Các dòng ngị vấn được tự động highlight màu đỏ nhạt
+        //          và tích chọn checkbox
+        highlightSuspiciousRows(suspicious);
+
+        // 05.10.5 Nhãn trạng thái hiển thị: "Phát hiện N kết quả ngị vấn"
+        int count = suspicious.size();
+        statusLabel.setText("Phát hiện " + count + " kết quả ngị vấn");
+        selectedCountLabel.setText(count + " đã chọn");
+    }
+
+    /**
+     * 05.10.4 Tự động chọn (ticked checkbox) các dòng nghi vấn trong bảng.
+     * Admin vẫn có thể bỏ chọn thủ công trước khi xóa (tiếp tục UC05.9).
+     */
+    private void highlightSuspiciousRows(List<GameResult> suspicious) {
+        resultTable.getSelectionModel().clearSelection();
+        for (GameResult r : suspicious) {
+            int idx = pageItems.indexOf(r);
+            if (idx >= 0) {
+                resultTable.getSelectionModel().select(idx);
+            }
+        }
+        resultTable.refresh();
     }
 
     // =========================================================================
