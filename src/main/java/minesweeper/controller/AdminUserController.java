@@ -437,15 +437,25 @@ public class AdminUserController {
         // 05.5.1 Admin chọn User trong bảng và nhấn nút khóa / mở khóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 05.5-E1 Chưa chọn User, nhấn khóa → hiển thị thông báo chọn User
-        if (selected == null) {
-            showInfo("Hãy chọn user");
+        try {
+            validateNotSelfAction(selected, "khóa");
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Hãy chọn")) {
+                showInfo(e.getMessage());
+            } else {
+                showError(e.getMessage());
+            }
+            return;
+        }
+
+        boolean isLocking = selected.isActive();
+        if (!confirmLock(selected.getUsername(), isLocking)) {
             return;
         }
 
         try {
             // 05.5.2 Hệ thống cập nhật trạng thái khoá / mở khoá vào CSDL
-            boolean newStatus = !selected.isActive();
+            boolean newStatus = !isLocking;
             managerUserService.setActive(selected.getId(), newStatus);
 
             // 05.5.3 Hệ thống load lại danh sách
@@ -474,9 +484,14 @@ public class AdminUserController {
         // 05.6.1 Admin chọn User trong bảng và nhấn nút xóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 05.6-E1 Chưa chọn User, nhấn xóa → hiển thị thông báo chọn User
-        if (selected == null) {
-            showInfo("Hãy chọn user cần xoá");
+        try {
+            validateNotSelfAction(selected, "xóa");
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Hãy chọn")) {
+                showInfo(e.getMessage());
+            } else {
+                showError(e.getMessage());
+            }
             return;
         }
 
@@ -774,10 +789,28 @@ public class AdminUserController {
         return dt != null ? dt.format(DATE_TIME_FORMATTER) : "N/A";
     }
 
+    void validateNotSelfAction(User selected, String actionName) {
+        if (selected == null) {
+            throw new IllegalArgumentException("Hãy chọn user" + (actionName.equals("xóa") ? " cần xoá" : ""));
+        }
+        if (SessionManager.isLoggedIn() && SessionManager.getCurrentUser() != null
+                && SessionManager.getCurrentUser().getId() == selected.getId()) {
+            throw new IllegalArgumentException("Bạn không thể " + actionName + " tài khoản của chính mình!");
+        }
+    }
+
     private boolean confirmDelete(String username) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("Xoá user \"" + username + "\"?");
         alert.setContentText("Hành động này không thể hoàn tác.");
+        Optional<ButtonType> btn = alert.showAndWait();
+        return btn.isPresent() && btn.get() == ButtonType.OK;
+    }
+
+    private boolean confirmLock(String username, boolean isLocking) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText((isLocking ? "Khóa" : "Mở khóa") + " user \"" + username + "\"?");
+        alert.setContentText(isLocking ? "Tài khoản bị khóa sẽ không thể đăng nhập." : "Tài khoản sẽ được phép đăng nhập trở lại.");
         Optional<ButtonType> btn = alert.showAndWait();
         return btn.isPresent() && btn.get() == ButtonType.OK;
     }
