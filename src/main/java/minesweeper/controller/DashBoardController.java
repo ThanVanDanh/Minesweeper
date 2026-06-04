@@ -26,6 +26,9 @@ import minesweeper.model.enums.Difficulty;
 import minesweeper.service.SessionManager;
 import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import java.util.Optional;
 
 import java.io.IOException;
 import java.util.List;
@@ -97,6 +100,11 @@ public class DashBoardController {
 
     @FXML
     private TextField playerNameField3;
+    @FXML
+    private StackPane mineDensityWarningOverlay;
+
+    @FXML
+    private Label mineDensityWarningMessage;
 
     @FXML
     private TextField playerNameField4;
@@ -106,6 +114,12 @@ public class DashBoardController {
     private static final int MAX_COLS = 40;
     private static final int MIN_PLAYERS = Board.MIN_PLAYER_COUNT;
     private static final int MAX_PLAYERS = Board.MAX_PLAYER_COUNT;
+    private static final double MINE_DENSITY_WARNING_THRESHOLD = 0.5;
+    private static final double HIGH_MINE_DENSITY_THRESHOLD = 0.5;
+
+    private CustomBoardSelection pendingWarningCustomSelection;
+    private int pendingWarningPlayerCount;
+    private User pendingWarningCurrentUser;
 
     private final ToggleGroup difficultyGroup = new ToggleGroup();
 
@@ -183,6 +197,13 @@ public class DashBoardController {
         if (customButton.isSelected()) {
             try {
                 customSelection = getCustomBoardSelection();
+
+                if (isHighMineDensity(customSelection)) {
+                    User currentUser = SessionManager.getCurrentUser();
+                    showMineDensityWarning(customSelection, playerCount, currentUser);
+                    return;
+                }
+
                 selectedModeLabel.setText("Đang chuẩn bị bàn chơi: TÙY CHỈNH - " + customSelection.meta());
             } catch (IllegalArgumentException e) {
                 selectedModeLabel.setText("Cấu hình tùy chỉnh chưa hợp lệ: " + e.getMessage());
@@ -194,23 +215,9 @@ public class DashBoardController {
 
         User currentUser = SessionManager.getCurrentUser();
 
-        if (playerCount == 1) {
-            String[] playerNames = new String[playerCount];
-            playerNames[0] = currentUser != null ? currentUser.getUsername() : "Player 01";
-
-            openBoardGame(
-                    customSelection,
-                    playerCount,
-                    currentUser,
-                    playerNames
-            );
-
-            return;
-        }
-
-        showPlayerNamePopup(
-                playerCount,
+        continueOpenGameAfterConfigAccepted(
                 customSelection,
+                playerCount,
                 currentUser
         );
     }
@@ -717,5 +724,99 @@ public class DashBoardController {
             errorLabel.getStyleClass().add("ranking-error-label");
             rankingContainer.getChildren().add(errorLabel);
         }
+    }
+    private boolean isHighMineDensity(CustomBoardSelection selection) {
+        int totalCells = selection.rows() * selection.cols();
+        double density = (double) selection.mines() / totalCells;
+
+        return density > HIGH_MINE_DENSITY_THRESHOLD;
+    }
+
+    private void showMineDensityWarning(
+            CustomBoardSelection customSelection,
+            int playerCount,
+            User currentUser
+    ) {
+        pendingWarningCustomSelection = customSelection;
+        pendingWarningPlayerCount = playerCount;
+        pendingWarningCurrentUser = currentUser;
+
+        int totalCells = customSelection.rows() * customSelection.cols();
+        double densityPercent = ((double) customSelection.mines() / totalCells) * 100;
+
+        mineDensityWarningMessage.setText(
+                "Số lượng mìn quá dày đặc.\n\n" +
+                        "Bàn chơi: " + customSelection.rows() + "×" + customSelection.cols() + "\n" +
+                        "Số mìn: " + customSelection.mines() + "\n" +
+                        "Mật độ mìn: " + String.format("%.1f", densityPercent) + "%\n\n" +
+                        "Bạn có chắc chắn muốn bắt đầu không?"
+        );
+
+        mineDensityWarningOverlay.setVisible(true);
+        mineDensityWarningOverlay.setManaged(true);
+    }
+
+    @FXML
+    private void onContinueMineDensityWarning() {
+        hideMineDensityWarning();
+
+        selectedModeLabel.setText(
+                "Đang chuẩn bị bàn chơi: TÙY CHỈNH - " + pendingWarningCustomSelection.meta()
+        );
+
+        continueOpenGameAfterConfigAccepted(
+                pendingWarningCustomSelection,
+                pendingWarningPlayerCount,
+                pendingWarningCurrentUser
+        );
+
+        clearMineDensityWarningData();
+    }
+
+    @FXML
+    private void onChangeMineDensityWarning() {
+        hideMineDensityWarning();
+        clearMineDensityWarningData();
+
+        selectedModeLabel.setText("Hãy điều chỉnh lại số mìn trước khi bắt đầu.");
+
+        customMinesField.requestFocus();
+        customMinesField.selectAll();
+    }
+
+    private void hideMineDensityWarning() {
+        mineDensityWarningOverlay.setVisible(false);
+        mineDensityWarningOverlay.setManaged(false);
+    }
+
+    private void clearMineDensityWarningData() {
+        pendingWarningCustomSelection = null;
+        pendingWarningPlayerCount = 0;
+        pendingWarningCurrentUser = null;
+    }
+    private void continueOpenGameAfterConfigAccepted(
+            CustomBoardSelection customSelection,
+            int playerCount,
+            User currentUser
+    ) {
+        if (playerCount == 1) {
+            String[] playerNames = new String[playerCount];
+            playerNames[0] = currentUser != null ? currentUser.getUsername() : "Player 01";
+
+            openBoardGame(
+                    customSelection,
+                    playerCount,
+                    currentUser,
+                    playerNames
+            );
+
+            return;
+        }
+
+        showPlayerNamePopup(
+                playerCount,
+                customSelection,
+                currentUser
+        );
     }
 }
