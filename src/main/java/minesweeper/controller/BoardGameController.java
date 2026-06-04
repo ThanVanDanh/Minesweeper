@@ -152,6 +152,7 @@ public class BoardGameController implements Initializable {
                     }
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
+                    int currentPlayerBefore = gameLogic.getCurrentPlayerNumber();
                     boolean completedMove = false;
 
                     // 03.2.1 UC03.1 - CẮM / GỠ CỜ
@@ -194,7 +195,9 @@ public class BoardGameController implements Initializable {
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
                     else if (completedMove) {
-                        restartTurnTimer();
+                        int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
+                        boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
+                        restartTurnTimer(isTurnChanged);
                     }
 
                     // 03.2.1.4, 03.2.2.4, 03.2.4.5: Đồng bộ hóa toàn bộ trạng thái lên UI
@@ -391,8 +394,10 @@ public class BoardGameController implements Initializable {
         if (turnTimer != null) turnTimer.pause();
     }
 
-    private void restartTurnTimer() {
-        processBlindBombTurnTransition();
+    private void restartTurnTimer(boolean turnChanged) {
+        if (turnChanged) {
+            processBlindBombTurnTransition();
+        }
 
         turnSecondsRemaining = TURN_DURATION_SECONDS;
         startTurnTimer();
@@ -401,9 +406,10 @@ public class BoardGameController implements Initializable {
 
     private void handleTurnTimeout() {
         gameLogic.skipCurrentTurn();
-        processBlindBombTurnTransition();
-        turnSecondsRemaining = TURN_DURATION_SECONDS;
-        updateStatus();
+//        processBlindBombTurnTransition();
+//        turnSecondsRemaining = TURN_DURATION_SECONDS;
+//        updateStatus();
+        restartTurnTimer(true);
     }
 
     @FXML
