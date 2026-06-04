@@ -434,11 +434,15 @@ public class AdminUserController {
 
     @FXML
     public void onLockUser() {
-        // 05.5.1 Admin chọn User trong bảng và nhấn nút khóa / mở khóa
+        // 05.5.1 Admin chọn User trong bảng và nhấn nút Khoá / Mở khoá
         User selected = userTable.getSelectionModel().getSelectedItem();
 
+        // 05.5-E1 Chưa chọn User, nhấn khoá → hiển thị thông báo chọn User
+        // 05.5.2 [CẢI TIẾN v1.1 – A4] Kiểm tra: nếu User được chọn chính là Admin đang
+        //          đăng nhập, hiển thị lỗi và dừng.
+        // 05.5-E2 Admin tự khoá mình → hiển thị lỗi
         try {
-            validateNotSelfAction(selected, "khóa");
+            validateNotSelfAction(selected, "khoá");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Hãy chọn")) {
                 showInfo(e.getMessage());
@@ -448,23 +452,27 @@ public class AdminUserController {
             return;
         }
 
+        // 05.5.3 [CẢI TIẾN v1.1 – A3] Hệ thống hiển thị dialog xác nhận
+        //          Khoá: "• Tài khoản bị khoá sẽ không thể đăng nhập."
+        //          Mở khoá: "• Tài khoản sẽ được phép đăng nhập trở lại."
+        // 05.5-A1 Admin nhấn Huỷ → Đóng dialog, không thay đổi trạng thái
         boolean isLocking = selected.isActive();
         if (!confirmLock(selected.getUsername(), isLocking)) {
             return;
         }
 
         try {
-            // 05.5.2 Hệ thống cập nhật trạng thái khoá / mở khoá vào CSDL
+            // 05.5.4 Admin xác nhận OK → Hệ thống cập nhật trạng thái is_active vào CSDL
             boolean newStatus = !isLocking;
             managerUserService.setActive(selected.getId(), newStatus);
 
-            // 05.5.3 Hệ thống load lại danh sách
+            // 05.5.5 Hệ thống load lại danh sách, cột Trạng thái cập nhật badge màu tương ứng
             loadPage();
             statusLabel.setText(newStatus
                     ? "Đã mở khoá: " + selected.getUsername()
                     : "Đã khoá: "    + selected.getUsername());
 
-            // 05.5.4 Hệ thống ghi nhận Log vào CSDL
+            // 05.5.6 Hệ thống ghi nhận Log vào CSDL (action: LOCK_USER / UNLOCK_USER)
             String action  = newStatus ? "UNLOCK_USER" : "LOCK_USER";
             String details = newStatus ? "Unlocked user account" : "Locked user account";
             writeAuditLog(action, "user:" + selected.getUsername(), details);
@@ -481,9 +489,13 @@ public class AdminUserController {
 
     @FXML
     public void onDeleteUser() {
-        // 05.6.1 Admin chọn User trong bảng và nhấn nút xóa
+        // 05.6.1 Admin chọn User trong bảng và nhấn nút Xóa
         User selected = userTable.getSelectionModel().getSelectedItem();
 
+        // 05.6-E1 Chưa chọn User, nhấn xóa → hiển thị thông báo chọn User
+        // 05.6.2 [CẢI TIẾN v1.1 – A4] Kiểm tra: nếu User được chọn chính là Admin đang
+        //          đăng nhập, hiển thị lỗi và dừng.
+        // 05.6-E2 Admin tự xóa mình → hiển thị lỗi
         try {
             validateNotSelfAction(selected, "xóa");
         } catch (IllegalArgumentException e) {
@@ -495,15 +507,16 @@ public class AdminUserController {
             return;
         }
 
-        // 05.6.2 Hệ thống hiển thị hộp thoại xác nhận
+        // 05.6.3 Hệ thống hiển thị hộp thoại xác nhận:
+        //          "Xoá user [tên]? Hành động này không thể hoàn tác."
+        // 05.6-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
         if (!confirmDelete(selected.getUsername())) {
-            // 05.6-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
             return;
         }
 
         try {
-            // 05.6.3 Admin xác nhận OK
-            // 05.6.4 Hệ thống xóa User khỏi CSDL
+            // 05.6.4 Admin xác nhận OK → Hệ thống xóa User khỏi CSDL
+            //          (CASCADE xóa game_sessions liên quan)
             managerUserService.deleteUser(selected.getId());
 
             // 05.6.5 Hệ thống load lại danh sách
@@ -515,7 +528,8 @@ public class AdminUserController {
             }
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
 
-            // 05.6.6 Hệ thống ghi nhận Log vào CSDL
+            // 05.6.6 Hệ thống ghi nhận Log vào CSDL với vai trò và trạng thái gốc
+            //          (action: DELETE_USER)
             String details = "Deleted user; Original Role: " + labelOf(selected.getRole())
                     + "; Status: " + (selected.isActive() ? "Active" : "Locked");
             writeAuditLog("DELETE_USER", "user:" + selected.getUsername(), details);

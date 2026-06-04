@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AdminResultController {
@@ -227,13 +228,22 @@ public class AdminResultController {
 
         // 05.9-E1 Chưa chọn dòng nào, nhấn Xoá
         //           → Hiển thị thông báo 'Hãy chọn dữ liệu để xoá', không thực hiện xoá
-        if (selectedList.isEmpty()) {
-            showInfo("Hãy chọn dữ liệu để xoá");
+        try {
+            validateDeleteSelection(selectedList);
+        } catch (IllegalArgumentException e) {
+            showInfo(e.getMessage());
+            return;
+        }
+
+        // 05.9.4 [CẢI TIẾN v1.2 – B3] Hệ thống hiển thị dialog xác nhận:
+        //          "Bạn có chắc muốn xóa N kết quả đã chọn? Hành động này không thể hoàn tác."
+        if (!confirmFraudDelete(selectedList.size())) {
+            // 05.9-A1 Admin nhấn Huỷ tại dialog xác nhận → Đóng dialog, không thực hiện xóa
             return;
         }
 
         try {
-            // 05.9.4 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
+            // 05.9.5 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
             List<String> ids = selectedList.stream()
                     .map(GameResult::getGameId)
                     .collect(Collectors.toList());
@@ -293,7 +303,30 @@ public class AdminResultController {
     // =========================================================================
 
     /**
-     * 05.9.6 Ghi nhận hành động xóa vào nhật ký, bao gồm thông tin Admin thực hiện,
+     * Xác thực danh sách kết quả được chọn trước khi xóa.
+     * 05.9-E1 Chưa chọn dòng nào → ném IllegalArgumentException.
+     */
+    void validateDeleteSelection(List<GameResult> selected) {
+        if (selected == null || selected.isEmpty()) {
+            throw new IllegalArgumentException("Hãy chọn dữ liệu để xoá");
+        }
+    }
+
+    /**
+     * 05.9.4 [CẢI TIẾN v1.2 – B3] Hiển thị dialog xác nhận trước khi xóa hàng loạt.
+     * 05.9-A1 Admin nhấn Huỷ → trả về false, không thực hiện xoá.
+     */
+    private boolean confirmFraudDelete(int count) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("Xoá " + count + " kết quả gian lận?");
+        alert.setContentText("Bạn có chắc muốn xóa " + count
+                + " kết quả đã chọn? Hành động này không thể hoàn tác.");
+        Optional<ButtonType> btn = alert.showAndWait();
+        return btn.isPresent() && btn.get() == ButtonType.OK;
+    }
+
+    /**
+     * 05.9.7 Ghi nhận hành động xóa vào nhật ký, bao gồm thông tin Admin thực hiện,
      *          danh sách mã kết quả bị xóa và tổng số lượng bản ghi.
      * 05-E1 Ghi log vào CSDL thất bại
      */
