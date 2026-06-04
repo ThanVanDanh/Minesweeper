@@ -801,3 +801,44 @@
     -fx-pref-height: 0;
     -fx-min-height: 0;
 }
+
+/*popup warning*/
+.popup-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.65);
+}
+
+.mine-warning-popup {
+    -fx-background-color: #020d14;
+    -fx-border-color: #00e5ff;
+    -fx-border-width: 3;
+    -fx-padding: 28 34 28 34;
+}
+
+.mine-warning-title {
+    -fx-text-fill: #00ff8a;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.mine-warning-message {
+    -fx-text-fill: #00e5ff;
+    -fx-font-size: 17px;
+    -fx-line-spacing: 4px;
+}
+
+.mine-warning-button-cancel {
+    -fx-background-color: transparent;
+    -fx-border-color: #00e5ff;
+    -fx-border-width: 2;
+    -fx-text-fill: #00e5ff;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.mine-warning-button-start {
+    -fx-background-color: linear-gradient(to right, #00ff8a, #00e5ff);
+    -fx-text-fill: #031018;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+}
