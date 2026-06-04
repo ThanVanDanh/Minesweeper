@@ -116,6 +116,7 @@ public class BoardGameController implements Initializable {
         firstClickAt = null;
 
         isBlindBombActive = false;
+        isBlindBombPending = false;
         if (btnBlindBomb != null) {
             btnBlindBomb.getStyleClass().remove("item-button-active");
             btnBlindBomb.setDisable(false);
@@ -297,6 +298,8 @@ public class BoardGameController implements Initializable {
         int mins = secondsElapsed / 60;
         int secs = secondsElapsed % 60;
         lblTime.setText(String.format("Time %02d:%02d", mins, secs));
+
+        updateItemUI();
     }
 
     // UC05/UC06 - Tạm dừng / Tiếp tục ván game
@@ -389,7 +392,7 @@ public class BoardGameController implements Initializable {
     }
 
     private void restartTurnTimer() {
-        deactivateBlindBomb();
+        processBlindBombTurnTransition();
 
         turnSecondsRemaining = TURN_DURATION_SECONDS;
         startTurnTimer();
@@ -398,6 +401,7 @@ public class BoardGameController implements Initializable {
 
     private void handleTurnTimeout() {
         gameLogic.skipCurrentTurn();
+        processBlindBombTurnTransition();
         turnSecondsRemaining = TURN_DURATION_SECONDS;
         updateStatus();
     }
@@ -659,30 +663,64 @@ public class BoardGameController implements Initializable {
     @FXML
     private Button btnBlindBomb;
     private boolean isBlindBombActive = false;
+    private boolean isBlindBombPending = false;
 
     @FXML
     private void useBlindBomb(ActionEvent event) {
         if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) return;
 
-        if (!isBlindBombActive) {
-            isBlindBombActive = true;
-            btnBlindBomb.getStyleClass().add("item-button-active");
+        int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
 
-            updateBoardUI();
-            System.out.println("Bom mù ĐÃ KÍCH HOẠT cho lượt này!");
+        if (currentScore >= 100 && !isBlindBombPending && !isBlindBombActive) {
+            gameLogic.deductCurrentPlayerScore(100);
+            isBlindBombPending = true;
+            if (btnBlindBomb != null) {
+                btnBlindBomb.getStyleClass().add("item-button-active");
+            }
+            System.out.println("Bom mù ĐÃ GÀI! Bị trừ 100 điểm.");
+            updateStatus();
         }
     }
-    private void deactivateBlindBomb() {
+    private void processBlindBombTurnTransition() {
         if (isBlindBombActive) {
             isBlindBombActive = false;
+            System.out.println("Lượt đã kết thúc. Màn hình trở lại bình thường.");
+        }
+
+        if (isBlindBombPending) {
+            isBlindBombPending = false;
+            isBlindBombActive = true;
 
             if (btnBlindBomb != null) {
                 btnBlindBomb.getStyleClass().remove("item-button-active");
-//                 btnBlindBomb.setDisable(true);
+                // btnBlindBomb.setDisable(true);
             }
+            System.out.println("ĐỐI THỦ DÍNH BOM MÙ! Bàn cờ bị ẩn số.");
+        }
+        updateBoardUI();
+    }
+    private void updateItemUI() {
+        if (btnBlindBomb == null) return;
 
-            System.out.println("Lượt đã kết thúc. Bom mù HẾT TÁC DỤNG!");
-            updateBoardUI();
+        if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) {
+            btnBlindBomb.setDisable(true);
+            btnBlindBomb.setOpacity(0.4);
+            return;
+        }
+
+        if (isBlindBombPending) {
+            btnBlindBomb.setDisable(true);
+            btnBlindBomb.setOpacity(1.0);
+            return;
+        }
+
+        int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
+        if (currentScore < 100) {
+            btnBlindBomb.setDisable(true);
+            btnBlindBomb.setOpacity(0.4);
+        } else {
+            btnBlindBomb.setDisable(false);
+            btnBlindBomb.setOpacity(1.0);
         }
     }
 }

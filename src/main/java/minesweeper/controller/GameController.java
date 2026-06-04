@@ -214,4 +214,9 @@ public class GameController {
         return row >= 0 && board != null && row < board.getRows()
                 && col >= 0 && col < board.getCols();
     }
+    public void deductCurrentPlayerScore(int points) {
+        if (playerScores != null && currentPlayerIndex >= 0 && currentPlayerIndex < playerScores.length) {
+            playerScores[currentPlayerIndex] = Math.max(0, playerScores[currentPlayerIndex] - points);
+        }
+    }
 }
