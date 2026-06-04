@@ -65,6 +65,8 @@
                 <Button text="☑  Chọn / Bỏ chọn tất cả" onAction="#onSelectAll" styleClass="outline-button"/>
                 <Label fx:id="selectedCountLabel" text="0 đã chọn" styleClass="selected-mode" style="-fx-padding:0 8;"/>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button text="🔍  PHÁT HIỆN GIAN LẬN" onAction="#onDetectFraud" 
+                        style="-fx-background-color:rgba(255,152,0,0.1);-fx-border-color:rgba(255,152,0,0.6);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ff9800;-fx-font-weight:bold;-fx-padding:9 16;-fx-cursor:hand;"/>
                 <Button text="⚑  XÓA GIAN LẬN" onAction="#onDeleteFraud"
                         style="-fx-background-color:rgba(198,40,40,0.18);-fx-border-color:rgba(198,40,40,0.7);-fx-border-radius:5;-fx-background-radius:5;-fx-text-fill:#ef5350;-fx-font-weight:900;-fx-padding:9 16;-fx-cursor:hand;"/>
             </HBox>
