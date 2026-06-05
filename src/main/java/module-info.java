@@ -9,6 +9,7 @@ module vn.edu.nlu.fit.app {
 
     requires org.controlsfx.controls;
     requires javafx.media;
+    requires jbcrypt;
 
     opens app to javafx.fxml;
     opens minesweeper.controller to javafx.fxml;
