@@ -270,6 +270,9 @@ public class AuthService {
         if (username.trim().length() < 3) {
             throw new IllegalArgumentException("Tên đăng nhập cần ít nhất 3 ký tự.");
         }
+        if (!username.matches("^[a-zA-Z0-9_]+$")) {
+            throw new IllegalArgumentException("Tên đăng nhập chỉ được chứa chữ cái, chữ số và dấu gạch dưới (_).");
+        }
     }
 
     /**
