@@ -3,6 +3,7 @@ package utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * CryptUtils - Lớp tiện ích mã hóa mật khẩu.
@@ -78,5 +79,38 @@ public final class CryptUtils {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    /**
+     * Mã hóa mật khẩu plain-text sử dụng BCrypt.
+     * 
+     * @param password mật khẩu dạng plain-text
+     * @return mật khẩu đã được băm bằng BCrypt
+     */
+    public static String hashPassword(String password) {
+        if (password == null) {
+            return null;
+        }
+        return BCrypt.hashpw(password, BCrypt.gensalt(12));
+    }
+
+    /**
+     * Xác minh mật khẩu plain-text với mã băm BCrypt.
+     * 
+     * @param password mật khẩu dạng plain-text
+     * @param hashed mật khẩu đã băm bằng BCrypt trong DB
+     * @return true nếu khớp, ngược lại false
+     */
+    public static boolean verifyPassword(String password, String hashed) {
+        if (password == null || hashed == null) {
+            return false;
+        }
+        try {
+            return BCrypt.checkpw(password, hashed);
+        } catch (Exception e) {
+            // Trường hợp dữ liệu cũ trong DB vẫn là MD5 hoặc chuỗi không hợp lệ, checkpw sẽ throw exception.
+            // Bắt exception này và trả về false để tránh crash app.
+            return false;
+        }
     }
 }
