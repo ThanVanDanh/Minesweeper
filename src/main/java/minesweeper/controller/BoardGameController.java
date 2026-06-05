@@ -153,12 +153,12 @@ public class BoardGameController implements Initializable {
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
                     int currentPlayerBefore = gameLogic.getCurrentPlayerNumber();
-                    boolean completedMove = false;
+                    boolean actionTaken = false;
 
                     // 03.2.1 UC03.1 - CẮM / GỠ CỜ
                     if (e.getButton() == MouseButton.SECONDARY) {
                         // 03.2.1.1 & 03.2.1.2: Người chơi nhấp chuột phải -> Chuyển tiếp lệnh
-                        completedMove = gameLogic.toggleFlag(finalR, finalC);
+                        actionTaken = gameLogic.toggleFlag(finalR, finalC);
                     }
                     // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
@@ -167,15 +167,15 @@ public class BoardGameController implements Initializable {
                         if (currentCell.isRevealed()) {
                             // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
                             int openedCells = gameLogic.fastReveal(finalR, finalC);
-                            completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
+                            actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                         } else {
                             // 03.2.1.1: Hoặc click chuột trái khi nút btnFlat đang bật chế độ cắm cờ
                             if (isFlagMode) {
-                                completedMove = gameLogic.toggleFlag(finalR, finalC);
+                                actionTaken = gameLogic.toggleFlag(finalR, finalC);
                             } else {
                                 // 3.1 MỞ Ô (Basic Flow)
                                 int openedCells = gameLogic.reveal(finalR, finalC);
-                                completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
+                                actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                             }
                         }
                     }
@@ -194,10 +194,14 @@ public class BoardGameController implements Initializable {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
-                    else if (completedMove) {
+                    else if (actionTaken) {
                         int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
                         boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
-                        restartTurnTimer(isTurnChanged);
+                        if (isTurnChanged) {
+                            restartTurnTimer(true);
+                        } else {
+                            updateStatus();
+                        }
                     }
 
                     // 03.2.1.4, 03.2.2.4, 03.2.4.5: Đồng bộ hóa toàn bộ trạng thái lên UI
