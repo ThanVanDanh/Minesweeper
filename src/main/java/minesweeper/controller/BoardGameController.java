@@ -27,6 +27,8 @@ import minesweeper.repository.GameSessionData;
 import minesweeper.repository.GameSessionRepository;
 import minesweeper.repository.GameSessionResult;
 import javafx.scene.input.MouseButton;
+import javafx.animation.FadeTransition;
+import javafx.scene.layout.Pane;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -46,6 +48,7 @@ public class BoardGameController implements Initializable {
     @FXML private Label lblGameOver;
     @FXML private Label lblPlayers;
     @FXML private Label lblScores;
+    @FXML private Pane fogOverlay;
     @FXML private VBox playerCard1, playerCard2, playerCard3, playerCard4;
     @FXML private TextField playerName1, playerName2, playerName3, playerName4;
     @FXML private Label playerScore1, playerScore2, playerScore3, playerScore4;
@@ -105,6 +108,7 @@ public class BoardGameController implements Initializable {
     }
 
     private void resetGameStartState() {
+        stopSmokeSound();
         stopTimer();
         stopTurnTimer();
         secondsElapsed = 0;
@@ -114,6 +118,7 @@ public class BoardGameController implements Initializable {
         // GIẤU CẢ 2 MÀN HÌNH ĐEN KHI BẮT ĐẦU VÁN MỚI
         if (pauseOverlay != null) pauseOverlay.setVisible(false);
         if (gameOverOverlay != null) gameOverOverlay.setVisible(false);
+        if (fogOverlay != null) fogOverlay.setVisible(false);
 
         if (btnPause != null) btnPause.setText("Tạm dừng");
         gameStartedAt = LocalDateTime.now();
@@ -157,12 +162,12 @@ public class BoardGameController implements Initializable {
 
                     minesweeper.model.Cell currentCell = gameLogic.getBoard().getCell(finalR, finalC);
                     int currentPlayerBefore = gameLogic.getCurrentPlayerNumber();
-                    boolean completedMove = false;
+                    boolean actionTaken = false;
 
                     // 03.2.1 UC03.1 - CẮM / GỠ CỜ
                     if (e.getButton() == MouseButton.SECONDARY) {
                         // 03.2.1.1 & 03.2.1.2: Người chơi nhấp chuột phải -> Chuyển tiếp lệnh
-                        completedMove = gameLogic.toggleFlag(finalR, finalC);
+                        actionTaken = gameLogic.toggleFlag(finalR, finalC);
                     }
                     // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
@@ -171,15 +176,15 @@ public class BoardGameController implements Initializable {
                         if (currentCell.isRevealed()) {
                             // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
                             int openedCells = gameLogic.fastReveal(finalR, finalC);
-                            completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
+                            actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                         } else {
                             // 03.2.1.1: Hoặc click chuột trái khi nút btnFlat đang bật chế độ cắm cờ
                             if (isFlagMode) {
-                                completedMove = gameLogic.toggleFlag(finalR, finalC);
+                                actionTaken = gameLogic.toggleFlag(finalR, finalC);
                             } else {
                                 // 3.1 MỞ Ô (Basic Flow)
                                 int openedCells = gameLogic.reveal(finalR, finalC);
-                                completedMove = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
+                                actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                             }
                         }
                     }
@@ -198,10 +203,14 @@ public class BoardGameController implements Initializable {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
-                    else if (completedMove) {
+                    else if (actionTaken) {
                         int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
                         boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
-                        restartTurnTimer(isTurnChanged);
+                        if (isTurnChanged) {
+                            restartTurnTimer(true);
+                        } else {
+                            updateStatus();
+                        }
                     }
 
                     // 03.2.1.4, 03.2.2.4, 03.2.4.5: Đồng bộ hóa toàn bộ trạng thái lên UI
@@ -334,6 +343,7 @@ public class BoardGameController implements Initializable {
     @FXML
     private void backToDashboard() {
         try {
+            stopSmokeSound();
             stopTimer();
             stopTurnTimer();
             Parent root = FXMLLoader.load(getClass().getResource("/app/dashboard.fxml"));
@@ -448,7 +458,41 @@ public class BoardGameController implements Initializable {
             System.err.println("Lỗi khi phát âm thanh: " + ex.getMessage());
         }
     }
+
+    private void playSmokeSound() {
+        try {
+            // 1. Chỉ khởi tạo 1 lần và lưu vào biến toàn cục smokeAudioClip
+            if (smokeAudioClip == null) {
+                URL soundUrl = getClass().getResource("/sound/bommu.wav");
+                if (soundUrl != null) {
+                    smokeAudioClip = new AudioClip(soundUrl.toExternalForm());
+                    smokeAudioClip.setVolume(0.8);
+
+                    // LỆNH QUAN TRỌNG: Thiết lập lặp lại vô hạn
+                    smokeAudioClip.setCycleCount(AudioClip.INDEFINITE);
+                } else {
+                    System.err.println("Lỗi: Không tìm thấy file âm thanh tại /sound/bommu.wav");
+                    return;
+                }
+            }
+
+            // 2. Nếu âm thanh chưa phát thì cho phát
+            if (!smokeAudioClip.isPlaying()) {
+                smokeAudioClip.play();
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi phát âm thanh sương mù: " + ex.getMessage());
+        }
+    }
+
+    // HÀM MỚI: Dùng để tắt âm thanh
+    private void stopSmokeSound() {
+        if (smokeAudioClip != null && smokeAudioClip.isPlaying()) {
+            smokeAudioClip.stop();
+        }
+    }
     private void showGameOver(String message, String hexColor) {
+        stopSmokeSound();
         stopTimer();
         stopTurnTimer();
         if (lblGameOver != null) {
@@ -673,6 +717,7 @@ public class BoardGameController implements Initializable {
     private Button btnBlindBomb;
     private boolean isBlindBombActive = false;
     private boolean isBlindBombPending = false;
+    private AudioClip smokeAudioClip;
 
     @FXML
     private void useBlindBomb(ActionEvent event) {
@@ -693,6 +738,8 @@ public class BoardGameController implements Initializable {
     private void processBlindBombTurnTransition() {
         if (isBlindBombActive) {
             isBlindBombActive = false;
+            if (fogOverlay != null) fogOverlay.setVisible(false);
+            stopSmokeSound();
             System.out.println("Lượt đã kết thúc. Màn hình trở lại bình thường.");
         }
 
@@ -704,6 +751,14 @@ public class BoardGameController implements Initializable {
                 btnBlindBomb.getStyleClass().remove("item-button-active");
                 // btnBlindBomb.setDisable(true);
             }
+            if (fogOverlay != null) {
+                fogOverlay.setVisible(true);
+                FadeTransition ft = new FadeTransition(Duration.millis(600), fogOverlay);
+                ft.setFromValue(0.0);
+                ft.setToValue(1.0);
+                ft.play();
+            }
+            playSmokeSound();
             System.out.println("ĐỐI THỦ DÍNH BOM MÙ! Bàn cờ bị ẩn số.");
         }
         updateBoardUI();
