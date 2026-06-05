@@ -49,6 +49,10 @@ public class LoginController {
         reCenterStage();
     }
 
+    /**
+     * 1.1.1 Người dùng chọn "Đăng ký" trên màn hình chào.
+     * showRegisterForm(): hiển thị form đăng ký.
+     */
     public void showRegisterForm() {
         formTitle.setText("ĐĂNG KÝ");
         formSubtitle.setText("Khởi tạo tài khoản chiến binh mới");
@@ -59,54 +63,101 @@ public class LoginController {
         setActiveTab(registerTabButton, loginTabButton);
         reCenterStage();
     }
-    public void openAsLogin()    { showLoginForm(); }
-    public void openAsRegister() { showRegisterForm(); }
+    public void openAsLogin() {
+        showLoginForm();
+    }
+
+    /**
+     * 1.1.1 Người dùng chọn "Đăng ký" trên màn hình chào.
+     */
+    public void openAsRegister() {
+        showRegisterForm();
+    }
+
     @FXML
     private void closePopup() {
         getStage().close();
     }
+
+    /**
+     * UC01 - AF01.2: Đăng nhập (phía UI).
+     * Đảm nhiệm: 1.2.2, 1.2.10..1.2.14 và xử lý lỗi 1.2.E1, 1.2.E2.
+     */
     @FXML
     private void handleLogin() {
-        String username   = text(loginUsernameField);
-        String password   = text(loginPasswordField);
-        boolean remember  = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
+        // 1.2.2 Người dùng nhập username, password và nhấn "Đăng nhập".
+        String username = text(loginUsernameField);
+        String password = text(loginPasswordField);
+        boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
+
         try {
+            // 1.2.3 AuthService.login(username, password, remember): validate, truy vấn user, verify password, tạo session.
             authService.login(username, password, remember);
+
+            // 1.2.10 clearLoginFields(): xóa dữ liệu form đăng nhập.
             clearLoginFields();
-            if (onLoginSuccess != null) onLoginSuccess.run();
+
+            if (onLoginSuccess != null) {
+                // 1.2.11 onLoginSuccess.run(): thực thi callback sau đăng nhập.
+                onLoginSuccess.run();
+            }
+
+            // 1.2.12 HeaderController.refreshAllInstances(): cập nhật Header theo trạng thái đã đăng nhập.
             HeaderController.refreshAllInstances();
+            // 1.2.13 DashBoardController.refreshAllInstances(): cập nhật Dashboard theo trạng thái đã đăng nhập.
             DashBoardController.refreshAllInstances();
+            // 1.2.14 closePopup(): đóng popup đăng nhập.
             closePopup();
         } catch (IllegalArgumentException e) {
+            // 1.2.E1 Dữ liệu đăng nhập không hợp lệ hoặc xác thực thất bại.
             showError(e.getMessage());
         } catch (DataAccessException e) {
+            // 1.2.E2 Lỗi truy cập CSDL khi đăng nhập.
             showError("Không thể đăng nhập. Vui lòng thử lại.");
         }
     }
+
+    /**
+     * UC01 - AF01.1: Đăng ký tài khoản (phía UI).
+     * Đảm nhiệm: 1.1.2..1.1.5 (thu thập/kiểm tra input) và xử lý lỗi 1.1.E1..1.1.E3.
+     * Lưu ý: flow hiện tại có bước xác nhận email (OTP) sau khi tạo tài khoản.
+     */
     @FXML
     private void handleRegister() {
-        String username       = text(registerUsernameField);
-        String displayName    = text(registerDisplayNameField);
-        String email          = text(registerEmailField);
-        String password       = text(registerPasswordField);
-        String confirmPassword= text(registerConfirmPasswordField);
+        // 1.1.2 Người dùng nhập thông tin và nhấn "Tạo tài khoản".
+        String username = text(registerUsernameField);
+        String displayName = text(registerDisplayNameField);
+        String email = text(registerEmailField);
+        String password = text(registerPasswordField);
+        String confirmPassword = text(registerConfirmPasswordField);
 
-        if (password == null || !password.equals(confirmPassword)) {
+        // 1.1.3 Kiểm tra confirmPassword khớp password.
+        if (password == null || confirmPassword == null || !password.equals(confirmPassword)) {
+            // 1.1.E1 Mật khẩu xác nhận không khớp.
             showError("Mật khẩu xác nhận không khớp.");
             return;
         }
+
+        // 1.1.4 Chuẩn hóa displayName, nếu rỗng thì dùng username.
         if (displayName == null || displayName.isBlank()) {
             displayName = username;
         }
 
         try {
+            // 1.1.5 AuthService.register(...): validate, kiểm tra trùng, hash mật khẩu, lưu DB (inactive) và gửi OTP.
             User newUser = authService.register(username, displayName, email, password);
             pendingVerifyUserId = newUser.getId();
+
+            // 1.1.9 clearRegisterFields(): xóa dữ liệu form đăng ký.
             clearRegisterFields();
+
+            // Hiển thị dialog xác nhận email/OTP.
             showOtpDialog(email);
         } catch (IllegalArgumentException e) {
+            // 1.1.E2 Dữ liệu đăng ký không hợp lệ hoặc username/email đã tồn tại.
             showError(e.getMessage());
         } catch (DataAccessException e) {
+            // 1.1.E3 Lỗi truy cập CSDL khi đăng ký.
             showError("Không thể đăng ký. Vui lòng thử lại.");
         } catch (MessagingException e) {
             showError("Đăng ký thành công nhưng không gửi được email xác nhận.\n" +

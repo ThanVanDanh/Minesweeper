@@ -4,6 +4,9 @@ import minesweeper.model.enums.Difficulty;
 import minesweeper.model.GameResult;
 import minesweeper.repository.GameResultRepository;
 import minesweeper.repository.exception.DataAccessException;
+import minesweeper.repository.pagination.Page;
+import minesweeper.repository.pagination.PagedResult;
+import minesweeper.repository.spec.GameResultFilterSpec;
 import minesweeper.service.RankingManager;
 import org.junit.jupiter.api.Test;
 
@@ -69,6 +72,21 @@ class RankingManagerRepositoryTest {
         }
         @Override
         public void deleteByGameIds(List<String> gameIds) throws DataAccessException {}
+
+        @Override
+        public PagedResult<GameResult> findPaged(GameResultFilterSpec spec, int pageNumber, int pageSize)
+                throws DataAccessException {
+            long total = results.size();
+            int from = Math.min(pageNumber * pageSize, results.size());
+            int to = Math.min(from + pageSize, results.size());
+            List<GameResult> page = new ArrayList<>(results.subList(from, to));
+            return new PagedResult<>(page, new Page(pageNumber, pageSize, total));
+        }
+
+        @Override
+        public long count(GameResultFilterSpec spec) throws DataAccessException {
+            return results.size();
+        }
     }
 }
 
