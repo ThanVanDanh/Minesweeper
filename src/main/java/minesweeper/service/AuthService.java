@@ -32,6 +32,7 @@ public class AuthService {
     private final EmailVerificationRepository emailVerifRepo;
     private final EmailService emailService;
     private final RememberMeService rememberMeService;
+    private final LoginAttemptService loginAttemptService = new LoginAttemptService();
 
     public AuthService() {
         this(new MySqlUserService(),
@@ -145,6 +146,12 @@ public class AuthService {
         // 1.2.3 validateUsername(username): kiểm tra username không rỗng, >= 3 ký tự, không chứa khoảng trắng.
         validateUsername(username);
 
+        // Kiểm tra xem tài khoản có đang bị khóa tạm thời do nhập sai quá nhiều lần không
+        if (loginAttemptService.isLocked(username)) {
+            long remaining = loginAttemptService.getRemainingLockTimeMinutes(username);
+            throw new IllegalArgumentException("Tài khoản đã bị tạm khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau " + remaining + " phút.");
+        }
+
         // 1.2.4 Kiểm tra password không rỗng.
         if (password == null || password.isBlank()) {
             // 1.2.E1 Người dùng chưa nhập mật khẩu.
@@ -169,9 +176,14 @@ public class AuthService {
 
         // 1.2.7 CryptUtils.matchesMd5(password, passwordHash): xác minh mật khẩu.
         if (!CryptUtils.matchesMd5(password, user.getPasswordHash())) {
+            // Tăng số lần đăng nhập sai
+            loginAttemptService.loginFailed(username);
             // 1.2.E4 Mật khẩu không khớp.
             throw new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu.");
         }
+
+        // Đăng nhập thành công -> Reset bộ đếm lần sai
+        loginAttemptService.loginSucceeded(username);
 
         // 1.2.8 updateLastLogin(userId): cập nhật thời gian đăng nhập cuối.
         userService.updateLastLogin(user.getId());
