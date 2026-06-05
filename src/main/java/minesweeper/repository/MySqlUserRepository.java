@@ -22,17 +22,23 @@ public class MySqlUserRepository implements UserRepository {
 
     // ── SQL constants ──────────────────────────────────────────────────────────
 
-    private static final String BASE_SELECT =
-            "SELECT id, username, display_name, role, is_active FROM users";
+    private static final String BASE_SELECT = """
+            SELECT u.id, u.username, u.display_name, u.email, u.role, u.is_active,
+                   u.created_at, u.last_login_at, COUNT(gs.id) AS game_count
+            FROM users u
+            LEFT JOIN game_sessions gs ON gs.user_id = u.id
+            """;
+
+    private static final String GROUP_BY_USER = " GROUP BY u.id";
 
     private static final String FIND_BY_ID =
-            BASE_SELECT + " WHERE id = ? LIMIT 1";
+            BASE_SELECT + " WHERE u.id = ?" + GROUP_BY_USER + " LIMIT 1";
 
     private static final String FIND_BY_USERNAME =
-            BASE_SELECT + " WHERE username = ? LIMIT 1";
+            BASE_SELECT + " WHERE u.username = ?" + GROUP_BY_USER + " LIMIT 1";
 
     private static final String FIND_ALL =
-            BASE_SELECT + " ORDER BY id";
+            BASE_SELECT + GROUP_BY_USER + " ORDER BY u.id";
 
     private static final String INSERT =
             "INSERT INTO users (username, display_name, role, password_hash) VALUES (?, ?, ?, ?)";
@@ -116,7 +122,8 @@ public class MySqlUserRepository implements UserRepository {
 
         Page page = new Page(pageNumber, pageSize, total);
 
-        String dataSql = BASE_SELECT + where.sql + " ORDER BY id" + page.getLimitClause();
+        String dataSql = BASE_SELECT + where.whereSql + GROUP_BY_USER
+                + where.havingSql + " ORDER BY u.id" + page.getLimitClause();
         List<User> users = new ArrayList<>();
 
         try (Connection conn = connectionFactory.getConnection();
@@ -228,29 +235,69 @@ public class MySqlUserRepository implements UserRepository {
      * Trường nào null → bỏ qua điều kiện đó.
      */
     private WhereClause buildWhere(UserFilterSpec spec) {
-        StringBuilder sql    = new StringBuilder(" WHERE 1=1");
-        List<Object>  params = new ArrayList<>();
+        StringBuilder whereSql  = new StringBuilder(" WHERE 1=1");
+        StringBuilder havingSql = new StringBuilder();
+        List<Object>  params    = new ArrayList<>();
 
         if (spec.keyword != null && !spec.keyword.isBlank()) {
-            sql.append(" AND (username LIKE ? OR display_name LIKE ?)");
+            whereSql.append(" AND (u.username LIKE ? OR u.display_name LIKE ?)");
             String like = "%" + spec.keyword.trim() + "%";
             params.add(like);
             params.add(like);
         }
+        if (spec.email != null && !spec.email.isBlank()) {
+            whereSql.append(" AND u.email LIKE ?");
+            params.add("%" + spec.email.trim() + "%");
+        }
         if (spec.role != null) {
-            sql.append(" AND role = ?");
+            whereSql.append(" AND u.role = ?");
             params.add(spec.role.name());
         }
         if (spec.active != null) {
-            sql.append(" AND is_active = ?");
+            whereSql.append(" AND u.is_active = ?");
             params.add(spec.active ? 1 : 0);
         }
+        if (spec.createdFrom != null) {
+            whereSql.append(" AND u.created_at >= ?");
+            params.add(Timestamp.valueOf(spec.createdFrom.atStartOfDay()));
+        }
+        if (spec.createdTo != null) {
+            whereSql.append(" AND u.created_at < ?");
+            params.add(Timestamp.valueOf(spec.createdTo.plusDays(1).atStartOfDay()));
+        }
+        if (spec.lastLoginFrom != null) {
+            whereSql.append(" AND u.last_login_at >= ?");
+            params.add(Timestamp.valueOf(spec.lastLoginFrom.atStartOfDay()));
+        }
+        if (spec.lastLoginTo != null) {
+            whereSql.append(" AND u.last_login_at < ?");
+            params.add(Timestamp.valueOf(spec.lastLoginTo.plusDays(1).atStartOfDay()));
+        }
 
-        return new WhereClause(sql.toString(), params);
+        List<String> havingParts = new ArrayList<>();
+        if (spec.minGames != null) {
+            havingParts.add("COUNT(gs.id) >= ?");
+            params.add(spec.minGames);
+        }
+        if (spec.maxGames != null) {
+            havingParts.add("COUNT(gs.id) <= ?");
+            params.add(spec.maxGames);
+        }
+        if (spec.hasGameResults != null) {
+            havingParts.add(spec.hasGameResults ? "COUNT(gs.id) > 0" : "COUNT(gs.id) = 0");
+        }
+        if (!havingParts.isEmpty()) {
+            havingSql.append(" HAVING ").append(String.join(" AND ", havingParts));
+        }
+
+        return new WhereClause(whereSql.toString(), havingSql.toString(), params);
     }
 
     private long executeCount(WhereClause where) throws DataAccessException {
-        String countSql = "SELECT COUNT(*) FROM users" + where.sql;
+        String countSql = "SELECT COUNT(*) FROM ("
+                + "SELECT u.id FROM users u LEFT JOIN game_sessions gs ON gs.user_id = u.id"
+                + where.whereSql + GROUP_BY_USER + where.havingSql
+                + ") filtered_users";
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(countSql)) {
             setParams(ps, where.params);
@@ -289,7 +336,13 @@ public class MySqlUserRepository implements UserRepository {
         user.setId(rs.getLong("id"));
         user.setUsername(rs.getString("username"));
         user.setDisplayName(rs.getString("display_name"));
+        user.setEmail(rs.getString("email"));
         user.setActive(rs.getBoolean("is_active"));
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) user.setCreatedAt(createdAt.toLocalDateTime());
+        Timestamp lastLoginAt = rs.getTimestamp("last_login_at");
+        if (lastLoginAt != null) user.setLastLoginAt(lastLoginAt.toLocalDateTime());
+        user.setGameCount(rs.getInt("game_count"));
         String roleStr = rs.getString("role");
         if (roleStr != null) user.setRole(Role.valueOf(roleStr));
         return user;
@@ -298,5 +351,5 @@ public class MySqlUserRepository implements UserRepository {
     // ── Inner class ────────────────────────────────────────────────────────────
 
     /** Giữ chuỗi WHERE và danh sách params tương ứng. */
-    private record WhereClause(String sql, List<Object> params) {}
+    private record WhereClause(String whereSql, String havingSql, List<Object> params) {}
 }

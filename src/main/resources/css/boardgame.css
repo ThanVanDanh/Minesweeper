@@ -208,3 +208,30 @@
 .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
+
+.item-button {
+    -fx-background-color: rgba(2, 13, 24, 0.8);
+    -fx-border-color: #2dd4f0;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: #2dd4f0;
+    -fx-cursor: hand;
+}
+
+.item-button:hover {
+    -fx-background-color: rgba(45, 212, 240, 0.2);
+}
+
+.item-button-active {
+    -fx-background-color: rgba(45, 212, 240, 0.4);
+    -fx-border-color: #ffffff;
+    -fx-text-fill: #ffffff;
+}
+
+.fog-overlay {
+    -fx-background-image: url("../img/suongmu.gif");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-opacity: 0.85;
+}
