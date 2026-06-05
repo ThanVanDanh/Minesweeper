@@ -18,6 +18,12 @@ module vn.edu.nlu.fit.app {
     exports minesweeper.controller;
     exports minesweeper.model;
     exports minesweeper.repository;
+    exports minesweeper.repository.connection;
+    exports minesweeper.repository.log;
+    exports minesweeper.repository.config;
+    exports minesweeper.repository.exception;
+    exports minesweeper.repository.pagination;
+    exports minesweeper.repository.spec;
     exports minesweeper.dto;
     exports minesweeper.service;
     exports utils;

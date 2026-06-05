@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
+import javafx.concurrent.Task;
 import minesweeper.repository.exception.DataAccessException;
 import minesweeper.service.AuthService;
 import minesweeper.service.ForgotPasswordService;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class LoginController {
+    @FXML private VBox loadingOverlay;
+    @FXML private Label loadingLabel;
     @FXML private Label  formTitle;
     @FXML private Label  formSubtitle;
     @FXML private VBox   loginForm;
@@ -27,6 +30,7 @@ public class LoginController {
     @FXML private TextField     loginUsernameField;
     @FXML private PasswordField loginPasswordField;
     @FXML private CheckBox      rememberMeCheckBox;
+    @FXML private CheckBox      termsCheckBox;
     @FXML private TextField     registerUsernameField;
     @FXML private TextField     registerDisplayNameField;
     @FXML private TextField     registerEmailField;
@@ -90,31 +94,51 @@ public class LoginController {
         String password = text(loginPasswordField);
         boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
 
-        try {
-            // 1.2.3 AuthService.login(username, password, remember): validate, truy vấn user, verify password, tạo session.
-            authService.login(username, password, remember);
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            showError("Vui lòng nhập tên đăng nhập và mật khẩu.");
+            return;
+        }
 
-            // 1.2.10 clearLoginFields(): xóa dữ liệu form đăng nhập.
+        if (loadingOverlay != null) {
+            loadingLabel.setText("Đang đăng nhập...");
+            loadingOverlay.setVisible(true);
+        }
+
+        Task<User> loginTask = new Task<>() {
+            @Override
+            protected User call() throws Exception {
+                return authService.login(username, password, remember);
+            }
+        };
+
+        loginTask.setOnSucceeded(event -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(false);
+            }
             clearLoginFields();
-
             if (onLoginSuccess != null) {
-                // 1.2.11 onLoginSuccess.run(): thực thi callback sau đăng nhập.
                 onLoginSuccess.run();
             }
-
-            // 1.2.12 HeaderController.refreshAllInstances(): cập nhật Header theo trạng thái đã đăng nhập.
             HeaderController.refreshAllInstances();
-            // 1.2.13 DashBoardController.refreshAllInstances(): cập nhật Dashboard theo trạng thái đã đăng nhập.
             DashBoardController.refreshAllInstances();
-            // 1.2.14 closePopup(): đóng popup đăng nhập.
             closePopup();
-        } catch (IllegalArgumentException e) {
-            // 1.2.E1 Dữ liệu đăng nhập không hợp lệ hoặc xác thực thất bại.
-            showError(e.getMessage());
-        } catch (DataAccessException e) {
-            // 1.2.E2 Lỗi truy cập CSDL khi đăng nhập.
-            showError("Không thể đăng nhập. Vui lòng thử lại.");
-        }
+        });
+
+        loginTask.setOnFailed(event -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(false);
+            }
+            Throwable e = loginTask.getException();
+            if (e instanceof IllegalArgumentException) {
+                showError(e.getMessage());
+            } else if (e instanceof DataAccessException) {
+                showError("Không thể đăng nhập. Vui lòng thử lại.");
+            } else {
+                showError("Lỗi hệ thống: " + e.getMessage());
+            }
+        });
+
+        new Thread(loginTask).start();
     }
 
     /**
@@ -138,14 +162,33 @@ public class LoginController {
             return;
         }
 
-        // 1.1.4 Chuẩn hóa displayName, nếu rỗng thì dùng username.
-        if (displayName == null || displayName.isBlank()) {
-            displayName = username;
+        // Kiểm tra checkbox điều khoản
+        if (termsCheckBox != null && !termsCheckBox.isSelected()) {
+            showError("Bạn phải đồng ý với điều khoản chiến thuật để đăng ký.");
+            return;
         }
 
-        try {
-            // 1.1.5 AuthService.register(...): validate, kiểm tra trùng, hash mật khẩu, lưu DB (inactive) và gửi OTP.
-            User newUser = authService.register(username, displayName, email, password);
+        // 1.1.4 Chuẩn hóa displayName, nếu rỗng thì dùng username.
+        final String finalDisplayName = (displayName == null || displayName.isBlank()) ? username : displayName;
+
+        if (loadingOverlay != null) {
+            loadingLabel.setText("Đang đăng ký và gửi mã OTP...");
+            loadingOverlay.setVisible(true);
+        }
+
+        Task<User> registerTask = new Task<>() {
+            @Override
+            protected User call() throws Exception {
+                // 1.1.5 AuthService.register(...): validate, kiểm tra trùng, hash mật khẩu, lưu DB (inactive) và gửi OTP.
+                return authService.register(username, finalDisplayName, email, password);
+            }
+        };
+
+        registerTask.setOnSucceeded(event -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(false);
+            }
+            User newUser = registerTask.getValue();
             pendingVerifyUserId = newUser.getId();
 
             // 1.1.9 clearRegisterFields(): xóa dữ liệu form đăng ký.
@@ -153,16 +196,27 @@ public class LoginController {
 
             // Hiển thị dialog xác nhận email/OTP.
             showOtpDialog(email);
-        } catch (IllegalArgumentException e) {
-            // 1.1.E2 Dữ liệu đăng ký không hợp lệ hoặc username/email đã tồn tại.
-            showError(e.getMessage());
-        } catch (DataAccessException e) {
-            // 1.1.E3 Lỗi truy cập CSDL khi đăng ký.
-            showError("Không thể đăng ký. Vui lòng thử lại.");
-        } catch (MessagingException e) {
-            showError("Đăng ký thành công nhưng không gửi được email xác nhận.\n" +
-                    "Vui lòng liên hệ admin.");
-        }
+        });
+
+        registerTask.setOnFailed(event -> {
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisible(false);
+            }
+            Throwable e = registerTask.getException();
+            if (e instanceof IllegalArgumentException) {
+                // 1.1.E2 Dữ liệu đăng ký không hợp lệ hoặc username/email đã tồn tại.
+                showError(e.getMessage());
+            } else if (e instanceof DataAccessException) {
+                // 1.1.E3 Lỗi truy cập CSDL khi đăng ký.
+                showError("Không thể đăng ký. Vui lòng thử lại.");
+            } else if (e instanceof MessagingException) {
+                showError("Đăng ký thành công nhưng không gửi được email xác nhận.\nVui lòng liên hệ admin.");
+            } else {
+                showError("Lỗi hệ thống: " + e.getMessage());
+            }
+        });
+
+        new Thread(registerTask).start();
     }
     private void showOtpDialog(String email) {
         try {
