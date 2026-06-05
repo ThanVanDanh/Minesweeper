@@ -26,9 +26,6 @@ import minesweeper.model.enums.Difficulty;
 import minesweeper.service.SessionManager;
 import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import java.util.Optional;
 
 import java.io.IOException;
 import java.util.List;
@@ -114,7 +111,6 @@ public class DashBoardController {
     private static final int MAX_COLS = 40;
     private static final int MIN_PLAYERS = Board.MIN_PLAYER_COUNT;
     private static final int MAX_PLAYERS = Board.MAX_PLAYER_COUNT;
-    private static final double MINE_DENSITY_WARNING_THRESHOLD = 0.5;
     private static final double HIGH_MINE_DENSITY_THRESHOLD = 0.5;
 
     private CustomBoardSelection pendingWarningCustomSelection;
@@ -188,33 +184,49 @@ public class DashBoardController {
         int playerCount;
 
         try {
+            // 3.1.8 Người chơi nhập số người chơi [UC02]
+            // 3.1.10 Hệ thống kiểm tra cấu hình ván đấu và số lượng người chơi hợp lệ [UC02]
             playerCount = getSelectedPlayerCount();
         } catch (IllegalArgumentException e) {
+            // 3.2.2.3 Dừng thao tác chuyển màn hình và không khởi tạo bàn cờ [UC02]
+            // 3.2.2.4 Hiển thị thông báo lỗi chi tiết tại Dashboard [UC02]
             selectedModeLabel.setText("Cấu hình số người chơi chưa hợp lệ: " + e.getMessage());
             return;
         }
 
         if (customButton.isSelected()) {
             try {
+                // 3.2.1.1 Người chơi chọn chế độ Tùy chỉnh [UC02]
+                // 3.2.1.3 Người chơi nhập số hàng, số cột và số mìn [UC02]
                 customSelection = getCustomBoardSelection();
 
+                // 3.2.3.1 Kiểm tra mật độ mìn trên bàn tùy chỉnh [UC02]
                 if (isHighMineDensity(customSelection)) {
                     User currentUser = SessionManager.getCurrentUser();
+
+                    // 3.2.3.3 Hiển thị cảnh báo mật độ mìn cao [UC02]
                     showMineDensityWarning(customSelection, playerCount, currentUser);
                     return;
                 }
 
+                // 3.2.1.4 Cập nhật nhãn chế độ chơi theo thông tin tùy chỉnh [UC02]
                 selectedModeLabel.setText("Đang chuẩn bị bàn chơi: TÙY CHỈNH - " + customSelection.meta());
+
             } catch (IllegalArgumentException e) {
+                // 3.2.2.2 Phát hiện dữ liệu không hợp lệ: trống, chứa chữ cái, ngoài giới hạn hoặc số mìn >= tổng số ô [UC02]
+                // 3.2.2.3 Dừng thao tác chuyển màn hình và không khởi tạo bàn cờ [UC02]
+                // 3.2.2.4 Hiển thị thông báo lỗi chi tiết tại Dashboard [UC02]
                 selectedModeLabel.setText("Cấu hình tùy chỉnh chưa hợp lệ: " + e.getMessage());
                 return;
             }
         } else {
+            // 3.1.6 Hệ thống ghi nhận chế độ chơi được chọn [UC02]
             selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
         }
 
         User currentUser = SessionManager.getCurrentUser();
 
+        // 3.1.9 Người chơi nhấn nút Bắt đầu [UC02]
         continueOpenGameAfterConfigAccepted(
                 customSelection,
                 playerCount,
