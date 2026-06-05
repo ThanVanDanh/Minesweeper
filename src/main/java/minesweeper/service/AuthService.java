@@ -75,8 +75,8 @@ public class AuthService {
             throw new IllegalArgumentException("Email này đã được sử dụng.");
         }
 
-        // 1.1.6 CryptUtils.md5(password): mã hóa mật khẩu trước khi lưu.
-        String passwordHash = CryptUtils.md5(password);
+        // 1.1.6 CryptUtils.hashPassword(password): mã hóa mật khẩu trước khi lưu.
+        String passwordHash = CryptUtils.hashPassword(password);
 
         // Lưu user mới (inactive) và chờ xác nhận OTP.
         userService.createUserWithEmail(username,
@@ -174,8 +174,8 @@ public class AuthService {
             throw new IllegalArgumentException("Tài khoản đã bị khóa. Vui lòng liên hệ admin.");
         }
 
-        // 1.2.7 CryptUtils.matchesMd5(password, passwordHash): xác minh mật khẩu.
-        if (!CryptUtils.matchesMd5(password, user.getPasswordHash())) {
+        // 1.2.7 CryptUtils.verifyPassword(password, passwordHash): xác minh mật khẩu.
+        if (!CryptUtils.verifyPassword(password, user.getPasswordHash())) {
             // Tăng số lần đăng nhập sai
             loginAttemptService.loginFailed(username);
             // 1.2.E4 Mật khẩu không khớp.
@@ -230,14 +230,14 @@ public class AuthService {
         // 1.4.5 getPasswordHashById(userId): lấy password_hash hiện tại từ DB.
         String storedHash = userService.getPasswordHashById(userId);
 
-        // 1.4.6 CryptUtils.matchesMd5(currentPassword, storedHash): xác minh mật khẩu hiện tại.
-        if (storedHash == null || !CryptUtils.matchesMd5(currentPassword, storedHash)) {
+        // 1.4.6 CryptUtils.verifyPassword(currentPassword, storedHash): xác minh mật khẩu hiện tại.
+        if (storedHash == null || !CryptUtils.verifyPassword(currentPassword, storedHash)) {
             // 1.4.E1 Mật khẩu hiện tại không đúng hoặc không tìm thấy hash trong DB.
             throw new IllegalArgumentException("Mật khẩu hiện tại không đúng.");
         }
 
-        // 1.4.7 CryptUtils.md5(newPassword): mã hóa mật khẩu mới.
-        String newHash = CryptUtils.md5(newPassword);
+        // 1.4.7 CryptUtils.hashPassword(newPassword): mã hóa mật khẩu mới.
+        String newHash = CryptUtils.hashPassword(newPassword);
 
         // 1.4.8 updatePasswordHash(userId, newHash): cập nhật mật khẩu mới vào DB.
         userService.updatePasswordHash(userId, newHash);
