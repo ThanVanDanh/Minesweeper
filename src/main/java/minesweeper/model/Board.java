@@ -23,16 +23,17 @@ public class Board {
     private static final int[] DR = {-1, -1, 0, 1, 1, 1, 0, -1};
     private static final int[] DC = {0, 1, 1, 1, 0, -1, -1, -1};
 
-    public Board(Difficulty difficulty) {
-        this(difficulty, MIN_PLAYER_COUNT);
-    }
 
+    // 3.1.13 Khởi tạo bàn cờ theo độ khó và số người chơi [UC02]
     public Board(Difficulty difficulty, int playerCount) {
         this(difficulty.getRows(), difficulty.getCols(), difficulty.getMines(), playerCount);
     }
 
+    // 3.1.13 Khởi tạo bàn cờ theo thông số hàng, cột, mìn và số người chơi [UC02]
     public Board(int rows, int cols, int totalMines, int playerCount) {
+        // 3.1.13 Kiểm tra cấu hình bàn cờ trước khi khởi tạo [UC02]
         validateBoardConfig(rows, cols, totalMines, playerCount);
+
         this.rows = rows;
         this.cols = cols;
         this.totalMines = totalMines;
@@ -42,6 +43,8 @@ public class Board {
         this.minesPlaced = false;
         this.grid = new Cell[rows][cols];
         this.safeCellsRemaining = (this.rows * this.cols) - this.totalMines;
+
+        // 3.1.14 Tạo ma trận Cell cho bàn cờ [UC02]
         initGrid();
     }
 
@@ -215,6 +218,7 @@ public class Board {
         }
     }
 
+    // 3.1.14 Tạo ma trận Cell cho bàn cờ [UC02]
     private void initGrid() {
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -223,20 +227,23 @@ public class Board {
         }
     }
 
-    // 3.1 MỞ Ô: Rải mìn tránh ô click đầu tiên
+    // 3.1.15 Rải mìn lên bàn cờ sau lượt click đầu tiên [UC02]
     public void placeMines(int safeRow, int safeCol) {
         Random random = new Random();
         int placed = 0;
+
         while (placed < totalMines) {
             int row = random.nextInt(rows);
             int col = random.nextInt(cols);
+
             if ((row == safeRow && col == safeCol) || grid[row][col].isMine()) {
                 continue;
             }
             grid[row][col].setMine(true);
             placed++;
         }
-        calculateNeighborMines(); // Tính toán NeighborMines
+        // 3.1.16 Tính số mìn xung quanh cho từng ô [UC02]
+        calculateNeighborMines();
         minesPlaced = true;
         this.gameState = GameState.PLAYING;
     }
@@ -279,16 +286,20 @@ public class Board {
         return row >= 0 && row < rows && col >= 0 && col < cols;
     }
 
+    // 3.1.13 Kiểm tra cấu hình bàn cờ trước khi khởi tạo [UC02]
     private static void validateBoardConfig(int rows, int cols, int totalMines, int playerCount) {
         if (rows < 2 || cols < 2) {
             throw new IllegalArgumentException("Board must have at least 2 rows and 2 columns");
         }
+
         if (totalMines <= 0) {
             throw new IllegalArgumentException("Board must contain at least 1 mine");
         }
+
         if (totalMines >= rows * cols) {
             throw new IllegalArgumentException("Mine count must be smaller than total cells");
         }
+
         if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
             throw new IllegalArgumentException("Player count must be between "
                     + MIN_PLAYER_COUNT + " and " + MAX_PLAYER_COUNT);
