@@ -45,16 +45,17 @@ class AuthServiceTest {
         when(mockUserService.getUserByUsername(username)).thenReturn(null);
         when(mockUserService.getUserByEmail(anyString())).thenReturn(null);
 
-        // Chúng ta mong đợi code chạy qua validate và gọi đến check trùng, ném lỗi NPE hoặc NullPointer ở các bước sau 
-        // hoặc bắt lỗi do mock chưa cấu hình hết. Nhưng quan trọng là KHÔNG ném validate error về định dạng.
-        try {
+        // Cấu hình mock trả về user hợp lệ để tránh NullPointerException khi gửi OTP
+        User dummyUser = new User();
+        dummyUser.setId(999);
+        dummyUser.setUsername(username);
+        dummyUser.setEmail("test@example.com");
+        when(mockUserService.getAuthUserByUsername(username)).thenReturn(dummyUser);
+
+        // Đảm bảo không ném ra bất kỳ ngoại lệ nào
+        assertDoesNotThrow(() -> {
             authService.register(username, "Display", "test@example.com", "password123");
-        } catch (NullPointerException e) {
-            // Đạt yêu cầu: Không ném IllegalArgumentException về định dạng username
-        } catch (IllegalArgumentException e) {
-            // Không được có thông báo lỗi định dạng ký tự
-            assertFalse(e.getMessage().contains("chỉ được chứa chữ cái"));
-        }
+        });
     }
 
     @Test
