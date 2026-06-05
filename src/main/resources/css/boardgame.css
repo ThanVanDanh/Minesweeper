@@ -228,3 +228,10 @@
     -fx-border-color: #ffffff;
     -fx-text-fill: #ffffff;
 }
+
+.fog-overlay {
+    -fx-background-image: url("../img/suongmu.gif");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-opacity: 0.85;
+}
