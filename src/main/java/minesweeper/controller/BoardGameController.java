@@ -74,7 +74,7 @@ public class BoardGameController implements Initializable {
         setupTurnTimer();
     }
 
-    // UC04 - Bắt đầu ván mới
+    // UC02.1 - Chọn độ khó & UC02.2 - Bắt đầu ván mới
     public void setInitialDifficulty(Difficulty selectedDifficulty) {
         setInitialDifficulty(selectedDifficulty, Board.MIN_PLAYER_COUNT);
     }
@@ -88,14 +88,15 @@ public class BoardGameController implements Initializable {
         startCustomGame(rows, cols, mines, playerCount);
     }
 
-    // UC04 - Bắt đầu ván mới
+    // UC02.2 - Bắt đầu ván mới
     private void startGame(Difficulty diff, int playerCount) {
-        gameLogic.startNewGame(diff, playerCount);
+        gameLogic.startNewGame(diff, playerCount); // UC02.1 & UC02.2
         resetGameStartState();
         renderBoard();
 //        startTimer();
     }
 
+    // UC02.2 - Bắt đầu ván mới
     private void startCustomGame(int rows, int cols, int mines, int playerCount) {
         gameLogic.startCustomGame(rows, cols, mines, playerCount);
         resetGameStartState();
@@ -199,6 +200,7 @@ public class BoardGameController implements Initializable {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
+                    // UC03.3 - Chuyển lượt
                     else if (actionTaken) {
                         int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
                         boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
@@ -314,7 +316,7 @@ public class BoardGameController implements Initializable {
         updateItemUI();
     }
 
-    // UC05/UC06 - Tạm dừng / Tiếp tục ván game
+    // UC03.6 - Tạm dừng / Tiếp tục: Kích hoạt khi nhấn nút btnPause
     @FXML
     private void togglePause() {
         if (gameLogic.getGameState() != GameState.PLAYING && !gameLogic.isPaused()) return;
@@ -689,7 +691,7 @@ public class BoardGameController implements Initializable {
         }
     }
 
-    // UC04 - Bắt đầu ván mới
+    // UC02.2 - Bắt đầu ván mới
     @FXML
     public void restartGame(ActionEvent actionEvent) {
         if (isFlagMode) {
@@ -716,20 +718,21 @@ public class BoardGameController implements Initializable {
     private boolean isBlindBombPending = false;
     private AudioClip smokeAudioClip;
 
+    // UC03.5 - Sử dụng Bom mù (Điều kiện nâng cấp: >= 200 điểm)
     @FXML
     private void useBlindBomb(ActionEvent event) {
         if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) return;
 
         int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
 
-        if (currentScore >= 100 && !isBlindBombPending && !isBlindBombActive) {
+        if (currentScore >= 200 && !isBlindBombPending && !isBlindBombActive) {
             gameLogic.deductCurrentPlayerScore(100);
             isBlindBombPending = true;
             if (btnBlindBomb != null) {
                 btnBlindBomb.getStyleClass().add("item-button-active");
             }
             System.out.println("Bom mù ĐÃ GÀI! Bị trừ 100 điểm.");
-            updateStatus();
+            updateStatus(); // UC03.4: Cập nhật lại UI điểm số
         }
     }
     private void processBlindBombTurnTransition() {
