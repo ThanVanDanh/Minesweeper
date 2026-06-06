@@ -247,7 +247,7 @@ public class LoginController {
     private void handleForgotPassword() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/forgot-password.fxml"));
-            VBox root = loader.load();
+            javafx.scene.Parent root = loader.load();
             ForgotPasswordController controller = loader.getController();
             controller.setOnSuccess(() -> {
                 showLoginForm();
@@ -255,7 +255,7 @@ public class LoginController {
             Stage stage = new Stage();
             stage.setTitle("Quên mật khẩu");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root, 450, 300));
+            stage.setScene(new Scene(root, 450, -1));
             stage.setResizable(false);
             stage.centerOnScreen();
             stage.showAndWait();
