@@ -350,7 +350,7 @@ public class AdminUserController {
         result.ifPresent(newUser -> {
             try {
                 // 05.3.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
-                String passwordHash = CryptUtils.md5(newUser.getPasswordHash());
+                String passwordHash = CryptUtils.hashPassword(newUser.getPasswordHash());
                 long generatedId = managerUserService.createUser(
                         newUser.getUsername(),
                         newUser.getDisplayName(),
