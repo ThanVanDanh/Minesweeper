@@ -124,6 +124,34 @@ public class AdminResultController {
         resultTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         resultTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         setupColumns();
+
+        // 05.7.5 Lắng nghe sự kiện click tiêu đề cột để sắp xếp (server-side)
+        resultTable.setOnSort(event -> {
+            var sortOrder = resultTable.getSortOrder();
+            if (sortOrder.isEmpty()) {
+                activeSpec.sortBy = null;
+                activeSpec.sortDir = null;
+            } else {
+                TableColumn<GameResult, ?> col = sortOrder.get(0);
+                if (col == colScore) {
+                    activeSpec.sortBy = "score";
+                } else if (col == colTime) {
+                    activeSpec.sortBy = "time";
+                } else {
+                    activeSpec.sortBy = null;
+                }
+                
+                if (activeSpec.sortBy != null) {
+                    activeSpec.sortDir = col.getSortType() == TableColumn.SortType.ASCENDING ? "ASC" : "DESC";
+                } else {
+                    activeSpec.sortDir = null;
+                }
+            }
+            
+            currentPage = 0;
+            loadPage();
+            event.consume(); // Chặn client-side sorting của TableView
+        });
     }
 
     /**
@@ -423,6 +451,15 @@ public class AdminResultController {
         colResult.setCellValueFactory(new PropertyValueFactory<>("result"));
         colPlayedAt.setCellValueFactory(new PropertyValueFactory<>("playedAtFormatted"));
         colOpenedCells.setCellValueFactory(new PropertyValueFactory<>("openedCells"));
+
+        // Chỉ cho phép sort cột Score và Thời gian
+        colGameId.setSortable(false);
+        colUsername.setSortable(false);
+        colDifficulty.setSortable(false);
+        colResult.setSortable(false);
+        colPlayedAt.setSortable(false);
+        colOpenedCells.setSortable(false);
+        colSelect.setSortable(false);
 
         colSelect.setCellValueFactory(param -> new SimpleBooleanProperty(false));
         colSelect.setCellFactory(col -> new TableCell<>() {
