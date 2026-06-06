@@ -5,6 +5,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -130,7 +131,8 @@
                                styleClass="auth-input"/>
             </VBox>
 
-            <CheckBox text="Tôi đồng ý với điều khoản chiến thuật"
+            <CheckBox fx:id="termsCheckBox"
+                      text="Tôi đồng ý với điều khoản chiến thuật"
                       styleClass="auth-check"/>
 
             <Button text="TẠO TÀI KHOẢN →"
@@ -146,6 +148,11 @@
 
         </VBox>
 
+    </VBox>
+
+    <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="12" style="-fx-background-color: rgba(5, 10, 18, 0.85); -fx-background-radius: 16px;" visible="false">
+        <ProgressIndicator prefWidth="50" prefHeight="50"/>
+        <Label fx:id="loadingLabel" text="Đang xử lý..." style="-fx-text-fill: #2dd4f0; -fx-font-size: 15px; -fx-font-weight: bold;"/>
     </VBox>
 
 </StackPane>
