@@ -1,4 +1,4 @@
-package minesweeper.statisticsV2;
+package minesweeper.rankingV2;
 
 import minesweeper.model.Achievement;
 import minesweeper.model.GameResult;
