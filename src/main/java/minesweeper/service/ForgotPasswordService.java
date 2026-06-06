@@ -79,7 +79,7 @@ public class ForgotPasswordService {
         if (newPassword.length() < 6) {
             throw new IllegalArgumentException("Mật khẩu cần ít nhất 6 ký tự.");
         }
-        String newPasswordHash = CryptUtils.md5(newPassword);
+        String newPasswordHash = CryptUtils.hashPassword(newPassword);
         userService.updatePasswordHash(resetToken.getUserId(), newPasswordHash);
         resetTokenRepo.markUsed(resetToken.getId());
 
