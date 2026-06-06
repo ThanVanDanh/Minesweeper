@@ -117,7 +117,7 @@ public class AuthService {
             throw new IllegalArgumentException("Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại.");
         }
 
-        if (!CryptUtils.matchesMd5(otp.trim(), token.getOtp())) {
+        if (!CryptUtils.verifyPassword(otp.trim(), token.getOtp())) {
             throw new IllegalArgumentException("Mã OTP không đúng.");
         }
 
@@ -249,7 +249,7 @@ public class AuthService {
 
     private void sendOtp(User user) throws DataAccessException, MessagingException {
         String plainOtp = generateOtp();
-        String hashedOtp = CryptUtils.md5(plainOtp);
+        String hashedOtp = CryptUtils.hashPassword(plainOtp);
 
         EmailVerificationToken token = new EmailVerificationToken();
         token.setUserId(user.getId());
