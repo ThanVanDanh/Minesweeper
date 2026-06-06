@@ -1,11 +1,15 @@
 package minesweeper.controller;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import minesweeper.model.AuditLog;
 import minesweeper.model.GameResult;
@@ -17,12 +21,16 @@ import minesweeper.repository.pagination.PagedResult;
 import minesweeper.repository.spec.GameResultFilterSpec;
 import minesweeper.service.FraudDetectionService;
 import minesweeper.service.GameResultService;
+import minesweeper.service.PlayerStatsService;
+import minesweeper.service.PlayerStatsService.DifficultyStats;
+import minesweeper.service.PlayerStatsService.PlayerStats;
 import minesweeper.service.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,28 +73,32 @@ public class AdminResultController {
     private final GameResultService       gameResultService;
     private final MySqlAuditLogRepository auditLogRepository;
     private final FraudDetectionService   fraudDetectionService;
+    private final PlayerStatsService      playerStatsService;
     private static final Logger LOG = LoggerFactory.getLogger(AdminResultController.class);
 
     /** Production constructor */
     public AdminResultController() {
-        this.gameResultService    = new GameResultService(new MySqlGameResultRepository());
-        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.gameResultService     = new GameResultService(new MySqlGameResultRepository());
+        this.auditLogRepository    = new MySqlAuditLogRepository();
         this.fraudDetectionService = new FraudDetectionService();
+        this.playerStatsService    = new PlayerStatsService();
     }
 
     /** Test constructor (inject mock) */
     public AdminResultController(GameResultService gameResultService) {
-        this.gameResultService    = gameResultService;
-        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.gameResultService     = gameResultService;
+        this.auditLogRepository    = new MySqlAuditLogRepository();
         this.fraudDetectionService = new FraudDetectionService();
+        this.playerStatsService    = new PlayerStatsService();
     }
 
     /** Test constructor with full injection */
     public AdminResultController(GameResultService gameResultService,
                                  FraudDetectionService fraudDetectionService) {
-        this.gameResultService    = gameResultService;
-        this.auditLogRepository   = new MySqlAuditLogRepository();
+        this.gameResultService     = gameResultService;
+        this.auditLogRepository    = new MySqlAuditLogRepository();
         this.fraudDetectionService = fraudDetectionService;
+        this.playerStatsService    = new PlayerStatsService();
     }
 
     // =========================================================================
@@ -365,6 +377,137 @@ public class AdminResultController {
             }
         }
         resultTable.refresh();
+    }
+
+    // =========================================================================
+    // Alternative Flow – UC-05.11 Thống kê theo người chơi [MỚI v1.2 – E1]
+    // =========================================================================
+
+    @FXML
+    public void onViewPlayerStats() {
+        // 05.11.1 Admin chọn một dòng kết quả trong bảng và nhấn nút
+        //          "Thống kê người chơi"
+        GameResult selected = resultTable.getSelectionModel().getSelectedItem();
+
+        // 05.11-E1 Chưa chọn dòng nào → hiển thị thông báo
+        if (selected == null) {
+            showInfo("Hãy chọn một dòng kết quả để xem thống kê người chơi.");
+            return;
+        }
+
+        // 05.11.2 Hệ thống lấy username từ dòng được chọn
+        String username = selected.getPlayerName();
+
+        try {
+            // 05.11.3 Hệ thống truy vấn toàn bộ game_sessions của user đó
+            //          và tính toán các chỉ số thống kê tổng hợp
+            GameResultFilterSpec spec = GameResultFilterSpec.withUsername(username);
+            // Lấy tất cả kết quả (tối đa 10000 để tính thống kê đầy đủ)
+            PagedResult<GameResult> allResults =
+                    gameResultService.findPaged(spec, 0, 10_000);
+
+            PlayerStats stats = playerStatsService.computeStats(allResults.getContent());
+
+            // 05.11-A1 User không có kết quả nào
+            if (stats.totalGames() == 0) {
+                showInfo("Người chơi '" + username + "' chưa có kết quả nào.");
+                return;
+            }
+
+            // 05.11.4 Hệ thống hiển thị popup thống kê chi tiết
+            showPlayerStatsDialog(username, stats);
+
+        } catch (DataAccessException e) {
+            // 05-E1 CSDL lỗi
+            LOG.error("Failed to load player stats for: {}", username, e);
+            showError("Không thể tải thống kê cho người chơi: " + username);
+        }
+    }
+
+    /**
+     * 05.11.4 Hiển thị popup thống kê chi tiết cho người chơi.
+     *          Gồm: tổng ván, thắng/thua, tỉ lệ thắng, điểm TB,
+     *          và bảng best score / best time theo từng độ khó.
+     */
+    private void showPlayerStatsDialog(String username, PlayerStats stats) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Thống kê người chơi: " + username);
+        dialog.setHeaderText("Dashboard — " + username);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        VBox content = new VBox(14);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: linear-gradient(to bottom right, "
+                + "rgba(5,20,28,0.95), rgba(5,10,18,0.95));");
+
+        // ── Tổng quan ──
+        GridPane grid = new GridPane();
+        grid.setHgap(30);
+        grid.setVgap(8);
+        grid.setStyle("-fx-padding: 10;");
+        String labelStyle = "-fx-text-fill: rgba(45,212,240,0.8); -fx-font-weight: bold;";
+        String valueStyle = "-fx-text-fill: white; -fx-font-size: 14;";
+
+        int row = 0;
+        grid.add(styledLabel("Tổng ván chơi:", labelStyle), 0, row);
+        grid.add(styledLabel(String.valueOf(stats.totalGames()), valueStyle), 1, row++);
+
+        grid.add(styledLabel("Thắng / Thua:", labelStyle), 0, row);
+        grid.add(styledLabel(stats.totalWins() + " / " + stats.totalLoses(), valueStyle), 1, row++);
+
+        grid.add(styledLabel("Tỉ lệ thắng:", labelStyle), 0, row);
+        grid.add(styledLabel(String.format("%.1f%%", stats.winRate()), valueStyle), 1, row++);
+
+        grid.add(styledLabel("Điểm trung bình (WIN):", labelStyle), 0, row);
+        grid.add(styledLabel(String.format("%.0f", stats.avgScore()), valueStyle), 1, row);
+
+        content.getChildren().add(grid);
+
+        // ── Bảng theo độ khó ──
+        Label sectionLabel = new Label("Thành tích theo độ khó");
+        sectionLabel.setStyle("-fx-text-fill: #ff9800; -fx-font-weight: bold; -fx-font-size: 13; -fx-padding: 8 0 0 0;");
+        content.getChildren().add(sectionLabel);
+
+        TableView<Map.Entry<Difficulty, DifficultyStats>> diffTable = new TableView<>();
+        diffTable.setStyle("-fx-control-inner-background: rgba(10,20,30,0.8); -fx-text-fill: white;");
+        diffTable.setPrefHeight(200);
+        diffTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+        TableColumn<Map.Entry<Difficulty, DifficultyStats>, String> colDiff = new TableColumn<>("Độ khó");
+        colDiff.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getKey().getLabel()));
+
+        TableColumn<Map.Entry<Difficulty, DifficultyStats>, String> colTotal = new TableColumn<>("Tổng ván");
+        colTotal.setCellValueFactory(d -> new SimpleStringProperty(
+                String.valueOf(d.getValue().getValue().totalGames())));
+
+        TableColumn<Map.Entry<Difficulty, DifficultyStats>, String> colWR = new TableColumn<>("Tỉ lệ thắng");
+        colWR.setCellValueFactory(d -> new SimpleStringProperty(
+                String.format("%.1f%%", d.getValue().getValue().winRate())));
+
+        TableColumn<Map.Entry<Difficulty, DifficultyStats>, String> colBest = new TableColumn<>("Best Score");
+        colBest.setCellValueFactory(d -> new SimpleStringProperty(
+                String.valueOf(d.getValue().getValue().bestScore())));
+
+        TableColumn<Map.Entry<Difficulty, DifficultyStats>, String> colTime = new TableColumn<>("Best Time");
+        colTime.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getValue().bestTimeFormatted()));
+
+        diffTable.getColumns().addAll(colDiff, colTotal, colWR, colBest, colTime);
+        diffTable.setItems(FXCollections.observableArrayList(stats.perDifficulty().entrySet()));
+
+        content.getChildren().add(diffTable);
+
+        dialog.getDialogPane().setContent(content);
+        dialog.setWidth(650);
+        dialog.setHeight(500);
+        dialog.showAndWait();
+    }
+
+    /** Tạo Label có style inline (dùng cho dialog thống kê). */
+    private Label styledLabel(String text, String style) {
+        Label l = new Label(text);
+        l.setStyle(style);
+        return l;
     }
 
     // =========================================================================
