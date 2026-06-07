@@ -54,7 +54,7 @@ public class RankingHistoryController {
     // ── Tab Lịch sử ──────────────────────────────────────────────────────────
     @FXML private ComboBox<String>                        playerCombo;
 
-    // Bộ lọc lịch sử (THÊM MỚI)
+    // Bộ lọc lịch sử
     @FXML private ComboBox<DifficultyOption>              historyDifficultyCombo;
     @FXML private ComboBox<ResultOption>                  historyResultCombo;
 
@@ -65,7 +65,7 @@ public class RankingHistoryController {
     @FXML private TableColumn<GameResult, String>         colTime;
     @FXML private TableColumn<GameResult, Integer>        colHistoryScore;
 
-    // Phân trang – tab Lịch sử (THÊM MỚI)
+    // Phân trang – tab Lịch sử
     @FXML private Button                                  btnHistoryPrev;
     @FXML private Button                                  btnHistoryNext;
     @FXML private Label                                   lblHistoryPage;
@@ -98,21 +98,25 @@ public class RankingHistoryController {
     private int              historyCurrentPage = 0;
     private long             historyTotalItems  = 0;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Khởi tạo
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * UC04.1 – Điểm khởi tạo controller sau khi FXMLLoader nạp FXML xong.
+     * Thứ tự gọi tương ứng với luồng cơ bản:
+     *   Bước 04.1.2 → setupRankingTable()
+     *   Bước 04.1.3 → setupExpertOnlyLevelFilter()
+     *   UC04.2 – Bước 04.2.2:
+     */
     @FXML
     private void initialize() {
+        // 04.1.2 → setupRankingTable()
         setupRankingTable();
+        // 04.1.3 → setupExpertOnlyLevelFilter()
         setupExpertOnlyLevelFilter();
+        // 04.2.2 → setupHistoryAndStats()
         setupHistoryAndStats();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Tab Xếp hạng (giữ nguyên logic cũ, chỉ đổi tên biến cho nhất quán)
-    // ─────────────────────────────────────────────────────────────────────────
-
+    //  Tab Xếp hạng
+    // 04.1.2 → setupRankingTable()
     private void setupRankingTable() {
         colRank.setCellValueFactory(new PropertyValueFactory<>("rank"));
         colPlayerName.setCellValueFactory(new PropertyValueFactory<>("playerName"));
@@ -170,6 +174,7 @@ public class RankingHistoryController {
         return username != null && username.equalsIgnoreCase(playerName);
     }
 
+    // 04.1.3 → setupExpertOnlyLevelFilter()
     private void setupExpertOnlyLevelFilter() {
         List<RankingController.LevelOption> allLevels;
         try {
@@ -186,18 +191,22 @@ public class RankingHistoryController {
         }
     }
 
+    // 04.1.4 Hệ thống kích hoạt hàm loadRankingBySelectedLevel()
     private void loadRankingBySelectedLevel() {
         RankingController.LevelOption selected = levelCombo.getSelectionModel().getSelectedItem();
         if (selected == null) {
+            // UC04.1-A1: không có cấp độ được chọn → set bảng rỗng
             rankingTable.setItems(FXCollections.observableArrayList());
             return;
         }
 
         try {
+            // Bước 04.1.4: lấy top 50 theo cấp độ được chọn
+            // Bước 04.1.5: chuẩn hoá DTO
             allRankings = rankingController.getRankingTop(selected.getId(), 50);
             rankingCurrentPage = 0;
 
-            // Nhảy tới trang chứa người dùng hiện tại
+            // Bước 04.1.6: tự động nhảy đến trang chứa người dùng hiện tại
             if (SessionManager.isLoggedIn()) {
                 String me = SessionManager.getCurrentUser().getUsername();
                 for (int i = 0; i < allRankings.size(); i++) {
@@ -209,18 +218,21 @@ public class RankingHistoryController {
             }
             renderRankingPage();
         } catch (Exception e) {
+            // UC04.1-E1: lỗi CSDL → set bảng rỗng, ghi log, không crash UI
             allRankings = List.of();
             renderRankingPage();
             e.printStackTrace();
         }
     }
-
+    // 04.1.7 Hệ thống gọi renderPage(), cắt danh sách theo trang hiện tại
     private void renderRankingPage() {
         int from  = rankingCurrentPage * RANKING_PAGE_SIZE;
         int to    = Math.min(from + RANKING_PAGE_SIZE, allRankings.size());
         List<RankingDTO> slice = from < to ? allRankings.subList(from, to) : List.of();
         rankingTable.setItems(FXCollections.observableArrayList(slice));
+        // Bước 04.1.8: cập nhật điều khiển phân trang
         updateRankingPaginationControls();
+        // Bước 04.1.9: hiển thị / ẩn hàng ghim hạng
         renderMyRank();
     }
 
@@ -264,9 +276,9 @@ public class RankingHistoryController {
         if (rankingCurrentPage < total - 1) { rankingCurrentPage++; renderRankingPage(); }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Tab Lịch sử – khởi tạo
-    // ─────────────────────────────────────────────────────────────────────────
+    //  Tab Lịch sử
+    // UC04.2 – Bước 04.2.2 / 04.2.3 / 04.2.4
+    // Khởi tạo toàn bộ tab Lịch sử và tab Thống kê:
 
     private void setupHistoryAndStats() {
         // Cột bảng lịch sử
@@ -276,7 +288,7 @@ public class RankingHistoryController {
         colTime.setCellValueFactory(new PropertyValueFactory<>("timeFormatted"));
         colHistoryScore.setCellValueFactory(new PropertyValueFactory<>("score"));
 
-        // Khởi tạo ComboBox lọc độ khó: "Tất cả" + 4 mức
+        // 04.2.3 Hệ thống khởi tạo bộ lọc
         historyDifficultyCombo.setItems(FXCollections.observableArrayList(
                 DifficultyOption.ALL,
                 new DifficultyOption(Difficulty.EASY),
@@ -294,10 +306,11 @@ public class RankingHistoryController {
         ));
         historyResultCombo.getSelectionModel().selectFirst();
 
-        // Khi thay đổi bộ lọc → reset trang 0 và tải lại
+        // Khi thay đổi bộ lọc → reset trang 0 và tải lại (UC04.2-A2)
         historyDifficultyCombo.setOnAction(e -> onHistoryFilterChanged());
         historyResultCombo.setOnAction(e -> onHistoryFilterChanged());
 
+        // Bước 04.2.2: kiểm tra trạng thái đăng nhập
         if (!SessionManager.isLoggedIn()) {
             playerCombo.setItems(FXCollections.observableArrayList("Vui lòng đăng nhập"));
             statsPlayerCombo.setItems(FXCollections.observableArrayList("Vui lòng đăng nhập"));
@@ -306,9 +319,10 @@ public class RankingHistoryController {
             return;
         }
 
+        // 04.2.4 Hệ thống lấy username từ SessionManager.getCurrentUser().
         User currentUser = SessionManager.getCurrentUser();
         String username  = currentUser.getUsername();
-
+        //04.2.5 Hệ thống nạp username vào ComboBox playerCombo và khóa ComboBox này lại (setDisable(true)).
         playerCombo.setItems(FXCollections.observableArrayList(username));
         playerCombo.getSelectionModel().selectFirst();
         playerCombo.setDisable(true);
@@ -317,18 +331,15 @@ public class RankingHistoryController {
         statsPlayerCombo.getSelectionModel().selectFirst();
         statsPlayerCombo.setDisable(true);
 
-        // Tải lần đầu: lịch sử trang 0 + thống kê toàn bộ
+        // 04.2.6 Hệ thống gọi hàm loadPlayerHistoryAndStats(username).
         loadPlayerHistoryPaged(username, 0);
         loadPlayerStats(username);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Tab Lịch sử – lọc & phân trang (THÊM MỚI)
-    // ─────────────────────────────────────────────────────────────────────────
+    //  Tab Lịch sử – lọc & phân trang
 
     /**
-     * Gọi khi người dùng thay đổi ComboBox độ khó hoặc kết quả.
-     * Reset về trang 0 rồi tải lại với bộ lọc mới.
+     * UC04.2 – Alternative Flow A2: Người dùng áp dụng bộ lọc.
      */
     private void onHistoryFilterChanged() {
         historyCurrentPage = 0;
@@ -338,8 +349,6 @@ public class RankingHistoryController {
 
     /**
      * Xây dựng GameResultFilterSpec từ trạng thái combobox hiện tại.
-     * username luôn được set để giới hạn theo người dùng đang đăng nhập.
-     * difficulty/win chỉ set khi người dùng chọn cụ thể (không phải "Tất cả").
      */
     private GameResultFilterSpec buildHistoryFilterSpec(String username) {
         GameResultFilterSpec spec = new GameResultFilterSpec();
@@ -360,16 +369,11 @@ public class RankingHistoryController {
 
     /**
      * Tải một trang lịch sử từ DB theo filter và số trang.
-     *
-     * Luồng:
-     *   1. buildHistoryFilterSpec(username)  – gom filter thành spec
-     *   2. gameResultRepository.findPaged()  – truy vấn DB có WHERE + LIMIT/OFFSET
-     *   3. Hiển thị kết quả vào historyTable
-     *   4. updateHistoryPaginationControls() – cập nhật label trang + enable/disable nút
      */
     private void loadPlayerHistoryPaged(String username, int page) {
         historyCurrentPage = page;
         try {
+            // 04.2.7 MySqlGameResultRepository truy vấn và trả về danh sách lịch sử.
             GameResultFilterSpec spec = buildHistoryFilterSpec(username);
             PagedResult<GameResult> result =
                     gameResultRepository.findPaged(spec, page, HISTORY_PAGE_SIZE);
@@ -379,6 +383,7 @@ public class RankingHistoryController {
             updateHistoryPaginationControls();
         } catch (Exception e) {
             e.printStackTrace();
+            //04.2.8 Hệ thống đổ dữ liệu lên historyTable qua các cột: Thời gian, Độ khó, Kết quả, TG chơi, Điểm số.
             historyTable.setItems(FXCollections.observableArrayList());
             historyTotalItems = 0;
             updateHistoryPaginationControls();
@@ -408,19 +413,19 @@ public class RankingHistoryController {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     //  Tab Thống kê (tính trên toàn bộ lịch sử, không bị ảnh hưởng bởi filter)
-    // ─────────────────────────────────────────────────────────────────────────
-
     private void loadPlayerStats(String username) {
         try {
+            // 04.3.1 Người dùng mở tab Thống kê.
             List<GameResult> history = gameResultRepository.getPlayerHistory(username);
 
+            // 04.3.2 Hệ thống khởi tạo các biến đếm: totalGames, wins, bestScore, totalWinTimeMs.
             int  totalGames    = history.size();
             int  wins          = 0;
             int  bestScore     = 0;
             long totalWinTimeMs = 0;
 
+            // 04.3.3 Hệ thống duyệt qua danh sách history.
             for (GameResult r : history) {
                 if (r.isWon()) {
                     wins++;
@@ -429,6 +434,7 @@ public class RankingHistoryController {
                 if (r.getScore() > bestScore) bestScore = r.getScore();
             }
 
+            // 04.3.4 Hệ thống tính Tỉ lệ thắng
             statsTotalGames.setText(String.valueOf(totalGames));
             statsWins.setText(wins + " / " + (totalGames - wins));
 
@@ -436,13 +442,15 @@ public class RankingHistoryController {
             statsWinRate.setText(String.format("%.1f%%", winRate));
             statsBestScore.setText(String.format("%,d", bestScore));
 
+            // 04.3.5 Hệ thống tính Thời gian trung bình
+            // 04.3-A1 Người chơi chưa thắng ván nào → hiển thị "0 giây" hoặc "N/A"
             if (wins > 0) {
                 statsAvgTime.setText((totalWinTimeMs / wins / 1000) + " giây");
             } else {
                 statsAvgTime.setText("0 giây");
             }
 
-            // Win streak hiện tại & dài nhất (history đã sắp xếp DESC – mới nhất trước)
+            // 04.3.6 Hệ thống tính Win Streak dài nhất (maxStreak)
             int currentStreak = 0, maxStreak = 0, tempStreak = 0;
             for (int i = history.size() - 1; i >= 0; i--) {
                 if (history.get(i).isWon()) {
@@ -452,66 +460,83 @@ public class RankingHistoryController {
                     tempStreak = 0;
                 }
             }
+
+            // 04.3.7 Hệ thống tính Win Streak hiện tại (currentStreak)
             for (GameResult r : history) {
                 if (r.isWon()) currentStreak++;
                 else break;
             }
 
+            // 04.3.8 Hệ thống cập nhật số liệu lên các Label giao diện tương ứng.
             statsWinStreak.setText(currentStreak > 0 ? currentStreak + " 🔥" : "0");
             statsMaxWinStreak.setText(maxStreak > 0 ? maxStreak + " ⭐" : "0");
 
+            // Render achievement cards dựa trên lịch sử
             renderAchievements(history);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  Tab Thành tựu
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * UC04.5 - Xem thành tựu cá nhân
+     */
     private void renderAchievements(List<GameResult> history) {
+        // Pre-condition: người chơi đã đăng nhập và `history` đã được lấy (có thể là danh sách rỗng).
         if (achievementList == null) return;
         achievementList.getChildren().clear();
 
-        Map<Achievement, Boolean> results = achievementService.evaluate(history);
+        try {
+            // 04.5.2: Gọi service để đánh giá các achievement dựa trên lịch sử.
+            // 04.5.3 — Duyệt enum Achievement & gọi hàm kiểm tra
+            // 04.5.4 — Hàm kiểm chuỗi liên tiế
+            // 04.5.5 evaluate() trả về Map<Achievement, Boolean> — mỗi thành tựu ánh xạ tới kết quả true/false.
+            Map<Achievement, Boolean> results = achievementService.evaluate(history);
 
-        for (Achievement achievement : Achievement.values()) {
-            boolean unlocked = Boolean.TRUE.equals(results.get(achievement));
+            // 04.5.6: Duyệt qua toàn bộ enum Achievement và render một card cho mỗi thành tựu.
+            for (Achievement achievement : Achievement.values()) {
+                boolean unlocked = Boolean.TRUE.equals(results.get(achievement));
 
-            javafx.scene.layout.HBox card = new javafx.scene.layout.HBox(16);
-            card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-            card.setPadding(new Insets(14, 18, 14, 18));
-            card.setStyle(unlocked
-                    ? "-fx-background-color: rgba(0,255,180,0.10); -fx-background-radius: 10;"
-                    + " -fx-border-color: #00ffcc; -fx-border-radius: 10; -fx-border-width: 1.5;"
-                    : "-fx-background-color: rgba(255,255,255,0.04); -fx-background-radius: 10;"
-                    + " -fx-border-color: #444; -fx-border-radius: 10; -fx-border-width: 1;");
+                javafx.scene.layout.HBox card = new javafx.scene.layout.HBox(16);
+                card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                card.setPadding(new Insets(14, 18, 14, 18));
 
-            Label iconLabel = new Label(unlocked ? achievement.getIcon() : "🔒");
-            iconLabel.setStyle("-fx-font-size: 28px;");
+                // 04.5.7: Card thành tựu đã đạt được render
+                card.setStyle(unlocked
+                        ? "-fx-background-color: rgba(0,255,180,0.10); -fx-background-radius: 10;"
+                        + " -fx-border-color: #00ffcc; -fx-border-radius: 10; -fx-border-width: 1.5;"
+                        : "-fx-background-color: rgba(255,255,255,0.04); -fx-background-radius: 10;"
+                        + " -fx-border-color: #444; -fx-border-radius: 10; -fx-border-width: 1;");
 
-            VBox textBlock = new VBox(4);
-            Label nameLabel = new Label(achievement.getDisplayName());
-            nameLabel.setStyle(unlocked
-                    ? "-fx-text-fill: #00ffcc; -fx-font-size: 14px; -fx-font-weight: bold;"
-                    : "-fx-text-fill: #888888; -fx-font-size: 14px; -fx-font-weight: bold;");
-            Label descLabel = new Label(achievement.getDescription());
-            descLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
-            textBlock.getChildren().addAll(nameLabel, descLabel);
+                Label iconLabel = new Label(unlocked ? achievement.getIcon() : "🔒");
+                iconLabel.setStyle("-fx-font-size: 28px;");
 
-            javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
-            javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                VBox textBlock = new VBox(4);
+                Label nameLabel = new Label(achievement.getDisplayName());
+                nameLabel.setStyle(unlocked
+                        ? "-fx-text-fill: #00ffcc; -fx-font-size: 14px; -fx-font-weight: bold;"
+                        : "-fx-text-fill: #888888; -fx-font-size: 14px; -fx-font-weight: bold;");
+                Label descLabel = new Label(achievement.getDescription());
+                descLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
+                textBlock.getChildren().addAll(nameLabel, descLabel);
 
-            Label badge = new Label(unlocked ? "✔ Đã đạt" : "Chưa đạt");
-            badge.setStyle(unlocked
-                    ? "-fx-text-fill: #00ffcc; -fx-font-size: 12px; -fx-font-weight: bold;"
-                    : "-fx-text-fill: #666666; -fx-font-size: 12px;");
+                javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+                javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-            card.getChildren().addAll(iconLabel, textBlock, spacer, badge);
-            achievementList.getChildren().add(card);
+                Label badge = new Label(unlocked ? "✔ Đã đạt" : "Chưa đạt");
+                badge.setStyle(unlocked
+                        ? "-fx-text-fill: #00ffcc; -fx-font-size: 12px; -fx-font-weight: bold;"
+                        : "-fx-text-fill: #666666; -fx-font-size: 12px;");
+
+                card.getChildren().addAll(iconLabel, textBlock, spacer, badge);
+                achievementList.getChildren().add(card);
+            }
+        } catch (Exception e) {
+            // 04.5-E1: Bắt lỗi truy xuất / đánh giá, in ra console (không cho crash UI).
+            e.printStackTrace();
         }
     }
+
 
     // ─────────────────────────────────────────────────────────────────────────
     //  Helpers
