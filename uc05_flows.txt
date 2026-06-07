@@ -1,0 +1,119 @@
+﻿199: Bß║úng 11: M├┤ tß║ú Use Case UC05 (phi├¬n bß║ún cß║¡p nhß║¡t v1.2)
+200: 4.1 Actors
+201: Admin
+202: 4.2 Pre-conditions
+203: Admin ─æ├ú ─æ─âng nhß║¡p th├ánh c├┤ng v├áo hß╗ç thß╗æng vß╗¢i vai tr├▓ ADMIN.
+204: 4.3 Post-conditions
+205: 4.3.1 C├íc thay ─æß╗òi vß╗ü th├┤ng tin hoß║╖c trß║íng th├íi ng╞░ß╗¥i d├╣ng ─æ╞░ß╗úc cß║¡p nhß║¡t ch├¡nh x├íc v├áo CSDL.
+206: 4.3.2 C├íc kß║┐t quß║ú ─æ╞░ß╗úc chß╗ìn bß╗ï x├│a ho├án to├án khß╗Åi CSDL.
+207: 4.3.3 Mß╗ìi thao t├íc quß║ún trß╗ï ─æ╞░ß╗úc ghi nhß║¡n ─æß║ºy ─æß╗º trong audit_log.
+208: 4.4 Trigger
+209: Admin nhß║Ñn chß╗ìn mß╗Ñc "Quß║ún l├╜ ng╞░ß╗¥i ch╞íi" hoß║╖c "Quß║ún l├╜ kß║┐t quß║ú" tß╗½ thanh ─æiß╗üu h╞░ß╗¢ng.
+210: 4.5 Basic Flow
+211: 5.1.0 Admin nhß║Ñn chß╗ìn mß╗Ñc "Quß║ún l├╜ ng╞░ß╗¥i ch╞íi" tß╗½ thanh ─æiß╗üu h╞░ß╗¢ng.
+212: 5.1.2 Hß╗ç thß╗æng hiß╗ân thß╗ï m├án h├¼nh quß║ún l├╜ ng╞░ß╗¥i ch╞íi v├á c├íc n├║t chß╗⌐c n─âng (Th├¬m, Chß╗ënh sß╗¡a, Kho├í/Mß╗ƒ kho├í, Xo├í, L├ám mß╗¢i, Xem nhß║¡t k├╜).
+213: 5.1.3 Hß╗ç thß╗æng tß╗▒ ─æß╗Öng tß║úi danh s├ích ng╞░ß╗¥i ch╞íi; hiß╗ân thß╗ï tß╗æi ─æa 20 ng╞░ß╗¥i mß╗ùi trang c├╣ng thanh ─æiß╗üu h╞░ß╗¢ng ph├ón trang (trang hiß╗çn tß║íi / tß╗òng sß╗æ trang).
+214: 5.1.4 Admin chß╗ìn mß╗Öt trong c├íc chß╗⌐c n─âng: T├¼m kiß║┐m & Lß╗ìc n├óng cao, Th├¬m, Chß╗ënh sß╗¡a, Kho├í/Mß╗ƒ kho├í, Xo├í hoß║╖c Xem lß╗ïch sß╗¡ thao t├íc.
+215: 4.6 Extensions
+216: 4.6.1 First Alternative Flow - UC05.2: T├¼m kiß║┐m & Lß╗ìc n├óng cao ng╞░ß╗¥i d├╣ng [Cß║óI TIß║╛N v1.1]
+217: 5.2.1 Admin nhß║¡p tß╗½ kho├í v├áo ├┤ t├¼m kiß║┐m (Username / T├¬n hiß╗ân thß╗ï) v├á/hoß║╖c ─æiß╗ün c├íc bß╗Ö lß╗ìc mß╗ƒ rß╗Öng: Email, Vai tr├▓, Trß║íng th├íi, Khoß║úng ng├áy tß║ío, Khoß║úng lß║ºn ─æ─âng nhß║¡p gß║ºn nhß║Ñt, Sß╗æ v├ín tß╗æi thiß╗âu / tß╗æi ─æa, C├│/kh├┤ng c├│ kß║┐t quß║ú game.
+218: 5.2.2 Admin nhß║Ñn n├║t T├¼m kiß║┐m. Hß╗ç thß╗æng kiß╗âm tra hß╗úp lß╗ç (ng├áy From <= To, sß╗æ v├ín >= 0, min <= max). Nß║┐u sai, hiß╗ân thß╗ï th├┤ng b├ío lß╗ùi cß╗Ñ thß╗â v├á dß╗½ng.
+219: 5.2.3 Hß╗ç thß╗æng gß╗¡i to├án bß╗Ö ─æiß╗üu kiß╗çn xuß╗æng CSDL, lß║Ñy danh s├ích ph├╣ hß╗úp.
+220: 5.2.4 Hß╗ç thß╗æng hiß╗ân thß╗ï tß╗½ trang ─æß║ºu ti├¬n v├á cß║¡p nhß║¡t nh├ún "T├¼m thß║Ñy N kß║┐t quß║ú".
+221: Alternative 05.2-A1: Admin xo├í hß║┐t ─æiß╗üu kiß╗çn rß╗ôi nhß║Ñn T├¼m kiß║┐m -> Hß╗ç thß╗æng tß║úi lß║íi to├án bß╗Ö danh s├ích kh├┤ng k├¿m bß╗Ö lß╗ìc, hiß╗ân thß╗ï tß╗½ trang ─æß║ºu ti├¬n.
+222: Alternative 05.2-A2: Admin nhß║Ñn L├ám mß╗¢i -> Hß╗ç thß╗æng xo├í ├┤ t├¼m kiß║┐m, reset tß║Ñt cß║ú bß╗Ö lß╗ìc vß╗ü mß║╖c ─æß╗ïnh "Tß║Ñt cß║ú" / trß╗æng, truy vß║Ñn lß║íi v├á hiß╗ân thß╗ï to├án bß╗Ö danh s├ích tß╗½ trang ─æß║ºu.
+223: 4.6.2 Second Alternative Flow - UC05.3: Th├¬m ng╞░ß╗¥i d├╣ng
+224: 5.3.1 Admin nhß║Ñn n├║t "Th├¬m ng╞░ß╗¥i ch╞íi".
+225: 5.3.2 Hß╗ç thß╗æng hiß╗ân thß╗ï dialog nhß║¡p th├┤ng tin: Username (*), Nickname, Mß║¡t khß║⌐u (mß║╖c ─æß╗ïnh 123456), Vai tr├▓.
+226: 5.3.3 Admin nhß║¡p th├┤ng tin v├á nhß║Ñn n├║t Th├¬m.
+227: 5.3.4 Hß╗ç thß╗æng hash mß║¡t khß║⌐u (MD5) v├á l╞░u ng╞░ß╗¥i d├╣ng v├áo CSDL.
+228: 5.3.5 Hß╗ç thß╗æng g├ín ID trß║ú vß╗ü cho User mß╗¢i, chuyß╗ân ─æß║┐n trang cuß╗æi c├╣ng v├á l├ám nß╗òi bß║¡t d├▓ng mß╗¢i.
+229: 5.3.6 Hß╗ç thß╗æng ghi nhß║¡n Log v├áo CSDL (action: CREATE_USER).
+230: Alternative 05.3-A1: Nickname bß╗ï ─æß╗â trß╗æng -> Hß╗ç thß╗æng tß╗▒ ─æß╗Öng lß║Ñy Username l├ám t├¬n hiß╗ân thß╗ï.
+231: 4.6.3 Third Alternative Flow - UC05.4: Chß╗ënh sß╗¡a th├┤ng tin ng╞░ß╗¥i d├╣ng
+232: 5.4.1 Admin chß╗ìn user trong bß║úng.
+233: 5.4.2 Admin nhß║Ñn n├║t Chß╗ënh sß╗¡a.
+234: 5.4.3 Hß╗ç thß╗æng hiß╗ân thß╗ï dialog sß╗¡a ng╞░ß╗¥i d├╣ng vß╗¢i th├┤ng tin hiß╗çn tß║íi ─æ╞░ß╗úc ─æiß╗ün sß║╡n (Username ß╗ƒ chß║┐ ─æß╗Ö read-only, password ß║⌐n).
+235: 5.4.4 Admin cß║¡p nhß║¡t Nickname v├á/hoß║╖c Vai tr├▓ rß╗ôi nhß║Ñn Cß║¡p nhß║¡t.
+236: 5.4.5 Hß╗ç thß╗æng cß║¡p nhß║¡t th├┤ng tin v├áo CSDL.
+237: 5.4.6 Hß╗ç thß╗æng load lß║íi danh s├ích, giß╗» nguy├¬n trang hiß╗çn tß║íi.
+238: 5.4.7 Hß╗ç thß╗æng ghi nhß║¡n Log v├áo CSDL vß╗¢i nß╗Öi dung thay ─æß╗òi tr╞░ß╗¢c/sau (action: UPDATE_USER).
+239: 4.6.4 Fourth Alternative Flow - UC05.5: Kho├í / Mß╗ƒ kho├í t├ái khoß║ún [Cß║óI TIß║╛N v1.1 - A3, A4]
+240: 5.5.1 Admin chß╗ìn User trong bß║úng v├á nhß║Ñn n├║t Kho├í / Mß╗ƒ kho├í.
+241: 5.5.2 Hß╗ç thß╗æng kiß╗âm tra: nß║┐u User ─æ╞░ß╗úc chß╗ìn ch├¡nh l├á Admin ─æang ─æ─âng nhß║¡p, hiß╗ân thß╗ï lß╗ùi "Bß║ín kh├┤ng thß╗â kho├í t├ái khoß║ún cß╗ºa ch├¡nh m├¼nh!" v├á dß╗½ng.
+242: 5.5.3 Hß╗ç thß╗æng hiß╗ân thß╗ï dialog x├íc nhß║¡n. Khi kho├í, hß╗ç thß╗æng th├┤ng b├ío: "T├ái khoß║ún bß╗ï kho├í sß║╜ kh├┤ng thß╗â ─æ─âng nhß║¡p." Khi mß╗ƒ kho├í, hß╗ç thß╗æng th├┤ng b├ío: "T├ái khoß║ún sß║╜ ─æ╞░ß╗úc ph├⌐p ─æ─âng nhß║¡p trß╗ƒ lß║íi."
+243: 5.5.4 Admin x├íc nhß║¡n OK -> Hß╗ç thß╗æng cß║¡p nhß║¡t trß║íng th├íi is_active v├áo CSDL.
+244: 5.5.5 Hß╗ç thß╗æng load lß║íi danh s├ích, cß╗Öt Trß║íng th├íi cß║¡p nhß║¡t t╞░╞íng ß╗⌐ng.
+245: 5.5.6 Hß╗ç thß╗æng ghi nhß║¡n Log v├áo CSDL (action: LOCK_USER / UNLOCK_USER).
+246: Alternative 05.5-A1: Admin nhß║Ñn Huß╗╖ tß║íi dialog x├íc nhß║¡n -> ─É├│ng dialog, kh├┤ng thay ─æß╗òi trß║íng th├íi.
+247: 4.6.5 Fifth Alternative Flow - UC05.6: X├│a ng╞░ß╗¥i d├╣ng [Cß║óI TIß║╛N v1.1 - A4]
+248: 5.6.1 Admin chß╗ìn User trong bß║úng v├á nhß║Ñn n├║t X├│a.
+249: 5.6.2 Hß╗ç thß╗æng kiß╗âm tra: nß║┐u User ─æ╞░ß╗úc chß╗ìn ch├¡nh l├á Admin ─æang ─æ─âng nhß║¡p, hiß╗ân thß╗ï lß╗ùi "Bß║ín kh├┤ng thß╗â x├│a t├ái khoß║ún cß╗ºa ch├¡nh m├¼nh!" v├á dß╗½ng.
+250: 5.6.3 Hß╗ç thß╗æng hiß╗ân thß╗ï hß╗Öp thoß║íi x├íc nhß║¡n: "Xo├í user [t├¬n]? H├ánh ─æß╗Öng n├áy kh├┤ng thß╗â ho├án t├íc."
+251: 5.6.4 Admin x├íc nhß║¡n OK -> Hß╗ç thß╗æng x├│a User khß╗Åi CSDL (CASCADE x├│a game_sessions li├¬n quan).
+252: 5.6.5 Hß╗ç thß╗æng load lß║íi danh s├ích; l├╣i 1 trang nß║┐u trang hiß╗çn tß║íi ─æ├ú trß╗æng.
+253: 5.6.6 Hß╗ç thß╗æng ghi nhß║¡n Log v├áo CSDL vß╗¢i vai tr├▓ v├á trß║íng th├íi gß╗æc (action: DELETE_USER).
+254: Alternative 05.6-A1: Admin nhß║Ñn Huß╗╖ -> ─É├│ng dialog, kh├┤ng c├│ thay ─æß╗òi.
+255: 4.6.6 Sixth Alternative Flow - UC05.7: Xem danh s├ích kß║┐t quß║ú [Cß║óI TIß║╛N v1.2 - D3]
+256: 5.6.1 Admin nhß║Ñn chß╗ìn mß╗Ñc "Quß║ún l├╜ kß║┐t quß║ú" tß╗½ thanh ─æiß╗üu h╞░ß╗¢ng.
+257: 5.6.2 Hß╗ç thß╗æng khß╗ƒi tß║ío c├íc bß╗Ö lß╗ìc mß║╖c ─æß╗ïnh: ─Éß╗Ö kh├│ = Tß║Ñt cß║ú, Kß║┐t quß║ú = Tß║Ñt cß║ú, Username trß╗æng.
+258: 5.6.3 Hß╗ç thß╗æng truy vß║Ñn CSDL v├á lß║Ñy danh s├ích kß║┐t quß║ú, hiß╗ân thß╗ï tß╗æi ─æa 20 bß║ún ghi / trang.
+259: 5.6.4 Hß╗ç thß╗æng hiß╗ân thß╗ï danh s├ích l├¬n bß║úng k├¿m: sß╗æ trang hiß╗çn tß║íi, tß╗òng sß╗æ trang, tß╗òng sß╗æ kß║┐t quß║ú.
+260: 5.6.5 Admin c├│ thß╗â nhß║Ñn v├áo ti├¬u ─æß╗ü cß╗Öt Score hoß║╖c Thß╗¥i gian ─æß╗â sß║»p xß║┐p t─âng/giß║úm dß║ºn. Biß╗âu t╞░ß╗úng Γû▓/Γû╝ hiß╗ân thß╗ï chiß╗üu sß║»p xß║┐p.
+261: 5.6.6 Admin chß╗ìn mß╗Öt trong c├íc chß╗⌐c n─âng: Lß╗ìc kß║┐t quß║ú, X├│a kß║┐t quß║ú gian lß║¡n, Ph├ít hiß╗çn gian lß║¡n tß╗▒ ─æß╗Öng.
+262: 4.6.7 Seventh Alternative Flow - UC05.8: Lß╗ìc kß║┐t quß║ú
+263: 5.7.1 Admin nhß║¡p t├¬n ng╞░ß╗¥i ch╞íi v├á/hoß║╖c chß╗ìn bß╗Ö lß╗ìc ─Éß╗Ö kh├│, Kß║┐t quß║ú rß╗ôi nhß║Ñn n├║t Lß╗ìc.
+264: 5.7.2 Hß╗ç thß╗æng x├íc ─æß╗ïnh ─æiß╗üu kiß╗çn lß╗ìc dß╗▒a tr├¬n th├┤ng tin Admin vß╗½a nhß║¡p.
+265: 5.7.3 Hß╗ç thß╗æng truy vß║Ñn CSDL theo ─æiß╗üu kiß╗çn lß╗ìc, bß║»t ─æß║ºu hiß╗ân thß╗ï lß║íi tß╗½ trang ─æß║ºu ti├¬n.
+266: 5.7.4 Hß╗ç thß╗æng tß║úi lß║íi bß║úng vß╗¢i danh s├ích kß║┐t quß║ú ph├╣ hß╗úp v├á cß║¡p nhß║¡t nh├ún sß╗æ l╞░ß╗úng.
+267: Alternative 05.8-A1: Admin x├│a hß║┐t ─æiß╗üu kiß╗çn -> Hß╗ç thß╗æng nhß║¡n diß╗çn kh├┤ng c├│ bß╗Ö lß╗ìc n├áo, tß║úi lß║íi to├án bß╗Ö danh s├ích tß╗½ CSDL.
+268: Alternative 05.8-A2: Admin nhß║Ñn L├ám mß╗¢i -> Hß╗ç thß╗æng xo├í ├┤ Username, reset ComboBox vß╗ü "Tß║Ñt cß║ú", tß║úi lß║íi to├án bß╗Ö danh s├ích tß╗½ CSDL.
+269: 4.6.8 Eighth Alternative Flow - UC05.9: X├│a kß║┐t quß║ú gian lß║¡n [Cß║óI TIß║╛N v1.2 - B3]
+270: 5.8.1 Admin t├¡ch checkbox tr├¬n tß╗½ng d├▓ng hoß║╖c nhß║Ñn "Chß╗ìn tß║Ñt cß║ú" ─æß╗â chß╗ìn c├íc kß║┐t quß║ú ─æang hiß╗ân thß╗ï tr├¬n bß║úng.
+271: 5.8.2 Admin nhß║Ñn n├║t "Xo├í kß║┐t quß║ú gian lß║¡n".
+272: 5.8.3 Hß╗ç thß╗æng lß║Ñy danh s├ích kß║┐t quß║ú m├á Admin ─æ├ú chß╗ìn.
+273: 5.8.4 Hß╗ç thß╗æng hiß╗ân thß╗ï dialog x├íc nhß║¡n: "Bß║ín c├│ chß║»c muß╗æn x├│a N kß║┐t quß║ú ─æ├ú chß╗ìn? H├ánh ─æß╗Öng n├áy kh├┤ng thß╗â ho├án t├íc." Admin x├íc nhß║¡n OK.
+274: 5.8.5 Hß╗ç thß╗æng thß╗▒c hiß╗çn x├│a to├án bß╗Ö c├íc kß║┐t quß║ú ─æ├ú chß╗ìn khß╗Åi CSDL.
+275: 5.8.6 Hß╗ç thß╗æng tß║úi lß║íi bß║úng v├á hiß╗ân thß╗ï th├┤ng b├ío th├ánh c├┤ng k├¿m sß╗æ l╞░ß╗úng bß║ún ghi ─æ├ú x├│a.
+276: 5.8.7 Hß╗ç thß╗æng ghi nhß║¡n log: Admin thß╗▒c hiß╗çn, danh s├ích m├ú kß║┐t quß║ú bß╗ï x├│a, tß╗òng sß╗æ bß║ún ghi (action: DELETE_SESSION).
+277: Alternative 05.9-A1: Admin nhß║Ñn Huß╗╖ tß║íi dialog x├íc nhß║¡n -> ─É├│ng dialog, kh├┤ng thß╗▒c hiß╗çn x├│a.
+278: 4.6.9 Ninth Alternative Flow - UC05.10: Ph├ít hiß╗çn gian lß║¡n tß╗▒ ─æß╗Öng [Mß╗ÜI v1.2 - B5]
+279: 5.9.1 Admin nhß║Ñn n├║t "Ph├ít hiß╗çn gian lß║¡n" tr├¬n m├án h├¼nh Quß║ún l├╜ kß║┐t quß║ú.
+280: 5.9.2 Hß╗ç thß╗æng ─æß╗ìc ng╞░ß╗íng thß╗¥i gian hß╗úp l├╜ (v├¡ dß╗Ñ: EASY < 5s, MEDIUM < 20s, HARD < 60s, EXPERT < 120s).
+281: 5.9.3 Hß╗ç thß╗æng qu├⌐t tß║Ñt cß║ú kß║┐t quß║ú WIN ─æang hiß╗ân thß╗ï trong bß║úng, so s├ính completion_time vß╗¢i ng╞░ß╗íng t╞░╞íng ß╗⌐ng cß╗ºa tß╗½ng level.
+282: 5.9.4 C├íc d├▓ng nghi vß║Ñn ─æ╞░ß╗úc tß╗▒ ─æß╗Öng highlight v├á t├¡ch chß╗ìn checkbox.
+283: 5.9.5 Nh├ún trß║íng th├íi hiß╗ân thß╗ï: "Ph├ít hiß╗çn N kß║┐t quß║ú nghi vß║Ñn".
+284: 5.9.6 Admin xem x├⌐t v├á c├│ thß╗â bß╗Å chß╗ìn bß║Ñt kß╗│ d├▓ng n├áo tr╞░ß╗¢c khi nhß║Ñn X├│a kß║┐t quß║ú gian lß║¡n (tiß║┐p tß╗Ñc theo UC05.9).
+285: Alternative 05.9-A1: Kh├┤ng t├¼m thß║Ñy kß║┐t quß║ú nghi vß║Ñn -> Hß╗ç thß╗æng hiß╗ân thß╗ï th├┤ng b├ío "Kh├┤ng ph├ít hiß╗çn kß║┐t quß║ú bß║Ñt th╞░ß╗¥ng n├áo."
+286: 4.6.10 Tenth Alternative Flow - UC05.11: Xem thß╗æng k├¬ tß╗òng hß╗úp theo ng╞░ß╗¥i ch╞íi [Mß╗ÜI v1.2 - E1]
+287: 5.10.1 Admin chß╗ìn 1 user trong bß║úng Quß║ún l├╜ kß║┐t quß║ú v├á nhß║Ñn n├║t "Thß╗æng k├¬ ng╞░ß╗¥i ch╞íi"
+288: 5.10.2 Hß╗ç thß╗æng truy vß║Ñn CSDL to├án bß╗Ö game_sessions cß╗ºa user_id ─æ├│ ─æß╗â thß╗æng k├¬.
+289: 5.10.3 Hß╗ç thß╗æng hiß╗ân thß╗ï popup thß╗æng k├¬ gß╗ôm: Thß╗æng k├¬ tß╗òng quan (Tß╗òng v├ín ch╞íi | Thß║»ng / Thua | Tß╗ë lß╗ç thß║»ng (%) | ─Éiß╗âm trung b├¼nh) v├á bß║úng th├ánh t├¡ch tß╗æt nhß║Ñt theo tß╗½ng ─æß╗Ö kh├│ (Best Score, Best Time).
+290: 5.10.4 Admin xem th├┤ng tin v├á nhß║Ñn ─É├│ng ─æß╗â quay lß║íi m├án h├¼nh ch├¡nh.
+291: Alternative 05.10-A1: User ch╞░a c├│ v├ín ch╞íi n├áo -> Hiß╗ân thß╗ï th├┤ng b├ío "Ng╞░ß╗¥i ch╞íi ch╞░a c├│ kß║┐t quß║ú n├áo."
+299: 5.1 Danh s├ích Unit testing
+301: Bß║úng 12: Danh s├ích Unit Testing cho Use Case UC05
+303: 5.2 Danh s├ích Test case Release Testing
+304: M├┤i tr╞░ß╗¥ng kiß╗âm thß╗¡:
+305: Phi├¬n bß║ún kiß╗âm thß╗¡: Release build UC02
+306: Hß╗ç ─æiß╗üu h├ánh: Windows
+307: Ng╞░ß╗¥i thß╗▒c hiß╗çn: Nguyß╗àn V─ân ─Éiß╗ün
+308: Ng├áy kiß╗âm thß╗¡: 06/06/2026
+309: Ph╞░╞íng ph├íp: Kiß╗âm thß╗¡ thß╗º c├┤ng tr├¬n giao diß╗çn ng╞░ß╗¥i d├╣ng
+311: Bß║úng 13: Danh s├ích Test case Release Testing cho Use Case UC05
+313: Ch╞░╞íng 6. L╞░ß╗úc ─æß╗ô Sequence cho Use case ─æ├ú chß╗ìn
+317: H├¼nh 4: Sequence UC05
+318: Link:
+319: https://drive.google.com/file/d/1iUvUlGu2EnJCbdQ2KHTIg-opr__x3-Vh/view?usp=sharing
+320: Ch╞░╞íng 7. C├íc giao diß╗çn (GUI/ UI)
+321: 7.1 Th├┤ng tin chung:
+323: 7.2 Bß║úng m├áu:
+325: 7.3 K├¡ch th╞░ß╗¢c v├á bß╗æ cß╗Ñc chung
+327: 7.4 C├íc giao diß╗çn:
+329: H├¼nh 5: Giao diß╗çn quß║ún l├╜ ng╞░ß╗¥i d├╣ng
+331: H├¼nh 6: Giao diß╗çn quß║ún l├╜ editlog
+333: H├¼nh 7. Giao diß╗çn quß║ún l├╜ kß║┐t quß║ú - th├ánh t├¡ch
+335: H├¼nh 8: Giao diß╗çn thß╗æng k├¬ th├┤ng tin ng╞░ß╗¥i ch╞íi
+336: Ch╞░╞íng 8. S╞í ─æß╗ô Class cß║ú nh├│m
+339: H├¼nh 9: L╞░ß╗úc ─æß╗ô lß╗¢p (Class Diagram) cß╗ºa hß╗ç thß╗æng Minesweeper
+340: Ch╞░╞íng 9. Tham khß║úo
