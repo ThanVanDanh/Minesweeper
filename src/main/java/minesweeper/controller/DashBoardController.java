@@ -179,6 +179,7 @@ public class DashBoardController {
     }
 
     @FXML
+//    có chỉnh sửa code cũ [Hoa]
     private void onStartBattle() {
         CustomBoardSelection customSelection = null;
         int playerCount;
@@ -282,6 +283,7 @@ public class DashBoardController {
     }
 
     @FXML
+//    code mới thêm vào [Hoa]
     private void onCancelPlayerNamePopup() {
         // AF-2.2.6.1 Người chơi nhấn "Hủy" tại popup nhập tên [UC02]
         // AF-2.2.6.2 Hệ thống đóng popup nhập tên [UC02]
@@ -295,6 +297,7 @@ public class DashBoardController {
     }
 
     @FXML
+//    code mới thêm vào [Hoa]
     private void onConfirmPlayerNamePopup() {
         TextField[] fields = {
                 playerNameField1,
@@ -323,12 +326,12 @@ public class DashBoardController {
                 playerNames
         );
     }
-
+//code mới thêm vào [Hoa]
     private void hidePlayerNamePopup() {
         playerNameOverlay.setVisible(false);
         playerNameOverlay.setManaged(false);
     }
-
+// có chỉnh sửa code cũ [Hoa]
     private void openBoardGame(
             CustomBoardSelection customSelection,
             int playerCount,
@@ -478,7 +481,7 @@ public class DashBoardController {
     private void updateSelectedMode(String title, String meta) {
         selectedModeLabel.setText("Chế độ đã chọn: " + title + " - " + meta + " | " + getPlayerMeta());
     }
-
+// code mới thêm vào [Hoa]
     private void setupCustomInputListeners() {
         List.of(customRowsField, customColsField, customMinesField)
                 .forEach(field -> field.textProperty().addListener((obs, oldValue, newValue) -> {
@@ -491,12 +494,12 @@ public class DashBoardController {
                 (obs, oldValue, newValue) -> updateSelectedModeForCurrentSelection()
         );
     }
-
+// code mới thêm vào [Hoa]
     private void setCustomInputsDisabled(boolean disabled) {
         List.of(customRowsField, customColsField, customMinesField)
                 .forEach(field -> field.setDisable(disabled));
     }
-
+//code mới thêm vào [Hoa]
     private void applySelectedDifficultyDefaults() {
         Difficulty difficulty = getSelectedDifficultyOrNull();
 
@@ -508,7 +511,7 @@ public class DashBoardController {
         customColsField.setText(String.valueOf(difficulty.getCols()));
         customMinesField.setText(String.valueOf(difficulty.getMines()));
     }
-
+//code mới thêm vào [Hoa]
     private void updateSelectedModeForCurrentSelection() {
         if (customButton.isSelected()) {
             updateCustomModeLabel();
@@ -522,7 +525,7 @@ public class DashBoardController {
             updateSelectedMode("CHUYÊN GIA", "20×30 | 145 mìn");
         }
     }
-
+//code mới thêm vào [Hoa]
     private void updateCustomModeLabel() {
         try {
             CustomBoardSelection selection = getCustomBoardSelection();
@@ -531,7 +534,7 @@ public class DashBoardController {
             selectedModeLabel.setText("Chế độ đã chọn: TÙY CHỈNH - nhập hàng, cột, mìn và người chơi");
         }
     }
-
+//code mới thêm vào [Hoa]
     private CustomBoardSelection getCustomBoardSelection() {
         int rows = parseCustomNumber(customRowsField, "Số hàng");
         int cols = parseCustomNumber(customColsField, "Số cột");
@@ -558,7 +561,7 @@ public class DashBoardController {
 
         return new CustomBoardSelection(rows, cols, mines, players);
     }
-
+//code mới thêm vào [Hoa]
     private int getSelectedPlayerCount() {
         int players = parseCustomNumber(customPlayersField, "Số người chơi");
 
@@ -568,7 +571,7 @@ public class DashBoardController {
 
         return players;
     }
-
+//code mới thêm vào [Hoa]
     private String getPlayerMeta() {
         try {
             return getSelectedPlayerCount() + " người chơi";
@@ -576,6 +579,7 @@ public class DashBoardController {
             return "số người chơi 1-4";
         }
     }
+// code mới thêm vào [Hoa]
 
     private int parseCustomNumber(TextField field, String label) {
         String raw = field.getText();
@@ -752,6 +756,7 @@ public class DashBoardController {
             rankingContainer.getChildren().add(errorLabel);
         }
     }
+//    code mới thêm vào [Hoa]
     private boolean isHighMineDensity(CustomBoardSelection selection) {
         // AF-2.2.3.1 Hệ thống tính toán mật độ mìn theo công thức: (Số mìn / Tổng số ô) * 100 [UC02]
         int totalCells = selection.rows() * selection.cols();
@@ -760,7 +765,7 @@ public class DashBoardController {
         // AF-2.2.3.2 Hệ thống phát hiện số lượng mìn quá cao so với kích thước bàn cờ [UC02]
         return density > HIGH_MINE_DENSITY_THRESHOLD;
     }
-
+//code mới thêm vào [Hoa]
     private void showMineDensityWarning(
             CustomBoardSelection customSelection,
             int playerCount,
@@ -787,6 +792,7 @@ public class DashBoardController {
     }
 
     @FXML
+//    code mới thêm vào [Hoa]
     private void onContinueMineDensityWarning() {
         // AF-2.2.3.4 Nếu người chơi chọn "Tiếp tục", hệ thống đóng hộp thoại và đi tiếp tới BF-2.1.11 [UC02]
         hideMineDensityWarning();
@@ -805,6 +811,7 @@ public class DashBoardController {
     }
 
     @FXML
+//    code mới thêm vào [Hoa]
     private void onChangeMineDensityWarning() {
         // AF-2.2.3.5 Nếu người chơi chọn "Thay đổi", hệ thống đóng hộp thoại và cho phép chỉnh lại số mìn [UC02]
         hideMineDensityWarning();
@@ -820,12 +827,13 @@ public class DashBoardController {
         mineDensityWarningOverlay.setVisible(false);
         mineDensityWarningOverlay.setManaged(false);
     }
-
+//code mới thêm vào [Hoa]
     private void clearMineDensityWarningData() {
         pendingWarningCustomSelection = null;
         pendingWarningPlayerCount = 0;
         pendingWarningCurrentUser = null;
     }
+//    code mới thêm vào [Hoa]
     private void continueOpenGameAfterConfigAccepted(
             CustomBoardSelection customSelection,
             int playerCount,
