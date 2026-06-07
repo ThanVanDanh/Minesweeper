@@ -20,7 +20,7 @@ public class PasswordResetRepository {
     private static final String MARK_USED_SQL =
             "UPDATE password_reset_tokens SET used = TRUE WHERE id = ?";
     private static final String DELETE_EXPIRED_SQL =
-            "DELETE FROM password_reset_tokens WHERE expires_at < NOW() OR used = TRUE";
+            "DELETE FROM password_reset_tokens WHERE expires_at < ? OR used = TRUE";
 
     private final ConnectionFactory connectionFactory;
 
@@ -104,6 +104,7 @@ public class PasswordResetRepository {
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(DELETE_EXPIRED_SQL)) {
 
+            ps.setTimestamp(1, Timestamp.valueOf(java.time.LocalDateTime.now()));
             int rows = ps.executeUpdate();
 
             LOG.debug("Đã xóa {} mã đặt lại mật khẩu hết hạn hoặc đã được sử dụng", rows);
