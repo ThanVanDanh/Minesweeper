@@ -7,7 +7,39 @@
     <list default="true" id="0d7c4047-fbad-4578-9ed3-ea6368b56c54" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/RankingHistoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/RankingHistoryController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/minesweeper/TestUC02/BoardUC02UnitTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/minesweeper/TestUC02/DashBoardControllerComponentUC02Test.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/minesweeper/TestUC02/DashBoardControllerValidationUC02Test.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/minesweeper/TestUC02/UC02SystemFlowTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.config/git-ai/update_cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/.config/git-ai/update_cache.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilotDiffState.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/BoardGameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/BoardGameController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/DashBoardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/DashBoardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/ForgotPasswordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/ForgotPasswordController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/GameController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/controller/SettingsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/controller/SettingsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/model/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/model/Board.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/repository/MySqlEmailVerificationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/repository/MySqlEmailVerificationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/repository/PasswordResetRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/repository/PasswordResetRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/service/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/service/EmailService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/service/ForgotPasswordService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/service/ForgotPasswordService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/minesweeper/service/RememberMeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/minesweeper/service/RememberMeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/CryptUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/utils/CryptUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/app/forgot-password.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/app/forgot-password.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/mysql.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mysql.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/minesweeper/BoardTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/minesweeper/DashBoardControllerValidationTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/minesweeper/PlayerNameBeforeGameTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/minesweeper/admin/AdminUserControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/minesweeper/admin/AdminUserControllerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,6 +50,18 @@
     <persistenceIdMap>
       <entry key="_/Users/laiqua/Documents/Game" value="3EkFu454qqMct4jmNHWprGnPi8m" />
     </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="agent-panel" value="Claude Haiku 4.5" />
+      <entry key="chat-panel" value="Claude Haiku 4.5" />
+    </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="156" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -74,12 +118,15 @@
     &quot;JUnit.DashBoardControllerValidationUC02Test.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.UC02SystemFlowTest (1).executor&quot;: &quot;Run&quot;,
     &quot;JUnit.UC02SystemFlowTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.UC03.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.UC03_4_ChuyenLuotTest.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;hoa&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Merging thu&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
