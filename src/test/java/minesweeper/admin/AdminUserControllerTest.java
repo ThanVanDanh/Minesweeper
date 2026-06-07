@@ -265,7 +265,7 @@ public class AdminUserControllerTest {
         String username    = "newuser01";
         String displayName = "TestNick";
         Role   role        = Role.PLAYER;
-        String passHash    = "e10adc3949ba59abbe56e057f20f883e"; // md5("123456")
+        String passHash    = "some-bcrypt-hash"; // dummy hash (mock test, không dùng thật)
 
         when(userService.createUserFull(username, displayName, role, passHash))
                 .thenReturn(42L);

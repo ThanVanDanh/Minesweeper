@@ -10,7 +10,7 @@ import utils.CryptUtils;
 
 import jakarta.mail.MessagingException;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Random;
 
 public class ForgotPasswordService {
     private static final Logger LOG = LoggerFactory.getLogger(ForgotPasswordService.class);
@@ -34,7 +34,7 @@ public class ForgotPasswordService {
         this.emailService = emailService;
     }
 
-    public void sendPasswordResetLink(String email) throws DataAccessException, MessagingException {
+    public void sendPasswordResetOtp(String email) throws DataAccessException, MessagingException {
         User user = userService.getUserByEmail(email);
         if (user == null) {
             LOG.warn("Reset password requested for non-existent email: {}", email);
@@ -45,31 +45,31 @@ public class ForgotPasswordService {
             throw new IllegalArgumentException("Tài khoản chưa được kích hoạt. Vui lòng xác nhận email đăng ký.");
         }
 
-        String token = UUID.randomUUID().toString();
+        String otp = String.format("%06d", new Random().nextInt(1000000));
         PasswordResetToken resetToken = new PasswordResetToken(
             user.getId(),
-            token,
+            otp,
             email,
             LocalDateTime.now().plusMinutes(RESET_TOKEN_EXPIRE_MINS)
         );
         resetTokenRepo.save(resetToken);
 
-        emailService.sendPasswordResetEmail(email, token);
-        LOG.info("Password reset link sent to email: {}", email);
+        emailService.sendPasswordResetOtpEmail(email, otp);
+        LOG.info("Password reset OTP sent to email: {}", email);
     }
 
     public void resetPassword(String token, String newPassword) throws DataAccessException {
         if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Token không hợp lệ.");
+            throw new IllegalArgumentException("Vui lòng nhập mã OTP.");
         }
 
         PasswordResetToken resetToken = resetTokenRepo.findByToken(token);
         if (resetToken == null) {
-            throw new IllegalArgumentException("Link reset password không hợp lệ hoặc đã hết hạn.");
+            throw new IllegalArgumentException("Mã OTP không hợp lệ hoặc đã hết hạn.");
         }
 
         if (!resetToken.isValid()) {
-            throw new IllegalArgumentException("Link reset password đã hết hạn (30 phút). Vui lòng yêu cầu cấp lại.");
+            throw new IllegalArgumentException("Mã OTP đã hết hạn (30 phút). Vui lòng yêu cầu cấp lại.");
         }
 
         // Validate new password
