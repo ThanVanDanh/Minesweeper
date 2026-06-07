@@ -74,34 +74,37 @@ public class BoardGameController implements Initializable {
         setupTurnTimer();
     }
 
-    // UC02.1 - Chọn độ khó & UC02.2 - Bắt đầu ván mới
-    public void setInitialDifficulty(Difficulty selectedDifficulty) {
-        setInitialDifficulty(selectedDifficulty, Board.MIN_PLAYER_COUNT);
-    }
-
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ có sẵn từ DashBoardController [UC02], có chỉnh sửa code cũ [Hoa]
     public void setInitialDifficulty(Difficulty selectedDifficulty, int playerCount) {
         if (selectedDifficulty == null) return;
         startGame(selectedDifficulty, playerCount);
     }
 
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ tùy chỉnh từ DashBoardController [UC02],code mới thêm vào [Hoa]
     public void setInitialCustomBoard(int rows, int cols, int mines, int playerCount) {
         startCustomGame(rows, cols, mines, playerCount);
     }
 
-    // UC02.2 - Bắt đầu ván mới
+    // BF-2.1.12 Khởi tạo bàn cờ theo chế độ có sẵn [UC02], có chỉnh sửa code cũ [Hoa]
     private void startGame(Difficulty diff, int playerCount) {
-        gameLogic.startNewGame(diff, playerCount); // UC02.1 & UC02.2
+        gameLogic.startNewGame(diff, playerCount);
+
+        // BF-2.1.12 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
         resetGameStartState();
+
+        // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
         renderBoard();
-//        startTimer();
     }
 
-    // UC02.2 - Bắt đầu ván mới
+    // BF-2.1.12 Khởi tạo bàn cờ theo cấu hình tùy chỉnh [UC02],code mới thêm vào [Hoa]
     private void startCustomGame(int rows, int cols, int mines, int playerCount) {
         gameLogic.startCustomGame(rows, cols, mines, playerCount);
+
+        // BF-2.1.12 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
         resetGameStartState();
+
+        // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
         renderBoard();
-//        startTimer();
     }
 
     private void resetGameStartState() {
@@ -129,7 +132,7 @@ public class BoardGameController implements Initializable {
         }
         startTurnTimer();
     }
-
+    // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
     private void renderBoard() {
         minesweeperGrid.getChildren().clear();
         int rows = gameLogic.getBoard().getRows();
@@ -169,7 +172,6 @@ public class BoardGameController implements Initializable {
                     // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
                         GameState stateBeforeMove = gameLogic.getGameState();
-                        // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal)
                         if (currentCell.isRevealed()) {
                             // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
                             int openedCells = gameLogic.fastReveal(finalR, finalC);
@@ -179,7 +181,7 @@ public class BoardGameController implements Initializable {
                             if (isFlagMode) {
                                 actionTaken = gameLogic.toggleFlag(finalR, finalC);
                             } else {
-                                // 3.1 MỞ Ô (Basic Flow)
+                                // 03.2 MỞ Ô (Basic Flow)
                                 int openedCells = gameLogic.reveal(finalR, finalC);
                                 actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                             }
@@ -200,11 +202,12 @@ public class BoardGameController implements Initializable {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
-                    // UC03.3 - Chuyển lượt
+                    /// UC03.4 - Chuyển lượt
                     else if (actionTaken) {
                         int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
                         boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
                         if (isTurnChanged) {
+                            // UC03.4: Chuyển lượt
                             restartTurnTimer(true);
                         } else {
                             updateStatus();
@@ -218,7 +221,7 @@ public class BoardGameController implements Initializable {
                 minesweeperGrid.add(btnCell, c, r);
             }
         }
-
+        // BF-2.1.12 Cập nhật trạng thái bàn cờ sau khi render [UC02]
         updateBoardUI();
     }
 
@@ -316,7 +319,7 @@ public class BoardGameController implements Initializable {
         updateItemUI();
     }
 
-    // UC03.6 - Tạm dừng / Tiếp tục: Kích hoạt khi nhấn nút btnPause
+    // UC03.3 - Tạm dừng / Tiếp tục: Kích hoạt khi nhấn nút btnPause
     @FXML
     private void togglePause() {
         if (gameLogic.getGameState() != GameState.PLAYING && !gameLogic.isPaused()) return;
@@ -326,12 +329,12 @@ public class BoardGameController implements Initializable {
         if (pauseOverlay != null) pauseOverlay.setVisible(isNowPaused);
 
         if (isNowPaused) {
-            // UC05 - Tạm dừng
+            // UC03.3 - Tạm dừng
             stopTimer();
             stopTurnTimer();
             if (btnPause != null) btnPause.setText("Tiếp tục");
         } else {
-            // UC06 - Tiếp tục ván game
+            // UC03.3 - Tiếp tục ván game
             startTimer();
             startTurnTimer();
             if (btnPause != null) btnPause.setText("Tạm dừng");
@@ -691,7 +694,6 @@ public class BoardGameController implements Initializable {
         }
     }
 
-    // UC02.2 - Bắt đầu ván mới
     @FXML
     public void restartGame(ActionEvent actionEvent) {
         if (isFlagMode) {
@@ -718,13 +720,13 @@ public class BoardGameController implements Initializable {
     private boolean isBlindBombPending = false;
     private AudioClip smokeAudioClip;
 
-    // UC03.5 - Sử dụng Bom mù (Điều kiện nâng cấp: >= 200 điểm)
+    // UC03.6 - Sử dụng Bom mù (Điều kiện nâng cấp: >= 200 điểm)
     @FXML
     private void useBlindBomb(ActionEvent event) {
         if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) return;
 
         int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
-
+        // UC03.6
         if (currentScore >= 200 && !isBlindBombPending && !isBlindBombActive) {
             gameLogic.deductCurrentPlayerScore(100);
             isBlindBombPending = true;
@@ -732,7 +734,7 @@ public class BoardGameController implements Initializable {
                 btnBlindBomb.getStyleClass().add("item-button-active");
             }
             System.out.println("Bom mù ĐÃ GÀI! Bị trừ 100 điểm.");
-            updateStatus(); // UC03.4: Cập nhật lại UI điểm số
+            updateStatus(); // UC03.5: Cập nhật lại UI điểm số
         }
     }
     private void processBlindBombTurnTransition() {
@@ -779,7 +781,7 @@ public class BoardGameController implements Initializable {
         }
 
         int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
-        if (currentScore < 100) {
+        if (currentScore < 200) {
             btnBlindBomb.setDisable(true);
             btnBlindBomb.setOpacity(0.4);
         } else {
