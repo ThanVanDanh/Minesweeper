@@ -6,6 +6,8 @@ public class GameResultFilterSpec {
     public String     username;
     public Difficulty difficulty;
     public Boolean    win;
+    public String     sortBy;  // "score" or "time"
+    public String     sortDir; // "ASC" or "DESC"
 
     public GameResultFilterSpec() {}
 
