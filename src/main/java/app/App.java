@@ -35,9 +35,7 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
 
-        if (autoUser == null && SessionManager.getCurrentUser() == null) {
-            AuthPopupHelper.openAuthPopup(root, false, null);
-        }
+
     }
 
     public static void main(String[] args) {
