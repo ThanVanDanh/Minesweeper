@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class User {
     private long id;
     private String username;
-    private String passwordHash; // MD5 hash
+    private String passwordHash; // BCrypt hash
     private String displayName;
     private String email;
     private Role role;
