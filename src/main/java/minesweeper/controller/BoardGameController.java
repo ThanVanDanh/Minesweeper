@@ -74,36 +74,36 @@ public class BoardGameController implements Initializable {
         setupTurnTimer();
     }
 
-    // 3.1.12 Nhận dữ liệu cài đặt chế độ có sẵn từ DashBoardController [UC02]
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ có sẵn từ DashBoardController [UC02]
     public void setInitialDifficulty(Difficulty selectedDifficulty, int playerCount) {
         if (selectedDifficulty == null) return;
         startGame(selectedDifficulty, playerCount);
     }
 
-    // 3.1.12 Nhận dữ liệu cài đặt chế độ tùy chỉnh từ DashBoardController [UC02]
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ tùy chỉnh từ DashBoardController [UC02]
     public void setInitialCustomBoard(int rows, int cols, int mines, int playerCount) {
         startCustomGame(rows, cols, mines, playerCount);
     }
 
-    // 3.1.13 Khởi tạo ván đấu theo chế độ có sẵn [UC02]
+    // BF-2.1.12 Khởi tạo bàn cờ theo chế độ có sẵn [UC02]
     private void startGame(Difficulty diff, int playerCount) {
         gameLogic.startNewGame(diff, playerCount);
 
-        // 3.1.14 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
+        // BF-2.1.12 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
         resetGameStartState();
 
-        // 3.1.15 Vẽ bàn cờ lên giao diện chơi game [UC02]
+        // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
         renderBoard();
     }
 
-    // 3.1.13 Khởi tạo ván đấu theo cấu hình tùy chỉnh [UC02]
+    // BF-2.1.12 Khởi tạo bàn cờ theo cấu hình tùy chỉnh [UC02]
     private void startCustomGame(int rows, int cols, int mines, int playerCount) {
         gameLogic.startCustomGame(rows, cols, mines, playerCount);
 
-        // 3.1.14 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
+        // BF-2.1.12 Reset trạng thái ban đầu của ván đấu: thời gian, lượt chơi và lớp phủ giao diện [UC02]
         resetGameStartState();
 
-        // 3.1.15 Vẽ bàn cờ lên giao diện chơi game [UC02]
+        // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
         renderBoard();
     }
 
@@ -132,7 +132,7 @@ public class BoardGameController implements Initializable {
         }
         startTurnTimer();
     }
-    // 3.1.15 Vẽ bàn cờ lên giao diện chơi game [UC02]
+    // BF-2.1.12 Vẽ bàn cờ lên giao diện chơi game [UC02]
     private void renderBoard() {
         minesweeperGrid.getChildren().clear();
         int rows = gameLogic.getBoard().getRows();
@@ -220,7 +220,7 @@ public class BoardGameController implements Initializable {
                 minesweeperGrid.add(btnCell, c, r);
             }
         }
-        // 3.1.16 Cập nhật trạng thái bàn cờ sau khi render [UC02]
+        // BF-2.1.12 Cập nhật trạng thái bàn cờ sau khi render [UC02]
         updateBoardUI();
     }
 
