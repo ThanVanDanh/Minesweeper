@@ -74,18 +74,18 @@ public class BoardGameController implements Initializable {
         setupTurnTimer();
     }
 
-    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ có sẵn từ DashBoardController [UC02]
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ có sẵn từ DashBoardController [UC02], có chỉnh sửa code cũ [Hoa]
     public void setInitialDifficulty(Difficulty selectedDifficulty, int playerCount) {
         if (selectedDifficulty == null) return;
         startGame(selectedDifficulty, playerCount);
     }
 
-    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ tùy chỉnh từ DashBoardController [UC02]
+    // BF-2.1.11 Nhận dữ liệu cài đặt chế độ tùy chỉnh từ DashBoardController [UC02],code mới thêm vào [Hoa]
     public void setInitialCustomBoard(int rows, int cols, int mines, int playerCount) {
         startCustomGame(rows, cols, mines, playerCount);
     }
 
-    // BF-2.1.12 Khởi tạo bàn cờ theo chế độ có sẵn [UC02]
+    // BF-2.1.12 Khởi tạo bàn cờ theo chế độ có sẵn [UC02], có chỉnh sửa code cũ [Hoa]
     private void startGame(Difficulty diff, int playerCount) {
         gameLogic.startNewGame(diff, playerCount);
 
@@ -96,7 +96,7 @@ public class BoardGameController implements Initializable {
         renderBoard();
     }
 
-    // BF-2.1.12 Khởi tạo bàn cờ theo cấu hình tùy chỉnh [UC02]
+    // BF-2.1.12 Khởi tạo bàn cờ theo cấu hình tùy chỉnh [UC02],code mới thêm vào [Hoa]
     private void startCustomGame(int rows, int cols, int mines, int playerCount) {
         gameLogic.startCustomGame(rows, cols, mines, playerCount);
 
