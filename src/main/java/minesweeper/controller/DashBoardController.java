@@ -26,9 +26,6 @@ import minesweeper.model.enums.Difficulty;
 import minesweeper.service.SessionManager;
 import utils.AdminPopupHelper;
 import utils.AuthPopupHelper;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import java.util.Optional;
 
 import java.io.IOException;
 import java.util.List;
@@ -114,7 +111,6 @@ public class DashBoardController {
     private static final int MAX_COLS = 40;
     private static final int MIN_PLAYERS = Board.MIN_PLAYER_COUNT;
     private static final int MAX_PLAYERS = Board.MAX_PLAYER_COUNT;
-    private static final double MINE_DENSITY_WARNING_THRESHOLD = 0.5;
     private static final double HIGH_MINE_DENSITY_THRESHOLD = 0.5;
 
     private CustomBoardSelection pendingWarningCustomSelection;
@@ -188,33 +184,49 @@ public class DashBoardController {
         int playerCount;
 
         try {
+            // BF-2.1.8 Người chơi nhập số người chơi, mặc định là 1 [UC02]
+            // BF-2.1.10 Hệ thống kiểm tra cấu hình ván đấu và số lượng người chơi là hợp lệ [UC02]
             playerCount = getSelectedPlayerCount();
         } catch (IllegalArgumentException e) {
+            // AF-2.2.4.4 Hệ thống không chuyển sang màn hình chơi game. Use Case tạm dừng [UC02]
+            // AF-2.2.4.3 Hệ thống hiển thị thông báo yêu cầu nhập số nguyên từ 1 đến 4 [UC02]
             selectedModeLabel.setText("Cấu hình số người chơi chưa hợp lệ: " + e.getMessage());
             return;
         }
 
         if (customButton.isSelected()) {
             try {
+                // AF-2.2.1.1 Người chơi chọn chế độ Tùy chỉnh [UC02]
+                // AF-2.2.1.3 Người chơi nhập số hàng, số cột và số mìn [UC02]
                 customSelection = getCustomBoardSelection();
 
+                // AF-2.2.3.1 Hệ thống tính toán mật độ mìn theo công thức: (Số mìn / Tổng số ô) * 100 [UC02]
                 if (isHighMineDensity(customSelection)) {
                     User currentUser = SessionManager.getCurrentUser();
+
+                    // AF-2.2.3.3 Hệ thống hiển thị hộp thoại cảnh báo mật độ mìn cao [UC02]
                     showMineDensityWarning(customSelection, playerCount, currentUser);
                     return;
                 }
 
+                // AF-2.2.1.4 Hệ thống cập nhật nhãn chế độ chơi theo thông tin tùy chỉnh [UC02]
                 selectedModeLabel.setText("Đang chuẩn bị bàn chơi: TÙY CHỈNH - " + customSelection.meta());
+
             } catch (IllegalArgumentException e) {
+                // AF-2.2.2.2 Hệ thống phát hiện dữ liệu không hợp lệ như bị trống, chứa chữ cái, số hàng/cột ngoài giới hạn hoặc số mìn lớn hơn/bằng tổng số ô [UC02]
+                // AF-2.2.2.3 Hệ thống ngừng thao tác chuyển màn hình và không khởi tạo bàn cờ [UC02]
+                // AF-2.2.2.4 Hệ thống hiển thị thông báo lỗi tại Dashboard để cảnh báo người chơi [UC02]
                 selectedModeLabel.setText("Cấu hình tùy chỉnh chưa hợp lệ: " + e.getMessage());
                 return;
             }
         } else {
+            // BF-2.1.6 Hệ thống ghi nhận chế độ chơi được chọn [UC02]
             selectedModeLabel.setText("Đang chuẩn bị bàn chơi: " + selectedModeLabel.getText());
         }
 
         User currentUser = SessionManager.getCurrentUser();
 
+        // BF-2.1.9 Người chơi nhấn nút Bắt đầu [UC02]
         continueOpenGameAfterConfigAccepted(
                 customSelection,
                 playerCount,
@@ -245,6 +257,8 @@ public class DashBoardController {
                 playerNameField4
         };
 
+        // AF-2.2.5.1 Hệ thống hiển thị popup yêu cầu nhập tên tương ứng với số người chơi [UC02]
+        // AF-2.2.5.2 Hệ thống điền sẵn tên mặc định như Player 01, Player 02,... [UC02]
         for (int i = 0; i < fields.length; i++) {
             boolean active = i < playerCount;
 
@@ -262,12 +276,17 @@ public class DashBoardController {
             }
         }
 
+        // AF-2.2.5.1 Hiển thị popup nhập tên người chơi [UC02]
         playerNameOverlay.setVisible(true);
         playerNameOverlay.setManaged(true);
     }
 
     @FXML
     private void onCancelPlayerNamePopup() {
+        // AF-2.2.6.1 Người chơi nhấn "Hủy" tại popup nhập tên [UC02]
+        // AF-2.2.6.2 Hệ thống đóng popup nhập tên [UC02]
+        // AF-2.2.6.3 Hệ thống không khởi tạo bàn cờ [UC02]
+        // AF-2.2.6.4 Use Case kết thúc [UC02]
         hidePlayerNamePopup();
 
         pendingPlayerCount = 0;
@@ -284,6 +303,8 @@ public class DashBoardController {
                 playerNameField4
         };
 
+        // AF-2.2.5.3 Người chơi nhập hoặc chỉnh sửa tên người chơi [UC02]
+        // AF-2.2.5.4 Người chơi nhấn "Xác nhận" [UC02]
         String[] playerNames = new String[pendingPlayerCount];
 
         for (int i = 0; i < pendingPlayerCount; i++) {
@@ -291,8 +312,10 @@ public class DashBoardController {
             playerNames[i] = text.isEmpty() ? "Player " + (i + 1) : text;
         }
 
+        // AF-2.2.5.5 Hệ thống ghi nhận danh sách tên người chơi và đóng popup [UC02]
         hidePlayerNamePopup();
 
+        // AF-2.2.5.6 Luồng quay lại BF-2.1.11 [UC02]
         openBoardGame(
                 pendingCustomSelection,
                 pendingPlayerCount,
@@ -313,10 +336,13 @@ public class DashBoardController {
             String[] playerNames
     ) {
         try {
+            // BF-2.1.11 Hệ thống tải tệp giao diện boardgame.fxml [UC02]
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/app/boardgame.fxml"));
             Parent root = loader.load();
 
             BoardGameController controller = loader.getController();
+
+            // BF-2.1.11 Hệ thống truyền dữ liệu cài đặt sang màn chơi [UC02]
 
             if (currentUser != null) {
                 controller.setCurrentUser(currentUser.getId(), currentUser.getUsername());
@@ -344,6 +370,7 @@ public class DashBoardController {
                     getClass().getResource("/css/styles.css")
             ).toExternalForm());
 
+            // BF-2.1.12 Hệ thống chuyển sang màn hình chơi game [UC02]
             stage.setScene(gameScene);
             stage.show();
 
@@ -726,9 +753,11 @@ public class DashBoardController {
         }
     }
     private boolean isHighMineDensity(CustomBoardSelection selection) {
+        // AF-2.2.3.1 Hệ thống tính toán mật độ mìn theo công thức: (Số mìn / Tổng số ô) * 100 [UC02]
         int totalCells = selection.rows() * selection.cols();
         double density = (double) selection.mines() / totalCells;
 
+        // AF-2.2.3.2 Hệ thống phát hiện số lượng mìn quá cao so với kích thước bàn cờ [UC02]
         return density > HIGH_MINE_DENSITY_THRESHOLD;
     }
 
@@ -744,6 +773,7 @@ public class DashBoardController {
         int totalCells = customSelection.rows() * customSelection.cols();
         double densityPercent = ((double) customSelection.mines() / totalCells) * 100;
 
+        // AF-2.2.3.3 Hệ thống hiển thị hộp thoại cảnh báo mật độ mìn cao [UC02]
         mineDensityWarningMessage.setText(
                 "Số lượng mìn quá dày đặc.\n\n" +
                         "Bàn chơi: " + customSelection.rows() + "×" + customSelection.cols() + "\n" +
@@ -758,6 +788,7 @@ public class DashBoardController {
 
     @FXML
     private void onContinueMineDensityWarning() {
+        // AF-2.2.3.4 Nếu người chơi chọn "Tiếp tục", hệ thống đóng hộp thoại và đi tiếp tới BF-2.1.11 [UC02]
         hideMineDensityWarning();
 
         selectedModeLabel.setText(
@@ -775,6 +806,7 @@ public class DashBoardController {
 
     @FXML
     private void onChangeMineDensityWarning() {
+        // AF-2.2.3.5 Nếu người chơi chọn "Thay đổi", hệ thống đóng hộp thoại và cho phép chỉnh lại số mìn [UC02]
         hideMineDensityWarning();
         clearMineDensityWarningData();
 
@@ -799,6 +831,7 @@ public class DashBoardController {
             int playerCount,
             User currentUser
     ) {
+        // BF-2.1.10 Hệ thống kiểm tra số lượng người chơi trước khi mở màn chơi [UC02]
         if (playerCount == 1) {
             String[] playerNames = new String[playerCount];
             playerNames[0] = currentUser != null ? currentUser.getUsername() : "Player 01";
@@ -813,6 +846,7 @@ public class DashBoardController {
             return;
         }
 
+        // AF-2.2.5 Ván đấu có nhiều người chơi, mở rộng tại BF-2.1.10 [UC02]
         showPlayerNamePopup(
                 playerCount,
                 customSelection,
