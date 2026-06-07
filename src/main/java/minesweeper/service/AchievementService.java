@@ -14,7 +14,7 @@ public class AchievementService {
 
     public Map<Achievement, Boolean> evaluate(List<GameResult> history) {
         Map<Achievement, Boolean> result = new EnumMap<>(Achievement.class);
-
+        // 04.5.3 — Duyệt enum Achievement & gọi hàm kiểm tra
         result.put(Achievement.CO_DIEN,    hasConsecutiveWins(history, 2));
         result.put(Achievement.TON_TRONG, hasConsecutiveWins(history, 5));
         result.put(Achievement.NGU_LOM,    hasConsecutiveLosses(history, 2));
@@ -31,6 +31,7 @@ public class AchievementService {
     }
 
     private boolean hasConsecutiveStreak(List<GameResult> history, boolean wonTarget, int n) {
+        // 04.5.4 — Hàm kiểm chuỗi liên tiếp
         int streak = 0;
         for (int i = history.size() - 1; i >= 0; i--) {
             if (history.get(i).isWon() == wonTarget) {
