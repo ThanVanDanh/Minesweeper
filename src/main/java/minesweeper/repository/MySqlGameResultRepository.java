@@ -477,8 +477,18 @@ public class MySqlGameResultRepository implements GameResultRepository {
         long total = executeCount(where);
         Page page  = new Page(pageNumber, pageSize, total);
 
+        String sortSql = " ORDER BY gs.created_at DESC, gs.id DESC";
+        if (spec.sortBy != null && !spec.sortBy.isEmpty()) {
+            String dir = "DESC".equalsIgnoreCase(spec.sortDir) ? "DESC" : "ASC";
+            if ("score".equalsIgnoreCase(spec.sortBy)) {
+                sortSql = " ORDER BY gs.score " + dir + ", gs.id DESC";
+            } else if ("time".equalsIgnoreCase(spec.sortBy)) {
+                sortSql = " ORDER BY gs.completion_time " + dir + ", gs.id DESC";
+            }
+        }
+
         String sql = BASE_FILTERED_SELECT + where.sql()
-                + " ORDER BY gs.created_at DESC, gs.id DESC"
+                + sortSql
                 + page.getLimitClause();
 
         List<GameResult> results = new ArrayList<>();
