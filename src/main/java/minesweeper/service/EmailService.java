@@ -47,10 +47,9 @@ public class EmailService {
         Transport.send(message);
         LOG.info("OTP email sent to {}", toEmail);
     }
-    public void sendPasswordResetEmail(String toEmail, String resetToken) throws MessagingException {
-        String resetLink = "https://your-app-domain.com/reset-password?token=" + resetToken;
+    public void sendPasswordResetOtpEmail(String toEmail, String otp) throws MessagingException {
         String subject = "Đặt lại mật khẩu Minesweeper";
-        String body = buildPasswordResetEmailBody(resetLink);
+        String body = buildPasswordResetEmailBody(otp);
 
         MimeMessage message = new MimeMessage(mailSession);
         message.setFrom(new InternetAddress(fromAddress));
@@ -59,7 +58,7 @@ public class EmailService {
         message.setText(body, "UTF-8", "html");
 
         Transport.send(message);
-        LOG.info("Password reset email sent to {}", toEmail);
+        LOG.info("Password reset OTP email sent to {}", toEmail);
     }
     private String buildEmailBody(String otp) {
         return "<div style='font-family:monospace;background:#0d1117;color:#c9d1d9;padding:32px;border-radius:8px'>" +
@@ -74,24 +73,17 @@ public class EmailService {
                 "</div>";
     }
 
-    private String buildPasswordResetEmailBody(String resetLink) {
-        return "<div style='font-family:Arial,sans-serif;background:#f5f5f5;padding:32px;'>" +
-                "<div style='background:#ffffff;padding:24px;border-radius:8px;max-width:600px;margin:0 auto;'>" +
-                "<h2 style='color:#2196F3;margin-top:0'>Đặt lại mật khẩu Minesweeper</h2>" +
+    private String buildPasswordResetEmailBody(String otp) {
+        return "<div style='font-family:monospace;background:#0d1117;color:#c9d1d9;padding:32px;border-radius:8px'>" +
+                "<h2 style='color:#58a6ff;letter-spacing:4px'>MINESWEEPER</h2>" +
                 "<p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>" +
-                "<p style='margin:24px 0;'>" +
-                "<a href='" + resetLink + "' style='background-color:#2196F3;color:white;padding:12px 24px;" +
-                "text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;'>" +
-                "Đặt lại mật khẩu" +
-                "</a>" +
-                "</p>" +
-                "<p style='color:#666;font-size:13px;'>" +
-                "Link này sẽ hết hạn trong <b>30 phút</b>." +
-                "</p>" +
-                "<p style='color:#999;font-size:12px;'>" +
-                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này." +
-                "</p>" +
+                "<p>Mã xác nhận (OTP) để đổi mật khẩu của bạn là:</p>" +
+                "<div style='font-size:36px;font-weight:bold;letter-spacing:12px;color:#ffffff;" +
+                "background:#161b22;padding:20px 32px;border-radius:6px;display:inline-block'>" +
+                otp +
                 "</div>" +
+                "<p style='color:#8b949e;font-size:13px;margin-top:24px'>Mã có hiệu lực trong <b>30 phút</b>. " +
+                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>" +
                 "</div>";
     }
 

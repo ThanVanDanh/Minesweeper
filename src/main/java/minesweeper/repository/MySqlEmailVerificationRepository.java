@@ -23,7 +23,7 @@ public class MySqlEmailVerificationRepository implements EmailVerificationReposi
     private static final String FIND_ACTIVE =
             "SELECT id, user_id, email, otp_hash, expires_at, is_used, created_at " +
                     "FROM email_verification_tokens " +
-                    "WHERE user_id = ? AND is_used = FALSE AND expires_at > NOW() " +
+                    "WHERE user_id = ? AND is_used = FALSE " +
                     "ORDER BY created_at DESC LIMIT 1";
 
     private static final String MARK_USED =
