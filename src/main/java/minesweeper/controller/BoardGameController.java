@@ -172,7 +172,6 @@ public class BoardGameController implements Initializable {
                     // Mở ô bằng chuột trái
                     else if (e.getButton() == MouseButton.PRIMARY) {
                         GameState stateBeforeMove = gameLogic.getGameState();
-                        // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal)
                         if (currentCell.isRevealed()) {
                             // 03.2.2.1 & 03.2.2.2: Người chơi nhấp chuột trái vào ô số đã mở
                             int openedCells = gameLogic.fastReveal(finalR, finalC);
@@ -182,7 +181,7 @@ public class BoardGameController implements Initializable {
                             if (isFlagMode) {
                                 actionTaken = gameLogic.toggleFlag(finalR, finalC);
                             } else {
-                                // 3.1 MỞ Ô (Basic Flow)
+                                // 03.2 MỞ Ô (Basic Flow)
                                 int openedCells = gameLogic.reveal(finalR, finalC);
                                 actionTaken = openedCells > 0 || gameLogic.getGameState() != stateBeforeMove;
                             }
@@ -203,10 +202,12 @@ public class BoardGameController implements Initializable {
                         // 03.2.4.4 & 03.2.4.5: Hiển thị BẠN ĐÃ THẮNG, dừng đồng hồ và lưu KQ
                         showGameOver(buildWinMessage(), "#39ff8f");
                     }
+                    /// UC03.4 - Chuyển lượt
                     else if (actionTaken) {
                         int currentPlayerAfter = gameLogic.getCurrentPlayerNumber();
                         boolean isTurnChanged = (currentPlayerBefore != currentPlayerAfter);
                         if (isTurnChanged) {
+                            // UC03.4: Chuyển lượt
                             restartTurnTimer(true);
                         } else {
                             updateStatus();
@@ -318,7 +319,7 @@ public class BoardGameController implements Initializable {
         updateItemUI();
     }
 
-    // UC05/UC06 - Tạm dừng / Tiếp tục ván game
+    // UC03.3 - Tạm dừng / Tiếp tục: Kích hoạt khi nhấn nút btnPause
     @FXML
     private void togglePause() {
         if (gameLogic.getGameState() != GameState.PLAYING && !gameLogic.isPaused()) return;
@@ -328,12 +329,12 @@ public class BoardGameController implements Initializable {
         if (pauseOverlay != null) pauseOverlay.setVisible(isNowPaused);
 
         if (isNowPaused) {
-            // UC05 - Tạm dừng
+            // UC03.3 - Tạm dừng
             stopTimer();
             stopTurnTimer();
             if (btnPause != null) btnPause.setText("Tiếp tục");
         } else {
-            // UC06 - Tiếp tục ván game
+            // UC03.3 - Tiếp tục ván game
             startTimer();
             startTurnTimer();
             if (btnPause != null) btnPause.setText("Tạm dừng");
@@ -719,20 +720,21 @@ public class BoardGameController implements Initializable {
     private boolean isBlindBombPending = false;
     private AudioClip smokeAudioClip;
 
+    // UC03.6 - Sử dụng Bom mù (Điều kiện nâng cấp: >= 200 điểm)
     @FXML
     private void useBlindBomb(ActionEvent event) {
         if (gameLogic == null || gameLogic.getGameState() != GameState.PLAYING) return;
 
         int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
-
-        if (currentScore >= 100 && !isBlindBombPending && !isBlindBombActive) {
+        // UC03.6
+        if (currentScore >= 200 && !isBlindBombPending && !isBlindBombActive) {
             gameLogic.deductCurrentPlayerScore(100);
             isBlindBombPending = true;
             if (btnBlindBomb != null) {
                 btnBlindBomb.getStyleClass().add("item-button-active");
             }
             System.out.println("Bom mù ĐÃ GÀI! Bị trừ 100 điểm.");
-            updateStatus();
+            updateStatus(); // UC03.5: Cập nhật lại UI điểm số
         }
     }
     private void processBlindBombTurnTransition() {
@@ -779,7 +781,7 @@ public class BoardGameController implements Initializable {
         }
 
         int currentScore = gameLogic.getPlayerScores()[gameLogic.getCurrentPlayerNumber() - 1];
-        if (currentScore < 100) {
+        if (currentScore < 200) {
             btnBlindBomb.setDisable(true);
             btnBlindBomb.setOpacity(0.4);
         } else {
