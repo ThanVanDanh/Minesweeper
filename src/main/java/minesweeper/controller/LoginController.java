@@ -84,12 +84,12 @@ public class LoginController {
     }
 
     /**
-     * UC01 - AF01.2: Đăng nhập (phía UI).
-     * Đảm nhiệm: 1.2.2, 1.2.10..1.2.14 và xử lý lỗi 1.2.E1, 1.2.E2.
+     * UC01.2 - Đăng nhập
+     * Đảm nhiệm: 01.2.1, 01.2.11 và hiển thị lỗi.
      */
     @FXML
     private void handleLogin() {
-        // 1.2.2 Người dùng nhập username, password và nhấn "Đăng nhập".
+        // Basic flow 01.2.1 Người chơi nhập username, mật khẩu, chọn Remember Me (tuỳ chọn) và nhấn ĐĂNG NHẬP.
         String username = text(loginUsernameField);
         String password = text(loginPasswordField);
         boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
@@ -119,6 +119,7 @@ public class LoginController {
             if (onLoginSuccess != null) {
                 onLoginSuccess.run();
             }
+            // Basic flow 01.2.11 Hệ thống đóng popup, refresh Header/Dashboard.
             HeaderController.refreshAllInstances();
             DashBoardController.refreshAllInstances();
             closePopup();
@@ -142,22 +143,21 @@ public class LoginController {
     }
 
     /**
-     * UC01 - AF01.1: Đăng ký tài khoản (phía UI).
-     * Đảm nhiệm: 1.1.2..1.1.5 (thu thập/kiểm tra input) và xử lý lỗi 1.1.E1..1.1.E3.
-     * Lưu ý: flow hiện tại có bước xác nhận email (OTP) sau khi tạo tài khoản.
+     * UC01.1 - Đăng ký tài khoản
+     * Đảm nhiệm: thu thập thông tin 01.1.1, check mật khẩu khớp 01.1.3, Alternative Flow 01.1-A1, và gọi OTP 01.1.9.
      */
     @FXML
     private void handleRegister() {
-        // 1.1.2 Người dùng nhập thông tin và nhấn "Tạo tài khoản".
+        // Basic flow 01.1.1 Người chơi nhập username, tên hiển thị, email, mật khẩu và xác nhận mật khẩu rồi nhấn TẠO TÀI KHOẢN.
         String username = text(registerUsernameField);
         String displayName = text(registerDisplayNameField);
         String email = text(registerEmailField);
         String password = text(registerPasswordField);
         String confirmPassword = text(registerConfirmPasswordField);
 
-        // 1.1.3 Kiểm tra confirmPassword khớp password.
+        // Basic flow 01.1.3 Hệ thống kiểm tra mật khẩu >= 6 ký tự và khớp với xác nhận. (Xử lý phần khớp)
         if (password == null || confirmPassword == null || !password.equals(confirmPassword)) {
-            // 1.1.E1 Mật khẩu xác nhận không khớp.
+            // Exception flow E01.5 Xác nhận mật khẩu không khớp.
             showError("Mật khẩu xác nhận không khớp.");
             return;
         }
@@ -168,7 +168,7 @@ public class LoginController {
             return;
         }
 
-        // 1.1.4 Chuẩn hóa displayName, nếu rỗng thì dùng username.
+        // Alternative flow 01.1-A1 Tên hiển thị để trống: hệ thống dùng username làm display_name.
         final String finalDisplayName = (displayName == null || displayName.isBlank()) ? username : displayName;
 
         if (loadingOverlay != null) {
@@ -179,7 +179,7 @@ public class LoginController {
         Task<User> registerTask = new Task<>() {
             @Override
             protected User call() throws Exception {
-                // 1.1.5 AuthService.register(...): validate, kiểm tra trùng, hash mật khẩu, lưu DB (inactive) và gửi OTP.
+                // Gọi sang AuthService để thực hiện các bước 01.1.2 -> 01.1.8
                 return authService.register(username, finalDisplayName, email, password);
             }
         };
@@ -191,10 +191,9 @@ public class LoginController {
             User newUser = registerTask.getValue();
             pendingVerifyUserId = newUser.getId();
 
-            // 1.1.9 clearRegisterFields(): xóa dữ liệu form đăng ký.
             clearRegisterFields();
 
-            // Hiển thị dialog xác nhận email/OTP.
+            // Basic flow 01.1.9 Hệ thống hiển thị dialog nhập OTP.
             showOtpDialog(email);
         });
 
