@@ -612,10 +612,12 @@ public class RankingHistoryController {
         achievementList.getChildren().clear();
 
         try {
-            // 04.5.2 – 04.5.5: Gọi service đánh giá thành tựu dựa trên lịch sử
+            // Bước 04.5.2 – 04.5.5: Hệ thống đánh giá từng thành tựu dựa trên lịch sử.
+            // Với mỗi thành tựu, duyệt toàn bộ lịch sử từ ván cũ nhất đến mới nhất,
+            // đếm chuỗi thắng hoặc thua liên tiếp; đánh dấu đã đạt nếu chuỗi đủ ngưỡng.
             Map<Achievement, Boolean> results = achievementService.evaluate(history);
 
-            // 04.5.6: Duyệt toàn bộ enum Achievement và render card
+            // Bước 04.5.6: Hệ thống tạo một thẻ hiển thị cho từng thành tựu theo thứ tự danh sách.
             for (Achievement achievement : Achievement.values()) {
                 boolean unlocked = Boolean.TRUE.equals(results.get(achievement));
 
@@ -623,18 +625,19 @@ public class RankingHistoryController {
                 card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                 card.setPadding(new Insets(14, 18, 14, 18));
 
-                // 04.5.7: Style card theo trạng thái đạt / chưa đạt
+                // Bước 04.5.7 – 04.5.8: Hệ thống áp dụng style khác nhau cho thẻ
+                // tuỳ theo trạng thái Đã đạt (nền xanh mờ, viền sáng) hoặc Chưa đạt (nền tối, viền xám).
                 card.setStyle(unlocked
                         ? "-fx-background-color: rgba(0,255,180,0.10); -fx-background-radius: 10;"
                         + " -fx-border-color: #00ffcc; -fx-border-radius: 10; -fx-border-width: 1.5;"
                         : "-fx-background-color: rgba(255,255,255,0.04); -fx-background-radius: 10;"
                         + " -fx-border-color: #444; -fx-border-radius: 10; -fx-border-width: 1;");
 
-                // Icon: hiện icon thật nếu đã đạt, hiện 🔒 nếu chưa đạt
+                // Đã đạt: hiện icon thật của thành tựu. Chưa đạt: hiện icon khóa 🔒.
                 Label iconLabel = new Label(unlocked ? achievement.getIcon() : "🔒");
                 iconLabel.setStyle("-fx-font-size: 28px;");
 
-                // Khối text: tên thành tựu (bold) + mô tả điều kiện
+                // Khối văn bản gồm tên thành tựu (in đậm) và mô tả điều kiện (nhỏ hơn, mờ hơn).
                 VBox textBlock = new VBox(4);
                 Label nameLabel = new Label(achievement.getDisplayName());
                 nameLabel.setStyle(unlocked
@@ -644,21 +647,24 @@ public class RankingHistoryController {
                 descLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
                 textBlock.getChildren().addAll(nameLabel, descLabel);
 
-                // Spacer đẩy badge ra sát mép phải
+                // Khoảng trống co giãn để đẩy badge trạng thái sang sát mép phải thẻ.
                 javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
                 javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-                // Badge trạng thái
+                // Badge trạng thái: "✔ Đã đạt" (xanh sáng) hoặc "Chưa đạt" (xám tối).
                 Label badge = new Label(unlocked ? "✔ Đã đạt" : "Chưa đạt");
                 badge.setStyle(unlocked
                         ? "-fx-text-fill: #00ffcc; -fx-font-size: 12px; -fx-font-weight: bold;"
                         : "-fx-text-fill: #666666; -fx-font-size: 12px;");
 
                 card.getChildren().addAll(iconLabel, textBlock, spacer, badge);
+
+                // Bước 04.5.9: Hệ thống xếp các thẻ theo chiều dọc và hiển thị lên màn hình.
                 achievementList.getChildren().add(card);
             }
         } catch (Exception e) {
-            // 04.5-E1: Lỗi đánh giá thành tựu → in log, không crash UI
+            // E1: Lỗi xảy ra trong quá trình đánh giá hoặc hiển thị.
+            // Hệ thống ghi nhật ký lỗi; tab hiển thị rỗng, các tab khác không bị ảnh hưởng.
             e.printStackTrace();
         }
     }
