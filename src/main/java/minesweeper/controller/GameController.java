@@ -32,7 +32,7 @@ public class GameController {
         this.board = new Board(difficulty, playerCount);
         this.customGame = false;
         resetPlayerState(board.getPlayerCount());
-        // UC3.6 - Tạm dừng / Tiếp tục ván game
+        //UC03.3 - Tạm dừng / Tiếp tụcván game
         this.isPaused = false;
         LOG.info("New game started with difficulty: {}, players={}", difficulty, playerCount);
     }
@@ -97,7 +97,7 @@ public class GameController {
         return board == null ? GameState.IDLE : board.getGameState();
     }
 
-    // 3.1 MỞ Ô: tầng điều phối nhận yêu cầu từ BoardGameController
+    // 03.2 MỞ Ô: tầng điều phối nhận yêu cầu từ BoardGameController
     public int reveal(int row, int col) {
         if (board == null) {
             LOG.warn("Attempted to reveal cell ({}, {}) with no active game", row, col);
@@ -113,7 +113,7 @@ public class GameController {
         // Gọi lệnh reveal() của Board
         board.reveal(row, col);
         int newlyOpened = countRevealedSafeCells() - openedBefore;
-        // UC03.4 - Tính điểm & UC03.3 - Chuyển lượt
+        // UC03.5 - Tính điểm & UC03.4 - Chuyển lượt
         applyScoreAndAdvanceTurn(newlyOpened);
         return newlyOpened;
     }
@@ -144,7 +144,6 @@ public class GameController {
         return changed;
     }
 
-    // 03.2.2 UC03.2 - MỞ NHANH (Fast Reveal / Chording)
     public int fastReveal(int row, int col) {
         // 03.2.2.2: Chuyển tiếp lệnh gọi hàm
         if (board == null) {
@@ -154,7 +153,7 @@ public class GameController {
         board.fastReveal(row, col);
         int newlyOpened = countRevealedSafeCells() - openedBefore;
         if (newlyOpened > 0) {
-            // UC03.4 - Tính điểm: Cộng điểm cho các ô mở thành công
+            // UC03.5 - Tính điểm: Cộng điểm cho các ô mở thành công
             playerScores[currentPlayerIndex] += newlyOpened * SCORE_PER_OPENED_CELL;
         }
         return newlyOpened;
@@ -163,12 +162,12 @@ public class GameController {
     public boolean isPaused() {
         return isPaused;
     }
-    // UC03.6 - Tạm dừng / Tiếp tục: Ghi nhận trạng thái pause của game
+    // UC03.3 - Tạm dừng / Tiếp tụcc: Ghi nhận trạng thái pause của game
     public void setPaused(boolean paused) {
         isPaused = paused;
     }
 
-    // UC03.3 - Chuyển lượt: Chuyển lượt tự động khi người chơi hết 10 giây
+    // UC03.4 - Chuyển lượt: Chuyển lượt tự động khi người chơi hết 10 giây
     public boolean skipCurrentTurn() {
         if (board == null || board.getGameState() == GameState.LOST || board.getGameState() == GameState.WON) {
             return false;
@@ -199,20 +198,20 @@ public class GameController {
         return count;
     }
 
-    // UC03.4 - Tính điểm & UC03.3 - Chuyển lượt (Hàm dùng chung)
+    // UC03.5 - Tính điểm & UC03.4 - Chuyển lượt (Hàm dùng chung)
     private void applyScoreAndAdvanceTurn(int newlyOpenedCells) {
         if (newlyOpenedCells <= 0) {
             return;
         }
-        // UC03.4 - Tính điểm
+        // UC03.5 - Tính điểm
         playerScores[currentPlayerIndex] += newlyOpenedCells * SCORE_PER_OPENED_CELL;
-        // UC03.3 - Chuyển lượt (Nếu có nhiều hơn 1 người chơi)
+        // UC03.4 - Chuyển lượt (Nếu có nhiều hơn 1 người chơi)
         if (board.getGameState() == GameState.PLAYING && playerScores.length > 1) {
             advanceTurn();
         }
     }
 
-    // UC03.3 - Chuyển lượt: Xoay vòng index người chơi
+    // UC03.4 - Chuyển lượt: Xoay vòng index người chơi
     private void advanceTurn() {
         if (playerScores.length > 1) {
             currentPlayerIndex = (currentPlayerIndex + 1) % playerScores.length;
@@ -224,7 +223,7 @@ public class GameController {
                 && col >= 0 && col < board.getCols();
     }
 
-    // UC03.5 - Sử dụng Bom mù: Trừ điểm người dùng khi kích hoạt
+    // UC03.6 - Sử dụng Bom mù: Trừ điểm người dùng khi kích hoạt
     public void deductCurrentPlayerScore(int points) {
         if (playerScores != null && currentPlayerIndex >= 0 && currentPlayerIndex < playerScores.length) {
             playerScores[currentPlayerIndex] = Math.max(0, playerScores[currentPlayerIndex] - points);

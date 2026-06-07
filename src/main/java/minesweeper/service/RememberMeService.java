@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.*;
 import java.util.UUID;
+import utils.CryptUtils;
 public class RememberMeService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RememberMeService.class);
@@ -83,7 +84,9 @@ public class RememberMeService {
     private void writeTokenFile(String username, String token) {
         try {
             Files.createDirectories(TOKEN_FILE.getParent());
-            Files.writeString(TOKEN_FILE, username + "\n" + token,
+            String plainText = username + "\n" + token;
+            String encryptedText = CryptUtils.encryptAES(plainText);
+            Files.writeString(TOKEN_FILE, encryptedText,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             LOG.error("Failed to write remember-me token file", e);
@@ -92,8 +95,15 @@ public class RememberMeService {
     private String[] readTokenFile() {
         if (!Files.exists(TOKEN_FILE)) return null;
         try {
-            String content = Files.readString(TOKEN_FILE).trim();
-            String[] lines = content.split("\n", 2);
+            String encryptedContent = Files.readString(TOKEN_FILE).trim();
+            String decryptedContent = CryptUtils.decryptAES(encryptedContent);
+            
+            if (decryptedContent == null) {
+                // Có thể là file cũ dạng plain-text hoặc bị lỗi. Cứ thử coi như plain-text xem sao.
+                decryptedContent = encryptedContent; 
+            }
+
+            String[] lines = decryptedContent.split("\n", 2);
             if (lines.length == 2 && !lines[0].isBlank() && !lines[1].isBlank()) {
                 return new String[]{lines[0].trim(), lines[1].trim()};
             }
