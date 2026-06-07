@@ -301,29 +301,27 @@ public class SettingsController {
     }
 
     /**
-     * UC01 - AF01.4: Đổi mật khẩu (phía UI).
-     * Đảm nhiệm: 1.4.1..1.4.10 và xử lý lỗi 1.4.E1..1.4.E5.
+     * UC01.4 - Đổi mật khẩu
      */
     @FXML
     private void changePassword() {
-        // 1.4.1 Người dùng nhập mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới.
-        // 1.4.2 Người dùng nhấn "Đổi mật khẩu".
+        // Basic flow 01.4.1 Người dùng nhập mật khẩu hiện tại, mật khẩu mới, xác nhận mật khẩu mới và nhấn ĐỔI MẬT KHẨU.
         String currentPassword = currentPasswordField.getText();
         String newPassword = newPasswordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        // 1.4.3 Kiểm tra ba trường mật khẩu không rỗng.
+        // Basic flow 01.4.2 Hệ thống kiểm tra các trường không rỗng.
         if (currentPassword == null || currentPassword.isEmpty()
                 || newPassword == null || newPassword.isEmpty()
                 || confirmPassword == null || confirmPassword.isEmpty()) {
-            // 1.4.E1 Thiếu thông tin mật khẩu.
+            // Exception flow E01.1 Thiếu thông tin mật khẩu.
             accountMessageLabel.setText("Vui lòng nhập đầy đủ thông tin mật khẩu.");
             return;
         }
 
-        // 1.4.4 Kiểm tra newPassword khớp confirmPassword.
+        // Basic flow 01.4.3 Hệ thống kiểm tra mật khẩu mới >= 6 ký tự và khớp xác nhận. (Khớp xác nhận)
         if (!newPassword.equals(confirmPassword)) {
-            // 1.4.E2 Mật khẩu xác nhận không khớp.
+            // Exception flow E01.5 Mật khẩu mới không khớp xác nhận.
             accountMessageLabel.setText("Mật khẩu xác nhận không khớp.");
             return;
         }
@@ -337,18 +335,16 @@ public class SettingsController {
         }
 
         try {
-            // 1.4.6 AuthService.changePassword(userId, currentPassword, newPassword): xử lý nghiệp vụ đổi mật khẩu.
+            // AuthService sẽ xử lý: 01.4.4 Lấy hash, 01.4.5 Xác minh, 01.4.6 Hash mới, 01.4.7 Cập nhật hash
             authService.changePassword(currentUser.getId(), currentPassword, newPassword);
             
-            // 1.4.9 clear(): xóa các ô mật khẩu sau khi đổi thành công.
+            // Basic flow 01.4.8 Hệ thống xóa các ô nhập và hiển thị thông báo thành công.
             currentPasswordField.clear();
             newPasswordField.clear();
             confirmPasswordField.clear();
-            
-            // 1.4.10 setText(...): hiển thị thông báo đổi mật khẩu thành công.
             accountMessageLabel.setText("Đổi mật khẩu thành công.");
         } catch (IllegalArgumentException e) {
-            // 1.4.E4 Mật khẩu mới không hợp lệ hoặc mật khẩu hiện tại không đúng.
+            // Bắt Exception flow E01.8 Mật khẩu hiện tại sai, hoặc các lỗi do validator ném ra.
             accountMessageLabel.setText(e.getMessage());
         } catch (DataAccessException e) {
             // 1.4.E5 Lỗi truy cập CSDL khi đổi mật khẩu.
@@ -357,20 +353,19 @@ public class SettingsController {
     }
 
     /**
-     * UC01 - AF01.3: Đăng xuất (phía UI).
-     * Đảm nhiệm: 1.3.1..1.3.4.
+     * UC01.3 - Đăng xuất
      */
     @FXML
     private void logout() {
-        // 1.3.1 Người dùng nhấn "Đăng xuất".
+        // Basic flow 01.3.1 Người dùng chọn Đăng xuất từ Header hoặc Cài đặt.
         
-        // 1.3.2 AuthService.logout(): xóa phiên đăng nhập hiện tại.
+        // (Xử lý Basic flow 01.3.2 và 01.3.3 bên trong authService.logout)
         authService.logout();
         
-        // 1.3.3 clearAccountFields(): xóa dữ liệu trong tab tài khoản.
+        // Basic flow 01.3.4 Hệ thống xóa dữ liệu form tài khoản.
         clearAccountFields();
         
-        // 1.3.4 navigateToDashboard(): điều hướng về Dashboard.
+        // Basic flow 01.3.5 Hệ thống điều hướng về Dashboard.
         navigateToDashboard();
     }
 
