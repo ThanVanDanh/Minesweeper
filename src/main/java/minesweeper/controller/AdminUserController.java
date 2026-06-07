@@ -110,13 +110,13 @@ public class AdminUserController {
 
     @FXML
     public void initialize() {
-        // 05.1.1 Admin nhấn chọn mục "Quản lý người chơi" từ thanh điều hướng
-        // 05.1.2 Hệ thống hiển thị màn hình quản lý người chơi và các nút chức năng
+        // 05.1.1 Admin nhấn chọn mục "Quản lý người chơi" từ thanh điều hướng.
+        // 05.1.2 Hệ thống hiển thị màn hình quản lý người chơi và các nút chức năng (Thêm, Chỉnh sửa, Khoá/Mở khoá, Xoá, Làm mới, Xem nhật ký).
         setupFilterComboBoxes();
         setupTable();
 
-        // 05.1.3 Hệ thống tự động tải danh sách người chơi,
-        //          hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang
+        // 05.1.3 Hệ thống tự động tải danh sách người chơi; hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang (trang hiện tại / tổng số trang).
+        // 05.1.6 Admin chọn một trong các chức năng: Tìm kiếm & Lọc nâng cao, Thêm, Chỉnh sửa, Khoá/Mở khoá, Xoá hoặc Xem lịch sử thao tác.
         loadPage();
     }
 
@@ -139,11 +139,12 @@ public class AdminUserController {
     }
 
     /**
-     * Tải trang hiện tại theo activeSpec.
-     * 05.1-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+     * 05.1.3 Hệ thống tự động tải danh sách người chơi; hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang (trang hiện tại / tổng số trang).
+     * 05-E1 CSDL không thể kết nối → Hệ thống hiển thị hộp thoại lỗi "Không thể tải dữ liệu" và để trống bảng.
      */
     private void loadPage() {
         try {
+            // 05.1.3 Hệ thống tự động tải danh sách người chơi; hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang (trang hiện tại / tổng số trang).
             PagedResult<User> result = managerUserService.findPaged(activeSpec, currentPage, PAGE_SIZE);
 
             totalPages  = result.getTotalPages();
@@ -152,22 +153,25 @@ public class AdminUserController {
             pageItems.setAll(result.getContent());
             userTable.setItems(pageItems);
 
+            // 05.1.3 Hệ thống tự động tải danh sách người chơi; hiển thị tối đa 20 người mỗi trang cùng thanh điều hướng phân trang (trang hiện tại / tổng số trang).
             pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
             btnPrevPage.setDisable(currentPage == 0);
             btnNextPage.setDisable(currentPage >= totalPages - 1);
 
             refreshStats();
 
+            // 05.2.4 Hệ thống hiển thị từ trang đầu tiên và cập nhật nhãn "Tìm thấy N kết quả".
             statusLabel.setText("Tìm thấy " + result.getTotalElements() + " kết quả");
 
         } catch (DataAccessException e) {
-            // 05-E1 CSDL không thể kết nối
+            // 05-E1 CSDL không thể kết nối → Hệ thống hiển thị hộp thoại lỗi "Không thể tải dữ liệu" và để trống bảng.
             showError("Không thể tải dữ liệu");
         }
     }
 
     /** Cập nhật 4 nhãn thống kê bằng server-side count. */
     private void refreshStats() {
+        // 05.1.5 [CẢI TIẾN v1.2 – D2] Panel thống kê tổng quan hiển thị: Tổng người dùng | Đang hoạt động | Đã khoá | Số Admin.
         try {
             ManagerUserService.UserStats stats = managerUserService.getStats();
             totalUsersLabel.setText(String.valueOf(stats.total()));
@@ -185,8 +189,7 @@ public class AdminUserController {
 
     @FXML
     public void onSearch() {
-        // 05.2.1 Admin nhập từ khoá vào ô tìm kiếm và/hoặc chọn bộ lọc Vai trò,
-        //          Trạng thái rồi nhấn Tìm kiếm
+        // 05.2.1 Admin nhập từ khoá vào ô tìm kiếm (Username / Tên hiển thị) và/hoặc điền các bộ lọc mở rộng: Email, Vai trò, Trạng thái, Khoảng ngày tạo, Khoảng lần đăng nhập gần nhất, Số ván tối thiểu / tối đa, Có/không có kết quả game.
         String keyword      = searchField.getText().trim();
         String email        = emailField.getText().trim();
         String roleFilter   = cbRoleFilter.getValue();
@@ -206,12 +209,10 @@ public class AdminUserController {
                 && FILTER_ALL.equals(gameFilter);
 
         if (noFilter) {
-            // 05.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm
-            //           → Hệ thống truy vấn lại toàn bộ danh sách không kèm bộ lọc,
-            //             hiển thị từ trang đầu tiên
+            // 05.2-A1 Admin xoá hết điều kiện rồi nhấn Tìm kiếm → Hệ thống tải lại toàn bộ danh sách không kèm bộ lọc, hiển thị từ trang đầu tiên.
             activeSpec = new UserFilterSpec();
         } else {
-            // 05.2.2 Hệ thống gửi điều kiện tìm kiếm xuống CSDL, lấy về danh sách phù hợp
+            // 05.2.2 Admin nhấn nút Tìm kiếm. Hệ thống kiểm tra hợp lệ (ngày From ≤ To, số ván ≥ 0, min ≤ max). Nếu sai, hiển thị thông báo lỗi cụ thể và dừng.
             try {
                 activeSpec = buildFilterSpec(
                         keyword,
@@ -227,21 +228,21 @@ public class AdminUserController {
                         maxGamesField.getText()
                 );
             } catch (IllegalArgumentException e) {
+                // 05.2.2 Admin nhấn nút Tìm kiếm. Hệ thống kiểm tra hợp lệ (ngày From ≤ To, số ván ≥ 0, min ≤ max). Nếu sai, hiển thị thông báo lỗi cụ thể và dừng.
                 showError(e.getMessage());
                 return;
             }
         }
 
-        // 05.2.3 Hệ thống hiển thị từ trang đầu tiên và cập nhật số lượng kết quả tìm được
+        // 05.2.3 Hệ thống gửi toàn bộ điều kiện xuống CSDL, lấy danh sách phù hợp.
+        // 05.2.4 Hệ thống hiển thị từ trang đầu tiên và cập nhật nhãn "Tìm thấy N kết quả".
         currentPage = 0;
         loadPage();
     }
 
     @FXML
     public void onRefresh() {
-        // 05.2-A2 Admin nhấn Làm mới
-        //           → Hệ thống xoá ô tìm kiếm, đưa tất cả bộ lọc về mặc định "Tất cả",
-        //             truy vấn lại CSDL và hiển thị toàn bộ danh sách từ trang đầu tiên
+        // 05.2-A2 Admin nhấn Làm mới → Hệ thống xoá ô tìm kiếm, reset tất cả bộ lọc về mặc định "Tất cả" / trống, truy vấn lại và hiển thị toàn bộ danh sách từ trang đầu.
         searchField.clear();
         emailField.clear();
         cbRoleFilter.getSelectionModel().selectFirst();
@@ -339,17 +340,16 @@ public class AdminUserController {
 
     @FXML
     public void onAddUser() {
-        // 05.3.1 Admin nhấn nút Thêm người chơi
-        // 05.3.2 Hệ thống hiển thị dialog nhập thông tin người dùng
+        // 05.3.1 Admin nhấn nút "Thêm người chơi".
+        // 05.3.2 Hệ thống hiển thị dialog nhập thông tin: Username (*), Nickname, Mật khẩu (mặc định 123456), Vai trò.
         Dialog<User> dialog = buildUserDialog(null);
 
-        // 05.3-A1 Admin nhấn Huỷ → cửa sổ đóng lại, không lưu thay đổi
         Optional<User> result = dialog.showAndWait();
 
-        // 05.3.3 Admin nhập thông tin và nhấn nút thêm
+        // 05.3.3 Admin nhập thông tin và nhấn nút Thêm.
         result.ifPresent(newUser -> {
             try {
-                // 05.3.4 Hệ thống hash mật khẩu và lưu trữ người dùng vào CSDL
+                // 05.3.4 Hệ thống hash mật khẩu (MD5) và lưu người dùng vào CSDL.
                 String passwordHash = CryptUtils.hashPassword(newUser.getPasswordHash());
                 long generatedId = managerUserService.createUser(
                         newUser.getUsername(),
@@ -358,20 +358,20 @@ public class AdminUserController {
                         passwordHash
                 );
 
-                // 05.3.5 Hệ thống gán Id trả về cho User mới và cập nhật danh sách
+                // 05.3.5 Hệ thống gán ID trả về cho User mới, chuyển đến trang cuối cùng và làm nổi bật dòng mới.
                 newUser.setId((int) generatedId);
                 loadPage();
                 currentPage = totalPages - 1;
                 loadPage();
                 statusLabel.setText("Đã thêm user: " + newUser.getUsername());
 
-                // 05.3.6 Hệ thống ghi nhận Log vào CSDL
+                // 05.3.6 Hệ thống ghi nhận Log vào CSDL (action: CREATE_USER).
                 writeAuditLog("CREATE_USER",
                         "user:" + newUser.getUsername(),
                         "Created new user; Role: " + labelOf(newUser.getRole()));
 
             } catch (Exception e) {
-                // 05.3-E1 Username trùng hoặc lỗi CSDL → hiển thị hộp thoại lỗi
+                // 05.3-E1 Username trùng hoặc lỗi CSDL khi thêm → Hệ thống hiển thị thông báo lỗi cụ thể.
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
                 showError("Thêm user thất bại!\n"
                         + e.getClass().getSimpleName() + ": " + e.getMessage()
@@ -386,11 +386,11 @@ public class AdminUserController {
 
     @FXML
     public void onEditUser() {
-        // 05.4.1 Admin chọn user trong bảng
-        // 05.4.2 Admin nhấn nút chỉnh sửa
+        // 05.4.1 Admin chọn user trong bảng.
+        // 05.4.2 Admin nhấn nút Chỉnh sửa.
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 05.4-E1 Chưa chọn User, nhấn chỉnh sửa → hiển thị thông báo chọn User
+        // 05.4-E1 Chưa chọn User, nhấn Chỉnh sửa → Hệ thống hiển thị thông báo "Hãy chọn user cần sửa".
         if (selected == null) {
             showInfo("Hãy chọn user cần sửa");
             return;
@@ -399,30 +399,29 @@ public class AdminUserController {
         String oldDisplayName = selected.getDisplayName();
         Role   oldRole        = selected.getRole();
 
-        // 05.4.3 Hệ thống hiển thị dialog sửa người dùng
+        // 05.4.3 Hệ thống hiển thị dialog sửa người dùng với thông tin hiện tại được điền sẵn (Username ở chế độ read-only, password ẩn).
         Dialog<User> dialog = buildUserDialog(selected);
 
-        // 05.4-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
         Optional<User> result = dialog.showAndWait();
 
-        // 05.4.4 Admin cập nhật nickname hoặc vai trò và nhấn cập nhật
+        // 05.4.4 Admin cập nhật Nickname và/hoặc Vai trò rồi nhấn Cập nhật.
         result.ifPresent(updated -> {
             try {
-                // 05.4.5 Hệ thống cập nhật thông tin vào CSDL
+                // 05.4.5 Hệ thống cập nhật thông tin vào CSDL.
                 managerUserService.updateDisplayName(selected.getId(), updated.getDisplayName());
                 managerUserService.updateRole(selected.getId(), updated.getRole());
 
-                // 05.4.6 Hệ thống load lại danh sách
+                // 05.4.6 Hệ thống load lại danh sách, giữ nguyên trang hiện tại.
                 loadPage();
                 statusLabel.setText("Đã cập nhật: " + selected.getUsername());
 
-                // 05.4.7 Hệ thống ghi nhận Log vào CSDL
+                // 05.4.7 Hệ thống ghi nhận Log vào CSDL với nội dung thay đổi trước/sau (action: UPDATE_USER).
                 String changes = "DisplayName: " + oldDisplayName + " → " + updated.getDisplayName()
                         + "; Role: " + labelOf(oldRole) + " → " + labelOf(updated.getRole());
                 writeAuditLog("UPDATE_USER", "user:" + selected.getUsername(), changes);
 
             } catch (Exception e) {
-                // 05-E1 CSDL không thể kết nối
+                // 05-E1 CSDL không thể kết nối → Hệ thống hiển thị hộp thoại lỗi "Không thể tải dữ liệu" và để trống bảng.
                 showError("Sửa thất bại: " + e.getMessage());
             }
         });
@@ -434,13 +433,12 @@ public class AdminUserController {
 
     @FXML
     public void onLockUser() {
-        // 05.5.1 Admin chọn User trong bảng và nhấn nút Khoá / Mở khoá
+        // 05.5.1 Admin chọn User trong bảng và nhấn nút Khoá / Mở khoá.
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 05.5-E1 Chưa chọn User, nhấn khoá → hiển thị thông báo chọn User
-        // 05.5.2 [CẢI TIẾN v1.1 – A4] Kiểm tra: nếu User được chọn chính là Admin đang
-        //          đăng nhập, hiển thị lỗi và dừng.
-        // 05.5-E2 Admin tự khoá mình → hiển thị lỗi
+        // 05.5-E1 Chưa chọn User, nhấn Khoá → Hệ thống hiển thị thông báo "Hãy chọn user".
+        // 05.5.2 [CẢI TIẾN v1.1 – A4] Hệ thống kiểm tra: nếu User được chọn chính là Admin đang đăng nhập, hiển thị lỗi "Bạn không thể khoá tài khoản của chính mình!" và dừng.
+        // 05.5-E2 [CẢI TIẾN v1.1 – A4] Admin tự khoá mình → Hệ thống hiển thị lỗi "Bạn không thể khoá tài khoản của chính mình!".
         try {
             validateNotSelfAction(selected, "khoá");
         } catch (IllegalArgumentException e) {
@@ -452,33 +450,31 @@ public class AdminUserController {
             return;
         }
 
-        // 05.5.3 [CẢI TIẾN v1.1 – A3] Hệ thống hiển thị dialog xác nhận
-        //          Khoá: "• Tài khoản bị khoá sẽ không thể đăng nhập."
-        //          Mở khoá: "• Tài khoản sẽ được phép đăng nhập trở lại."
-        // 05.5-A1 Admin nhấn Huỷ → Đóng dialog, không thay đổi trạng thái
+        // 05.5.3 [CẢI TIẾN v1.1 – A3] Hệ thống hiển thị dialog xác nhận: Khoá: "Tài khoản bị khoá sẽ không thể đăng nhập." | Mở khoá: "Tài khoản sẽ được phép đăng nhập trở lại."
+        // 05.5-A1 Admin nhấn Huỷ tại dialog xác nhận → Đóng dialog, không thay đổi trạng thái.
         boolean isLocking = selected.isActive();
         if (!confirmLock(selected.getUsername(), isLocking)) {
             return;
         }
 
         try {
-            // 05.5.4 Admin xác nhận OK → Hệ thống cập nhật trạng thái is_active vào CSDL
+            // 05.5.4 Admin xác nhận OK → Hệ thống cập nhật trạng thái is_active vào CSDL.
             boolean newStatus = !isLocking;
             managerUserService.setActive(selected.getId(), newStatus);
 
-            // 05.5.5 Hệ thống load lại danh sách, cột Trạng thái cập nhật badge màu tương ứng
+            // 05.5.5 Hệ thống load lại danh sách, cột Trạng thái cập nhật badge màu tương ứng.
             loadPage();
             statusLabel.setText(newStatus
                     ? "Đã mở khoá: " + selected.getUsername()
                     : "Đã khoá: "    + selected.getUsername());
 
-            // 05.5.6 Hệ thống ghi nhận Log vào CSDL (action: LOCK_USER / UNLOCK_USER)
+            // 05.5.6 Hệ thống ghi nhận Log vào CSDL (action: LOCK_USER / UNLOCK_USER).
             String action  = newStatus ? "UNLOCK_USER" : "LOCK_USER";
             String details = newStatus ? "Unlocked user account" : "Locked user account";
             writeAuditLog(action, "user:" + selected.getUsername(), details);
 
         } catch (Exception e) {
-            // 05-E1 CSDL không thể kết nối
+            // 05-E1 CSDL không thể kết nối → Hệ thống hiển thị hộp thoại lỗi "Không thể tải dữ liệu" và để trống bảng.
             showError("Khoá/mở khoá thất bại");
         }
     }
@@ -489,13 +485,12 @@ public class AdminUserController {
 
     @FXML
     public void onDeleteUser() {
-        // 05.6.1 Admin chọn User trong bảng và nhấn nút Xóa
+        // 05.6.1 Admin chọn User trong bảng và nhấn nút Xóa.
         User selected = userTable.getSelectionModel().getSelectedItem();
 
-        // 05.6-E1 Chưa chọn User, nhấn xóa → hiển thị thông báo chọn User
-        // 05.6.2 [CẢI TIẾN v1.1 – A4] Kiểm tra: nếu User được chọn chính là Admin đang
-        //          đăng nhập, hiển thị lỗi và dừng.
-        // 05.6-E2 Admin tự xóa mình → hiển thị lỗi
+        // 05.6-E1 Chưa chọn User, nhấn Xoá → Hệ thống hiển thị thông báo "Hãy chọn user cần xoá".
+        // 05.6.2 [CẢI TIẾN v1.1 – A4] Hệ thống kiểm tra: nếu User được chọn chính là Admin đang đăng nhập, hiển thị lỗi "Bạn không thể xóa tài khoản của chính mình!" và dừng.
+        // 05.6-E2 [CẢI TIẾN v1.1 – A4] Admin tự xoá mình → Hệ thống hiển thị lỗi "Bạn không thể xóa tài khoản của chính mình!".
         try {
             validateNotSelfAction(selected, "xóa");
         } catch (IllegalArgumentException e) {
@@ -507,20 +502,17 @@ public class AdminUserController {
             return;
         }
 
-        // 05.6.3 Hệ thống hiển thị hộp thoại xác nhận:
-        //          "Xoá user [tên]? Hành động này không thể hoàn tác."
-        // 05.6-A1 Admin nhấn hủy → đóng dialog, không có thay đổi
+        // 05.6.3 Hệ thống hiển thị hộp thoại xác nhận: "Xoá user [tên]? Hành động này không thể hoàn tác."
+        // 05.6-A1 Admin nhấn Huỷ → Đóng dialog, không có thay đổi.
         if (!confirmDelete(selected.getUsername())) {
             return;
         }
 
         try {
-            // 05.6.4 Admin xác nhận OK → Hệ thống xóa User khỏi CSDL
-            //          (CASCADE xóa game_sessions liên quan)
+            // 05.6.4 Admin xác nhận OK → Hệ thống xóa User khỏi CSDL (CASCADE xóa game_sessions liên quan).
             managerUserService.deleteUser(selected.getId());
 
-            // 05.6.5 Hệ thống load lại danh sách
-            //          (lùi 1 trang nếu trang hiện tại đã trống sau khi xóa)
+            // 05.6.5 Hệ thống load lại danh sách; lùi 1 trang nếu trang hiện tại đã trống.
             loadPage();
             if (pageItems.isEmpty() && currentPage > 0) {
                 currentPage--;
@@ -528,14 +520,13 @@ public class AdminUserController {
             }
             statusLabel.setText("Đã xoá user: " + selected.getUsername());
 
-            // 05.6.6 Hệ thống ghi nhận Log vào CSDL với vai trò và trạng thái gốc
-            //          (action: DELETE_USER)
+            // 05.6.6 Hệ thống ghi nhận Log vào CSDL với vai trò và trạng thái gốc (action: DELETE_USER).
             String details = "Deleted user; Original Role: " + labelOf(selected.getRole())
                     + "; Status: " + (selected.isActive() ? "Active" : "Locked");
             writeAuditLog("DELETE_USER", "user:" + selected.getUsername(), details);
 
         } catch (Exception e) {
-            // 05-E1 CSDL không thể kết nối
+            // 05-E1 CSDL không thể kết nối → Hệ thống hiển thị hộp thoại lỗi "Không thể tải dữ liệu" và để trống bảng.
             showError("Xoá thất bại");
         }
     }
@@ -662,8 +653,8 @@ public class AdminUserController {
     /**
      * Dialog dùng chung cho Thêm (existing = null) và Sửa (existing ≠ null).
      *
-     * 05.3-A2 Biệt danh bị để trống → Hệ thống tự động lấy Tên đăng nhập làm tên hiển thị
-     * 05.3-E1 Username bị bỏ trống   → nút Thêm bị vô hiệu hoá
+     * 05.3-A2 Nickname bị để trống → Hệ thống tự động lấy Username làm tên hiển thị.
+     * 05.3-E1 Username trùng hoặc lỗi CSDL khi thêm → Hệ thống hiển thị thông báo lỗi cụ thể.
      */
     private Dialog<User> buildUserDialog(User existing) {
         boolean isEdit = existing != null;
@@ -715,7 +706,7 @@ public class AdminUserController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // 05.3-E1 Username bị bỏ trống → vô hiệu hoá nút Thêm
+        // 05.3-E1 Username trùng hoặc lỗi CSDL khi thêm → Hệ thống hiển thị thông báo lỗi cụ thể.
         javafx.scene.Node okNode = dialog.getDialogPane().lookupButton(okBtn);
         okNode.setDisable(!isEdit);
         if (!isEdit) {
@@ -724,13 +715,14 @@ public class AdminUserController {
         }
 
         dialog.setResultConverter(btnType -> {
-            // 05.3-A1 / 05.4-A1 Admin nhấn Huỷ → trả về null, đóng dialog
+            // 05.3-A1 Admin nhấn Huỷ → [CẢI TIẾN v1.2 – D1] Nếu Admin đã nhập thông tin, hệ thống hiển thị cảnh báo "Bạn có muốn bỏ thay đổi không?" trước khi đóng dialog.
+            // 05.4-A1 Admin nhấn Huỷ → [CẢI TIẾN v1.2 – D1] Nếu Admin đã thay đổi thông tin, hệ thống hiển thị cảnh báo "Bạn có muốn bỏ thay đổi không?" trước khi đóng dialog.
             if (btnType != okBtn) return null;
 
             User resultUser = isEdit ? existing : new User();
             if (!isEdit) resultUser.setUsername(tfUsername.getText().trim());
 
-            // 05.3-A2 Biệt danh bị để trống → lấy username làm tên hiển thị
+            // 05.3-A2 Nickname bị để trống → Hệ thống tự động lấy Username làm tên hiển thị.
             String nick = tfDisplayName.getText().trim();
             resultUser.setDisplayName(nick.isEmpty() ? tfUsername.getText().trim() : nick);
 
