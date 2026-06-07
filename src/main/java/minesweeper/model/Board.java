@@ -286,7 +286,7 @@ public class Board {
         return row >= 0 && row < rows && col >= 0 && col < cols;
     }
 
-    // BF-2.1.10 Kiểm tra cấu hình bàn cờ trước khi khởi tạo [UC02]
+    // BF-2.1.10 Kiểm tra cấu hình bàn cờ trước khi khởi tạo [UC02], code mới thêm vào [Hoa]
     private static void validateBoardConfig(int rows, int cols, int totalMines, int playerCount) {
         if (rows < 2 || cols < 2) {
             throw new IllegalArgumentException("Board must have at least 2 rows and 2 columns");
