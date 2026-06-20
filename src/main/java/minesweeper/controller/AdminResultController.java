@@ -107,14 +107,13 @@ public class AdminResultController {
 
     @FXML
     public void initialize() {
-        // 05.7.1 Admin nhấn chọn mục "Quản lý kết quả" từ thanh điều hướng
-        // 05.7.2 Hệ thống khởi tạo các bộ lọc mặc định:
-        //          Độ khó và Kết quả đều ở trạng thái "Tất cả"
+        // 05.7.1 Admin nhấn chọn mục "Quản lý kết quả" từ thanh điều hướng.
+        // 05.7.2 Hệ thống khởi tạo các bộ lọc mặc định: Độ khó = Tất cả, Kết quả = Tất cả, Username trống.
         setupTable();
         setupFilterComboBoxes();
 
-        // 05.7.3 Hệ thống truy vấn cơ sở dữ liệu và lấy danh sách kết quả,
-        //          hiển thị tối đa 20 bản ghi mỗi trang, bắt đầu từ trang đầu tiên
+        // 05.7.3 Hệ thống truy vấn CSDL và lấy danh sách kết quả, hiển thị tối đa 20 bản ghi / trang.
+        // 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm: số trang hiện tại, tổng số trang, tổng số kết quả.
         loadPage();
     }
 
@@ -137,7 +136,7 @@ public class AdminResultController {
         resultTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         setupColumns();
 
-        // 05.7.5 Lắng nghe sự kiện click tiêu đề cột để sắp xếp (server-side)
+        // 05.7.5 Admin có thể nhấn vào tiêu đề cột Score hoặc Thời gian để sắp xếp tăng/giảm dần. Biểu tượng ▲/▼ hiển thị chiều sắp xếp (server-side sort).
         resultTable.setOnSort(event -> {
             var sortOrder = resultTable.getSortOrder();
             if (sortOrder.isEmpty()) {
@@ -167,9 +166,9 @@ public class AdminResultController {
     }
 
     /**
-     * 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm thông tin số trang hiện tại,
-     *          tổng số trang và tổng số kết quả tìm được.
-     * 05-E1 CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
+     * 05.7.3 Hệ thống truy vấn CSDL và lấy danh sách kết quả, hiển thị tối đa 20 bản ghi / trang.
+     * 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm: số trang hiện tại, tổng số trang, tổng số kết quả.
+     * 05-E1  CSDL không thể kết nối → hiển thị hộp thoại lỗi, bảng để trống
      */
     private void loadPage() {
         try {
@@ -182,6 +181,7 @@ public class AdminResultController {
             pageItems.setAll(result.getContent());
             resultTable.setItems(pageItems);
 
+            // 05.7.4 Hệ thống hiển thị danh sách lên bảng kèm: số trang hiện tại, tổng số trang, tổng số kết quả.
             pageLabel.setText("Trang " + (currentPage + 1) + " / " + totalPages);
             btnPrevPage.setDisable(currentPage == 0);
             btnNextPage.setDisable(currentPage >= totalPages - 1);
@@ -199,8 +199,7 @@ public class AdminResultController {
 
     @FXML
     public void onFilter() {
-        // 05.8.1 Admin nhập tên người chơi và/hoặc chọn bộ lọc Độ khó, Kết quả
-        //          rồi nhấn nút Lọc
+        // 05.8.1 Admin nhập tên người chơi và/hoặc chọn bộ lọc Độ khó, Kết quả rồi nhấn nút Lọc.
         String usernameFilter   = tfUsername.getText().trim();
         String difficultyFilter = cbDifficulty.getValue();
         String resultFilter     = cbResult.getValue();
@@ -210,28 +209,23 @@ public class AdminResultController {
                 && FILTER_ALL.equals(resultFilter);
 
         if (noFilter) {
-            // 05.8-A1 Admin xóa hết điều kiện lọc rồi nhấn Lọc
-            //           → Hệ thống nhận diện không có bộ lọc nào,
-            //             tải lại toàn bộ danh sách ban đầu từ cơ sở dữ liệu
+            // 05.8-A1 Admin xóa hết điều kiện → Hệ thống nhận diện không có bộ lọc nào, tải lại toàn bộ danh sách từ CSDL.
             activeSpec = new GameResultFilterSpec();
         } else {
-            // 05.8.2 Hệ thống xác định điều kiện lọc dựa trên thông tin Admin vừa nhập
+            // 05.8.2 Hệ thống xác định điều kiện lọc dựa trên thông tin Admin vừa nhập.
             activeSpec = buildFilterSpec(usernameFilter, difficultyFilter, resultFilter);
         }
 
-        // 05.8.3 Hệ thống truy vấn cơ sở dữ liệu theo điều kiện lọc,
-        //          bắt đầu hiển thị lại từ trang đầu tiên
+        // 05.8.3 Hệ thống truy vấn CSDL theo điều kiện lọc, bắt đầu hiển thị lại từ trang đầu tiên.
         currentPage = 0;
 
-        // 05.8.4 Hệ thống tải lại bảng với danh sách kết quả phù hợp
+        // 05.8.4 Hệ thống tải lại bảng với danh sách kết quả phù hợp và cập nhật nhãn số lượng.
         loadPage();
     }
 
     @FXML
     public void onReset() {
-        // 05.8-A2 Admin nhấn Làm mới
-        //           → Hệ thống xoá ô Username, reset ComboBox về 'Tất cả',
-        //             tải lại toàn bộ danh sách từ CSDL
+        // 05.8-A2 Admin nhấn Làm mới → Hệ thống xoá ô Username, reset ComboBox về "Tất cả", tải lại toàn bộ danh sách từ CSDL.
         tfUsername.clear();
         cbDifficulty.getSelectionModel().selectFirst();
         cbResult.getSelectionModel().selectFirst();
@@ -242,44 +236,39 @@ public class AdminResultController {
     }
 
     /** Dựng GameResultFilterSpec từ các giá trị bộ lọc trên UI. */
-    private GameResultFilterSpec buildFilterSpec(String username,
-                                                 String difficultyFilter,
-                                                 String resultFilter) {
+    private GameResultFilterSpec buildFilterSpec(String username, String difficulty, String result) {
         GameResultFilterSpec spec = new GameResultFilterSpec();
-
-        if (!username.isEmpty()) spec.username = username;
-
-        if (!FILTER_ALL.equals(difficultyFilter)) {
+        
+        if (username != null && !username.trim().isEmpty()) {
+            spec.username = username.trim();
+        }
+        
+        if (difficulty != null && !FILTER_ALL.equals(difficulty)) {
             for (Difficulty d : Difficulty.values()) {
-                if (d.getLabel().equalsIgnoreCase(difficultyFilter)) {
+                if (d.getLabel().equals(difficulty)) {
                     spec.difficulty = d;
                     break;
                 }
             }
         }
-
-        if ("Thắng".equals(resultFilter))     spec.win = true;
-        else if ("Thua".equals(resultFilter)) spec.win = false;
-
+        
+        if (result != null && !FILTER_ALL.equals(result)) {
+            spec.win = "Thắng".equals(result);
+        }
+        
         return spec;
     }
 
-    // =========================================================================
-    // Alternative Flow – UC-05.9 Xóa kết quả gian lận
-    // =========================================================================
-
     @FXML
     public void onDeleteFraud() {
-        // 05.9.1 Admin tích checkbox trên từng dòng hoặc nhấn Chọn tất cả
-        //          để chọn các kết quả đang hiển thị trên bảng
-        // 05.9.2 Admin nhấn nút Xoá kết quả gian lận
+        // 05.9.1 Admin tích checkbox trên từng dòng hoặc nhấn "Chọn tất cả" để chọn các kết quả đang hiển thị trên bảng.
+        // 05.9.2 Admin nhấn nút "Xoá kết quả gian lận".
 
-        // 05.9.3 Hệ thống lấy danh sách kết quả mà Admin đã chọn
+        // 05.9.3 Hệ thống lấy danh sách kết quả mà Admin đã chọn.
         List<GameResult> selectedList =
                 new ArrayList<>(resultTable.getSelectionModel().getSelectedItems());
 
-        // 05.9-E1 Chưa chọn dòng nào, nhấn Xoá
-        //           → Hiển thị thông báo 'Hãy chọn dữ liệu để xoá', không thực hiện xoá
+        // 05.9-E1 Chưa chọn dòng nào, nhấn Xoá → Hiển thị thông báo 'Hãy chọn dữ liệu để xoá', không thực hiện xoá.
         try {
             validateDeleteSelection(selectedList);
         } catch (IllegalArgumentException e) {
@@ -287,32 +276,29 @@ public class AdminResultController {
             return;
         }
 
-        // 05.9.4 [CẢI TIẾN v1.2 – B3] Hệ thống hiển thị dialog xác nhận:
-        //          "Bạn có chắc muốn xóa N kết quả đã chọn? Hành động này không thể hoàn tác."
+        // 05.9.4 [CẢI TIẾN v1.2 – B3] Hệ thống hiển thị dialog xác nhận: "Bạn có chắc muốn xóa N kết quả đã chọn? Hành động này không thể hoàn tác." Admin xác nhận OK.
+        // 05.9-A1 Admin nhấn Huỷ tại dialog xác nhận → Đóng dialog, không thực hiện xóa.
         if (!confirmFraudDelete(selectedList.size())) {
-            // 05.9-A1 Admin nhấn Huỷ tại dialog xác nhận → Đóng dialog, không thực hiện xóa
             return;
         }
 
         try {
-            // 05.9.5 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi cơ sở dữ liệu
+            // 05.9.5 Hệ thống thực hiện xóa toàn bộ các kết quả đã chọn khỏi CSDL.
             List<String> ids = selectedList.stream()
                     .map(GameResult::getGameId)
                     .collect(Collectors.toList());
             gameResultService.deleteByGameIds(ids);
 
-            // 05.9.5 Hệ thống tải lại bảng dữ liệu và hiển thị thông báo xóa thành công
-            //          kèm số lượng bản ghi đã xóa
+            // 05.9.6 Hệ thống tải lại bảng và hiển thị thông báo thành công kèm số lượng bản ghi đã xóa.
             loadPage();
             statusLabel.setText("Đã xoá " + selectedList.size() + " kết quả");
             showInfo("Đã xoá thành công " + selectedList.size() + " kết quả gian lận.");
 
-            // 05.9.6 Hệ thống ghi nhận hành động xóa vào nhật ký, bao gồm thông tin
-            //          Admin thực hiện, danh sách mã kết quả bị xóa và tổng số lượng bản ghi
+            // 05.9.7 Hệ thống ghi nhận log: Admin thực hiện, danh sách mã kết quả bị xóa, tổng số bản ghi (action: DELETE_SESSION).
             writeAuditLog(selectedList);
 
         } catch (Exception e) {
-            // 05-E1 CSDL lỗi
+            // 05-E1 CSDL lỗi → hiển thị hộp thoại lỗi
             showError("Xoá thất bại");
         }
     }
@@ -331,42 +317,38 @@ public class AdminResultController {
     }
 
     // =========================================================================
-    // Alternative Flow – UC-05.10 Phát hiện gian lận tự động [MỚI v1.2 – B5]
+    // Alternative Flow – UC-05.9 Phát hiện gian lận tự động
     // =========================================================================
 
     @FXML
     public void onDetectFraud() {
-        // 05.10.1 Admin nhấn nút "Phát hiện gian lận" trên màn hình Quản lý kết quả
+        // 05.10.1 Admin nhấn nút "Phát hiện gian lận" trên thanh công cụ.
+        // 05.10.2 Hệ thống đọc ngưỡng thời gian hợp lý từ cấu hình FraudDetectionService (EASY < 5s | MEDIUM < 20s | HARD < 60s | EXPERT < 120s).
 
-        // 05.10.2 Hệ thống đọc ngưỡng thời gian hợp lý từ cấu hình FraudDetectionService
-        //          (EASY < 5s | MEDIUM < 20s | HARD < 60s | EXPERT < 120s)
-
-        // 05.10.3 Hệ thống quét tất cả kết quả WIN đang hiển thị trong bảng,
-        //          so sánh completion_time với ngưỡng tương ứng của từng level
+        // 05.10.3 Hệ thống quét tất cả kết quả WIN đang hiển thị trong bảng, so sánh completion_time với ngưỡng tương ứng của từng level.
         List<GameResult> currentItems = new ArrayList<>(pageItems);
         List<GameResult> suspicious   = fraudDetectionService.detectSuspicious(currentItems);
 
-        // 05.10-A1 Không tìm thấy kết quả ngị vấn
-        //           → Hệ thống hiển thị thông báo "Không phát hiện kết quả bất thường nào."
+        // 05.10-A1 Không tìm thấy kết quả ngị vấn → Hệ thống hiển thị thông báo "Không phát hiện kết quả bất thường nào."
         if (suspicious.isEmpty()) {
             statusLabel.setText("Không phát hiện kết quả ngị vấn");
             showInfo("Không phát hiện kết quả bất thường nào.");
             return;
         }
 
-        // 05.10.4 Các dòng ngị vấn được tự động highlight màu đỏ nhạt
-        //          và tích chọn checkbox
+        // 05.10.4 Các dòng ngị vấn được tự động highlight màu đỏ nhạt và tích chọn checkbox.
         highlightSuspiciousRows(suspicious);
 
-        // 05.10.5 Nhãn trạng thái hiển thị: "Phát hiện N kết quả ngị vấn"
+        // 05.10.5 Nhãn trạng thái hiển thị: "Phát hiện N kết quả ngị vấn".
+        // 05.10.6 Các kết quả này giờ đây đã được chọn sẵn, Admin có thể tiếp tục bằng bước UC05.9 (Nhấn xoá kết quả gian lận).
         int count = suspicious.size();
         statusLabel.setText("Phát hiện " + count + " kết quả ngị vấn");
         selectedCountLabel.setText(count + " đã chọn");
     }
 
     /**
-     * 05.10.4 Tự động chọn (ticked checkbox) các dòng nghi vấn trong bảng.
-     * Admin vẫn có thể bỏ chọn thủ công trước khi xóa (tiếp tục UC05.9).
+     * 05.10.4 Các dòng ngị vấn được tự động highlight màu đỏ nhạt và tích chọn checkbox.
+     * 05.10.6 Các kết quả này giờ đây đã được chọn sẵn, Admin có thể tiếp tục bằng bước UC05.9 (Nhấn xoá kết quả gian lận).
      */
     private void highlightSuspiciousRows(List<GameResult> suspicious) {
         resultTable.getSelectionModel().clearSelection();
@@ -385,22 +367,19 @@ public class AdminResultController {
 
     @FXML
     public void onViewPlayerStats() {
-        // 05.11.1 Admin chọn một dòng kết quả trong bảng và nhấn nút
-        //          "Thống kê người chơi"
+        // 05.11.1 Admin chọn 1 user trong bảng Quản lý kết quả và nhấn nút "Thống kê người chơi".
         GameResult selected = resultTable.getSelectionModel().getSelectedItem();
 
-        // 05.11-E1 Chưa chọn dòng nào → hiển thị thông báo
+        // 05.10-E1 Chưa chọn dòng nào → hiển thị thông báo
         if (selected == null) {
             showInfo("Hãy chọn một dòng kết quả để xem thống kê người chơi.");
             return;
         }
 
-        // 05.11.2 Hệ thống lấy username từ dòng được chọn
+        // 05.11.2 Hệ thống truy vấn CSDL toàn bộ game_sessions của user_id đó để thống kê.
         String username = selected.getPlayerName();
 
         try {
-            // 05.11.3 Hệ thống truy vấn toàn bộ game_sessions của user đó
-            //          và tính toán các chỉ số thống kê tổng hợp
             GameResultFilterSpec spec = GameResultFilterSpec.withUsername(username);
             // Lấy tất cả kết quả (tối đa 10000 để tính thống kê đầy đủ)
             PagedResult<GameResult> allResults =
@@ -408,26 +387,27 @@ public class AdminResultController {
 
             PlayerStats stats = playerStatsService.computeStats(allResults.getContent());
 
-            // 05.11-A1 User không có kết quả nào
+            // 05.11-A1 User chưa có ván chơi nào → Hiển thị thông báo "Người chơi chưa có kết quả nào."
             if (stats.totalGames() == 0) {
                 showInfo("Người chơi '" + username + "' chưa có kết quả nào.");
                 return;
             }
 
-            // 05.11.4 Hệ thống hiển thị popup thống kê chi tiết
+            // 05.11.3 Hệ thống hiển thị popup thống kê gồm: Thống kê tổng quan (Tổng ván chơi | Thắng / Thua | Tỉ lệ thắng (%) | Điểm TB) và bảng thành tích tốt nhất theo từng độ khó (Best Score, Best Time).
             showPlayerStatsDialog(username, stats);
 
+            // 05.11.4 Admin xem thông tin và nhấn Đóng để quay lại màn hình chính.
+
         } catch (DataAccessException e) {
-            // 05-E1 CSDL lỗi
+            // 05-E1 CSDL lỗi → hiển thị hộp thoại lỗi
             LOG.error("Failed to load player stats for: {}", username, e);
             showError("Không thể tải thống kê cho người chơi: " + username);
         }
     }
 
     /**
-     * 05.11.4 Hiển thị popup thống kê chi tiết cho người chơi.
-     *          Gồm: tổng ván, thắng/thua, tỉ lệ thắng, điểm TB,
-     *          và bảng best score / best time theo từng độ khó.
+     * 05.11.3 Hệ thống hiển thị popup thống kê gồm: Thống kê tổng quan (Tổng ván chơi | Thắng / Thua | Tỉ lệ thắng (%) | Điểm TB) và bảng thành tích tốt nhất theo từng độ khó (Best Score, Best Time).
+     * 05.11.4 Admin xem thông tin và nhấn Đóng để quay lại màn hình chính.
      */
     private void showPlayerStatsDialog(String username, PlayerStats stats) {
         Dialog<Void> dialog = new Dialog<>();
