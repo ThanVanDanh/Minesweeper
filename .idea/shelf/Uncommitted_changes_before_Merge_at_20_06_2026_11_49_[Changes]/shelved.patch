@@ -1,0 +1,23 @@
+Index: src/main/java/app/App.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package app;\r\n\r\nimport javafx.application.Application;\r\nimport javafx.fxml.FXMLLoader;\r\nimport javafx.scene.Parent;\r\nimport javafx.scene.Scene;\r\nimport javafx.stage.Stage;\r\nimport minesweeper.model.User;\r\nimport minesweeper.service.AuthService;\r\nimport minesweeper.service.SessionManager;\r\nimport utils.AuthPopupHelper;\r\n\r\nimport java.io.IOException;\r\nimport java.util.Objects;\r\n\r\npublic class App extends Application {\r\n\r\n    @Override\r\n    public void start(Stage stage) throws IOException {\r\n        // Thử auto-login bằng Remember Me token trước khi hiện UI\r\n        AuthService authService = new AuthService();\r\n        User autoUser = authService.tryAutoLogin();\r\n\r\n        Parent root = FXMLLoader.load(Objects.requireNonNull(\r\n                App.class.getResource(\"/app/dashboard.fxml\")\r\n        ));\r\n        Scene scene = new Scene(root, 1280, 760);\r\n        scene.getStylesheets().add(Objects.requireNonNull(\r\n                App.class.getResource(\"/css/styles.css\")\r\n        ).toExternalForm());\r\n\r\n        stage.setTitle(\"Minesweeper Tactical - Dashboard\");\r\n        stage.setMinWidth(1100);\r\n        stage.setMinHeight(700);\r\n        stage.setScene(scene);\r\n        stage.show();\r\n\r\n        if (autoUser == null && SessionManager.getCurrentUser() == null) {\r\n            AuthPopupHelper.openAuthPopup(root, false, null);\r\n        }\r\n    }\r\n\r\n\r\n\r\n\r\n    public static void main(String[] args) {\r\n        launch(args);\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/app/App.java b/src/main/java/app/App.java
+--- a/src/main/java/app/App.java	(revision 014b5f975674929d99e64a9f002835f06f0f974c)
++++ b/src/main/java/app/App.java	(date 1781930956807)
+@@ -43,6 +43,12 @@
+ 
+ 
+ 
++
++
++
++
++
++
+     public static void main(String[] args) {
+         launch(args);
+     }
